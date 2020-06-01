@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.boardCtgry">
+
+	<resultMap type="bbsCtgryVO" id="bbsCtgryMap">
+		<result property="bbsNo" 		column="BBS_NO" />
+		<result property="ctgryNo" 		column="CTGRY_NO" />
+		<result property="ctgryValue" 	column="CTGRY_VALUE" />
+		<result property="ctgryNm" 		column="CTGRY_NM" />
+	</resultMap>
+
+	<select id="listCtgry" parameterType="hashmap" resultMap="bbsCtgryMap">
+		/* Query ID : humanframe.boardCtgry.listCtgry */
+		SELECT
+			BBS_NO
+		   ,CTGRY_NO
+		<choose>
+			<when test="prefix != null">
+			,CONCAT('${prefix}-' , CTGRY_NO) AS CTGRY_VALUE
+			</when>
+			<otherwise>
+			,'' AS CTGRY_VALUE
+			</otherwise>
+		</choose>
+		  ,CTGRY_NM
+		FROM TN_BBS_CTGRY
+		WHERE BBS_NO = #{bbsNo}
+		AND USE_AT = 'Y'
+	</select>
+
+	<insert id="insertBoardCtgry" parameterType="bbsCtgryVO">
+		/* Query ID : humanframe.boardCtgry.insertBoardCtgry */
+		<selectKey keyProperty="ctgryNo" resultType="int" order="BEFORE">
+			SELECT
+				NVL(MAX(CTGRY_NO), 0) + 1
+			FROM TN_BBS_CTGRY
+			WHERE BBS_NO = #{bbsNo}
+		</selectKey>
+		INSERT INTO 
+			TN_BBS_CTGRY (
+			  BBS_NO
+			, CTGRY_NO
+			, CTGRY_NM
+			, USE_AT
+		) VALUES (
+			  #{bbsNo}
+			, #{ctgryNo}
+			, #{ctgryNm}
+			, #{useAt}
+		)
+	</insert>
+
+	<update id="updateBoardCtgry" parameterType="bbsCtgryVO">
+		/* Query ID : humanframe.boardCtgry.updateBoardCtgry */
+		UPDATE 
+			TN_BBS_CTGRY 
+		SET CTGRY_NM = #{ctgryNm}
+		   ,USE_AT = #{useAt}
+		WHERE BBS_NO =  #{bbsNo}
+		AND CTGRY_NO = #{ctgryNo}
+	</update>
+
+</mapper>

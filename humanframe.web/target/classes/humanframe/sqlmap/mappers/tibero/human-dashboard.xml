@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.dashboard">
+	
+	<select id="getBbsList" resultType="egovMap">
+		/* Query ID : humanframe.dashboard.getBbsList */	
+	   select 
+			(select count(*) from tn_bbs_ty1) as ty1
+			,(select count(*) from tn_bbs_ty2) as ty2
+			,(select count(*) from tn_bbs_ty3) as ty3
+			,(select count(*) from tn_bbs_ty4) as ty4
+			,(select count(*) from tn_bbs_ty5) as ty5
+			,(select count(*) from tn_bbs_ty6) as ty6
+			,(select count(*) from tn_bbs_ty7) as ty7
+			,(select count(*) from tn_bbs_ty8) as ty8
+		from 
+		DUAL	   
+	</select>
+	
+	<select id="getConList" resultType="egovMap">
+		/* Query ID : humanframe.dashboard.getConList */	
+	   SELECT 
+		(SELECT COUNT(*) FROM tn_cntnts WHERE pblcate_sttus_ty = 'T') AS  pblcate_sttus_ty_t
+		,(SELECT COUNT(*) FROM tn_cntnts WHERE pblcate_sttus_ty = 'P') AS  pblcate_sttus_ty_p
+	   FROM 
+	   DUAL		   
+	</select>
+	
+</mapper>

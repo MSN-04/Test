@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.stsfdg">
+
+	<!-- Define Banner Result Map  -->
+	<resultMap type="stsfdgVO" id="stsfdgMap">
+		<result column="STSFDG_NO"		property="stsfdgNo"/>
+		<result column="SITE_NO"		property="siteNo"/>
+		<result column="MENU_NO"		property="menuNo"/>
+		<result column="SCORE"			property="score"/>
+		<result column="USE_AT"			property="useAt"/>
+		<result column="CREAT_DTTM"		property="creatDttm"/>
+		<result column="CRTR_NM"		property="crtrNm"/>
+		<result column="CRTR_UNIQUE_ID"	property="crtrUniqueId"/>
+		<result column="CRTR_ID"		property="crtrId"/>
+		<result column="OPINION"		property="opinion"/>
+	</resultMap>
+	
+	<!-- Define tn_stssdg Insert Query -->
+	<insert id="insertStsfdg" parameterType="stsfdgVO">
+		/* Query ID : humanframework.stssdg.insertStsfdg */
+		<selectKey keyProperty="stsfdgNo" resultType="int" order="BEFORE">
+			(SELECT NVL(MAX(STSFDG_NO), 0) + 1 FROM TN_STSFDG)
+		</selectKey>
+		INSERT INTO TN_STSFDG (
+			STSFDG_NO
+			, SITE_NO
+			, MENU_NO
+			, SCORE
+			, USE_AT
+			, CREAT_DTTM
+			, CRTR_NM
+			, CRTR_UNIQUE_ID
+			, CRTR_ID
+			, OPINION
+		) VALUES (
+	    	#{stsfdgNo}
+	    	, #{siteNo}
+	    	, #{menuNo}
+			, #{score}
+			, #{useAt}
+			, SYSDATE
+			, #{crtrNm, jdbcType=VARCHAR}
+			, #{crtrUniqueId, jdbcType=VARCHAR}
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{opinion, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	
+</mapper>

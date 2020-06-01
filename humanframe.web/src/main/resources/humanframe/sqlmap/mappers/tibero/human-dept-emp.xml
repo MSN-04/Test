@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.dept.emp">
+
+	<!-- Define DeptEmp Result Map  -->
+	<resultMap type="deptEmpVO" id="deptEmpMap">
+		<result column="EMP_CODE"			property="empCode" />
+		<result column="EMP_NM"				property="empNm" />
+		<result column="EMP_ENG_NM" 		property="empEngNm"/>
+		<result column="CLSF_NM" 			property="clsfNm"/>
+		<result column="OFCPS_NM"			property="ofcpsNm"/>
+		<result column="RSPOFC_NM" 			property="rspofcNm"/>
+		<result column="DEPT_CODE" 			property="deptCode"/>
+		<result column="TELNO" 				property="telno"/>
+		<result column="EMAIL" 				property="email"/>
+		<result column="SEXDSTN" 			property="sexdstn"/>
+		<result column="WORK_STLE"			property="workStle"/>
+		<result column="JOB_GUIDANCE" 		property="jobGuidance"/>
+		<result column="SORT_NO" 			property="sortNo"/>
+		<result column="CNKEY" 				property="cnkey"/>
+		<result column="LDAP_AT" 			property="ldapAt"/>
+		<result column="DSPY_AT" 			property="dspyAt"/>
+		<result column="USE_AT" 			property="useAt"/>
+		<result column="CRTR_UNIQUE_ID" 	property="crtrUniqueId"/>
+		<result column="CRTR_ID" 			property="crtrId"/>
+		<result column="CRTR_NM" 			property="crtrNm"/>
+		<result column="CREAT_DTTM" 		property="creatDttm"/>
+		<result column="UPDUSR_UNIQUE_ID" 	property="updusrUniqueId"/>
+		<result column="UPDUSR_ID" 			property="updusrId"/>
+		<result column="UPDUSR_NM" 			property="updusrNm"/>
+		<result column="UPDT_DTTM" 			property="updtDttm"/>
+		<result column="DEPT_NM" 			property="deptNm"/>
+		<result column="ALL_DEPT_NM" 		property="allDeptNm"/>
+		<result column="VIRTL_CODE" 		property="virtlCode"/>
+		<result column="DEPT_NM_PATH" 		property="deptNmPath"/>
+		<result column="MNGR_ID" 			property="mngrId"/>
+	</resultMap>
+
+	<!-- Define DeptEmpVO Column List -->
+	<sql id="listColumn">
+		  TDE.EMP_CODE
+		, TDE.EMP_NM
+		, TDE.EMP_ENG_NM
+		, TDE.CLSF_NM
+		, TDE.OFCPS_NM
+		, TDE.RSPOFC_NM
+		, TDE.DEPT_CODE
+		, TDE.TELNO
+		, TDE.EMAIL
+		, TDE.SEXDSTN
+		, TDE.WORK_STLE
+		, TDE.JOB_GUIDANCE
+		, TDE.SORT_NO
+		, TDE.CNKEY
+		, TDE.LDAP_AT
+		, TDE.DSPY_AT
+		, TDE.USE_AT
+		, TDE.CRTR_UNIQUE_ID
+		, TDE.CRTR_ID
+		, TDE.CRTR_NM
+		, TDE.CREAT_DTTM
+		, TDE.UPDUSR_UNIQUE_ID
+		, TDE.UPDUSR_ID
+		, TDE.UPDUSR_NM
+		, TDE.UPDT_DTTM
+	</sql>
+
+	<!-- Define Search Condition -->
+	<sql id="searchConditions">
+		<if test="dspyAt != null and dspyAt != ''">
+			AND TDE.DSPY_AT = 'Y'
+		</if>
+		<if test="useAt != null and useAt != '' ">
+			AND TDE.USE_AT = #{useAt}
+		</if>
+		<if test="srchEmpNm != null and srchEmpNm != '' ">
+			AND TDE.EMP_NM LIKE ''|| #{srchEmpNm} ||'%'
+		</if>
+		<if test="srchClsfNm != null and srchClsfNm != '' ">
+			AND TDE.CLSF_NM LIKE '%'|| #{srchClsfNm} ||'%'
+		</if>
+		<if test="srchEmpCode != null and srchEmpCode != '' ">
+			AND TDE.EMP_CODE LIKE '%'|| #{srchEmpCode} ||'%'
+		</if>
+		<if test="srchTelno != null and srchTelno != '' ">
+			AND TDE.TELNO LIKE '%'|| #{srchTelno} ||'%'
+		</if>
+ 		<if test="srchDeptNm != null and srchDeptNm != '' ">
+			AND TD.DEPT_NM LIKE '%'|| #{srchDeptNm} ||'%'
+		</if>
+		<if test="srchJobGuidance != null and srchJobGuidance != '' ">
+			AND TDE.JOB_GUIDANCE LIKE '%'|| #{srchJobGuidance} ||'%'
+		</if>
+		<if test="srchWord != null and srchWord != '' ">
+			<choose>
+				<when test='srchKey != null and srchKey == "srchDeptNm" '>AND TD.DEPT_NM LIKE '%'|| #{srchWord} ||'%'</when>
+				<when test='srchKey != null and srchKey == "srchEmpNm" '>AND TDE.EMP_NM LIKE '%'|| #{srchWord} ||'%'</when>
+				<when test='srchKey != null and srchKey == "srchTelno" '>AND TDE.TELNO LIKE '%'|| #{srchWord} ||'%'</when>
+				<when test='srchKey != null and srchKey == "srchClsfNm" '>AND TDE.CLSF_NM LIKE '%'|| #{srchWord} ||'%'</when>
+				<when test='srchKey != null and srchKey == "srchJobGuidance" '>AND TDE.JOB_GUIDANCE LIKE '%'|| #{srchWord} ||'%'</when>
+				<otherwise>
+					AND (TD.DEPT_NM LIKE '%'|| #{srchWord} ||'%' OR TDE.EMP_NM LIKE '%'|| #{srchWord} ||'%' OR TDE.JOB_GUIDANCE LIKE '%'|| #{srchWord} ||'%' OR TDE.TELNO LIKE '%'|| #{srchWord} ||'%' OR TDE.CLSF_NM LIKE '%'|| #{srchWord} ||'%')
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+
+	<!-- Define tn_dept_emp List Query -->
+	<select id="selectDeptEmpListVO" parameterType="java.util.HashMap" resultMap="deptEmpMap">
+		/* Query ID : humanframework.deptEmp.selectDeptEmpListVO */
+		SELECT
+			<include refid="listColumn"/>
+			, TDE.VIRTL_CODE
+			, TDE.DEPT_NM
+			, TDE.DEPT_NM_PATH
+			, (SELECT 
+				MNGR_ID 
+			   FROM TN_MNGR TMN 
+			   WHERE TMN.EMP_CODE = TDE.EMP_CODE) AS MNGR_ID
+		FROM (
+			SELECT 
+				ROWNUM AS RNUM
+				,<include refid="listColumn"/>
+				, TDE.VIRTL_CODE
+				, TDE.DEPT_NM
+				, TDE.DEPT_NM_PATH
+			FROM (
+				SELECT
+					<include refid="listColumn"/>
+					, TD.VIRTL_CODE
+					, TD.DEPT_NM
+					, TD.DEPT_NM_PATH
+				FROM (
+					SELECT 
+						ROWNUM AS ORD
+						,LEVEL_NO
+						,SORT_NO
+						,VIRTL_CODE
+						,UPPER_DEPT_CODE
+						,DEPT_CODE
+						,DEPT_NM
+						,SUBSTR(SYS_CONNECT_BY_PATH(DEPT_NM, '>'), 2) AS DEPT_NM_PATH
+					FROM TN_DEPT
+					WHERE 1=1
+					<if test="useAt != null and useAt != ''">
+					AND USE_AT = #{useAt}
+					</if>
+					<if test="dspyAt != null and dspyAt != ''">
+					AND DSPY_AT = #{dspyAt}
+					</if>
+					<if test="temp != null and temp != ''">
+					AND TEMP = #{temp}
+					</if>
+					<choose>
+						<when test='srchDeptCode != null and srchDeptCode != "" '>
+						START WITH DEPT_CODE = #{srchDeptCode}
+						</when>
+						<when test='srchVDeptCode != null and srchVDeptCode != "" '>
+						START WITH UPPER_DEPT_CODE = '6260000' AND VIRTL_CODE = #{srchVDeptCode}
+						</when>
+						<otherwise>
+						START WITH (UPPER_DEPT_CODE = '6260000' OR UPPER_DEPT_CODE = '0')
+						</otherwise>
+					</choose>
+					CONNECT BY PRIOR DEPT_CODE = UPPER_DEPT_CODE
+					ORDER SIBLINGS BY LEVEL_NO, SORT_NO
+				) TD, TN_DEPT_EMP TDE
+				WHERE TD.DEPT_CODE = TDE.DEPT_CODE
+				<include refid="searchConditions" />
+				ORDER BY TDE.DSPY_AT DESC, TD.ORD, TDE.SORT_NO
+			  ) TDE
+			  WHERE ROWNUM &lt;= #{endNum}
+		   ) TDE
+	     WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<!-- Define tn_dept_emp Count Query -->
+	<select id="selectDeptEmpCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframework.deptEmp.selectDeptEmpCount */
+			SELECT 
+				COUNT(1)
+			FROM (
+				SELECT 
+					ROWNUM AS ORD
+					,LEVEL_NO
+					,SORT_NO
+					,VIRTL_CODE
+					,UPPER_DEPT_CODE
+					,DEPT_CODE
+					,DEPT_NM 
+				FROM TN_DEPT
+					<!-- force INDEX (idx_tn_dept_01) -->
+				WHERE 1=1
+				<if test="useAt != null and useAt != ''">
+					AND USE_AT = #{useAt}
+				</if>
+				<if test="dspyAt != null and dspyAt != ''">
+					AND DSPY_AT = #{dspyAt}
+				</if>
+				<if test="temp != null and temp != ''">
+					AND TEMP = #{temp}
+				</if>
+				<choose>
+					<when test='srchDeptCode != null and srchDeptCode != "" '>
+					START WITH DEPT_CODE = #{srchDeptCode}
+					</when>
+					<when test='srchVDeptCode != null and srchVDeptCode != "" '>
+					START WITH UPPER_DEPT_CODE = '6260000' 
+					AND VIRTL_CODE = #{srchVDeptCode}
+					</when>
+					<otherwise>
+					START WITH (UPPER_DEPT_CODE = '6260000' OR UPPER_DEPT_CODE = '0')
+					</otherwise>
+				</choose>
+				CONNECT BY PRIOR DEPT_CODE = UPPER_DEPT_CODE
+				ORDER SIBLINGS BY LEVEL_NO, SORT_NO
+				) TD, TN_DEPT_EMP TDE
+			WHERE TD.DEPT_CODE = TDE.DEPT_CODE
+			<include refid="searchConditions" />
+	</select>
+
+	<!-- Define tn_dept_emp Detail Query -->
+	<select id="selectDeptEmp" parameterType="int" resultMap="deptEmpMap">
+		/* Query ID : humanframework.deptEmp.selectDeptEmp */
+		SELECT
+			<include refid="listColumn"/>
+		FROM TN_DEPT_EMP TDE
+	 	WHERE EMP_CODE = #{empCode}
+	</select>
+
+	<!-- Define tn_dept_emp Insert Query -->
+	<insert id="insertDeptEmp" parameterType="deptEmpVO">
+		/* Query ID : humanframework.deptEmp.insertDeptEmp */
+		<selectKey keyProperty="empCode" resultType="java.lang.String" order="BEFORE">
+			<if test="empCode == null or empCode == ''">
+            SELECT 'EMP_'||LPAD(SEQ_TN_DEPT_EMP.NEXTVAL, 9, '0') FROM DUAL
+            </if>
+            <if test="empCode != null and empCode != ''">
+            #{empCode}
+            </if>
+		</selectKey>
+		INSERT INTO TN_DEPT_EMP (
+			EMP_CODE
+			, EMP_NM
+			, EMP_ENG_NM
+			, CLSF_NM
+			, OFCPS_NM
+			, RSPOFC_NM
+			, DEPT_CODE
+			, TELNO
+			, EMAIL
+			, SEXDSTN
+			, WORK_STLE
+			, JOB_GUIDANCE
+			, SORT_NO
+			, CNKEY
+			, LDAP_AT
+			, DSPY_AT
+			, USE_AT
+			, CRTR_UNIQUE_ID
+			, CRTR_ID
+			, CRTR_NM
+			, CREAT_DTTM
+		) VALUES (
+	    	#{empCode}
+	    	, #{empNm}
+	    	, #{empEngNm, jdbcType=VARCHAR}
+			, #{clsfNm, jdbcType=VARCHAR}
+			, #{ofcpsNm, jdbcType=VARCHAR}
+			, #{rspofcNm, jdbcType=VARCHAR}
+			, #{deptCode, jdbcType=VARCHAR}
+			, #{telno, jdbcType=VARCHAR}
+			, #{email, jdbcType=VARCHAR}
+			, #{sexdstn, jdbcType=VARCHAR}
+			, #{workStle}
+			, #{jobGuidance, jdbcType=VARCHAR}
+			, #{sortNo}
+			, #{cnkey, jdbcType=VARCHAR}
+			, #{ldapAt, jdbcType=VARCHAR}
+			, #{dspyAt, jdbcType=VARCHAR}
+			, #{useAt, jdbcType=VARCHAR}
+			, #{crtrUniqueId, jdbcType=VARCHAR}
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{crtrNm, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+
+	<!-- Define tn_dept_emp Update Query -->
+	<update id="updateDeptEmp" parameterType="deptEmpVO">
+		/* Query ID : humanframework.deptEmp.updateDeptEmp */
+		UPDATE	TN_DEPT_EMP
+		   SET EMP_NM = #{empNm}
+			   	, EMP_ENG_NM = #{empNm}
+				, CLSF_NM = #{clsfNm, jdbcType=VARCHAR}
+				, OFCPS_NM = #{ofcpsNm, jdbcType=VARCHAR}
+				, RSPOFC_NM = #{rspofcNm, jdbcType=VARCHAR}
+				, DEPT_CODE = #{deptCode}
+				, TELNO = #{telno, jdbcType=VARCHAR}
+				, EMAIL = #{email, jdbcType=VARCHAR}
+				, SEXDSTN = #{sexdstn, jdbcType=VARCHAR}
+				, WORK_STLE = #{workStle}
+				, JOB_GUIDANCE = #{jobGuidance, jdbcType=VARCHAR}
+				, SORT_NO = #{sortNo}
+				, DSPY_AT = #{dspyAt, jdbcType=VARCHAR}
+				, USE_AT = #{useAt, jdbcType=VARCHAR}
+				, UPDUSR_UNIQUE_ID = #{updusrUniqueId, jdbcType=VARCHAR}
+				, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+				, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+				, UPDT_DTTM = SYSDATE
+		 WHERE	EMP_CODE = #{empCode}
+	</update>
+
+	<!-- Define tn_dept_emp Update Use Y/N Query -->
+	<update id="updateDeptEmpUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.deptEmp.updateDeptEmpUseAt */
+		UPDATE	TN_DEPT_EMP
+		   SET  USE_AT = #{useAt}
+		 WHERE	EMP_CODE = #{empCode}
+	</update>
+
+	<!-- Define tn_dept_emp Update Use Y/N for List Query -->
+	<update id="updateDeptEmpListUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.deptEmp.updateDeptEmpListUseAt */
+		UPDATE	TN_DEPT_EMP
+		   SET  USE_AT = #{useAt}
+		    , UPDUSR_UNIQUE_ID = #{updusrUniqueId}
+		    , UPDUSR_ID = #{updusrId}
+			, UPDUSR_NM = #{updusrNm}
+			, UPDT_DTTM = sysdate
+		WHERE EMP_CODE IN
+		<foreach collection="arrDeptEmp" item="empCode" open="(" separator="," close=")">
+			#{empCode}
+		</foreach>
+	</update>
+
+	<!-- Define tn_dept_emp Delete Query -->
+	<delete id="deleteDeptEmp" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.deptEmp.deleteDeptEmp */
+		DELETE TN_DEPT_EMP
+		WHERE EMP_CODE = #{empCode}
+	</delete>
+
+	<select id="selectDeptEmpListAll" resultMap="deptEmpMap">
+		/* Query ID : humanframework.deptEmp.selectDeptEmpListAll */
+		SELECT
+			<include refid="listColumn"/>
+			, TD.DEPT_NM
+			, TD.ALL_DEPT_NM
+		FROM TN_DEPT_EMP TDE, TN_DEPT TD
+		WHERE TDE.DEPT_CODE = TD.DEPT_CODE(+)
+		<include refid="searchConditions" />
+		ORDER BY ISNULL(TD.DEPT_NM), TD.LEVEL_NO, TD.SORT_NO, TDE.SORT_NO
+	</select>
+
+</mapper>

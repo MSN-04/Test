@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- // Oracle, Mssql : Null 허용시 사용 -->
+	<settings>
+		<setting name="jdbcTypeForNull" value="NULL" />
+	</settings>
+	<typeAliases>
+		<typeAlias alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+		<typeAlias alias="stringToArrayHandler" type="humanframe.core.typehandler.StringToArrayHandler"/>
+
+		<!-- CMS 공통 타입 Alias -->
+		<typeAlias alias="codeVO" type="humanframe.backoffice.vo.CodeVO"/>
+		<typeAlias alias="codeLangVO" type="humanframe.backoffice.vo.CodeLangVO"/>
+
+		<!-- 사이트관리 -->
+		<typeAlias alias="siteVO" 		type="humanframe.backoffice.vo.SiteVO"/>
+		<typeAlias alias="siteMenuVO" 	type="humanframe.backoffice.vo.SiteMenuVO"/>
+		<typeAlias alias="siteMainVO" 	type="humanframe.backoffice.vo.SiteMainVO" />
+		<typeAlias alias="siteMainImageVO" type="humanframe.backoffice.vo.SiteMainImageVO"/>
+		<typeAlias alias="bannerVO" type="humanframe.backoffice.vo.BannerVO"/>
+		<typeAlias alias="popupVO" type="humanframe.backoffice.vo.PopupVO"/>
+		<typeAlias alias="stsfdgVO" type="humanframe.backoffice.vo.StsfdgVO"/>
+
+		<!-- Contents VO -->
+		<typeAlias alias="cntntsVO" type="humanframe.backoffice.vo.CntntsVO"/>
+		<typeAlias alias="cntntsHistVO" type="humanframe.backoffice.vo.CntntsHistVO"/>
+		<typeAlias alias="cntntsMapngVO" type="humanframe.backoffice.vo.CntntsMapngVO"/>
+		<typeAlias alias="cntntsFormVO" type="humanframe.backoffice.vo.CntntsFormVO"/>
+		<typeAlias alias="cntntsRelateImageVO" type="humanframe.backoffice.vo.CntntsRelateImageVO"/>
+
+		<typeAlias alias="mediaVO" type="humanframe.backoffice.vo.MediaVO"/>
+		<typeAlias alias="mediaLangVO" type="humanframe.backoffice.vo.MediaLangVO"/>
+
+		<typeAlias alias="metadata" type="humanframe.backoffice.vo.Metadata"/>
+		<typeAlias alias="metadataVO" type="humanframe.backoffice.vo.MetadataVO"/>
+
+		<!-- 게시판 관련 VO -->
+		<typeAlias alias="bbsSettingVO" type="humanframe.backoffice.vo.BbsSettingVO"/>
+		<typeAlias alias="bbsScrtyVO" type="humanframe.backoffice.vo.BbsScrtyVO"/>
+		<typeAlias alias="bbsHashTagVO" type="humanframe.backoffice.vo.BbsHashTagVO"/>
+		<typeAlias alias="bbsCtgryVO" type="humanframe.backoffice.vo.BbsCtgryVO"/>
+		<typeAlias alias="bbsType1VO" type="humanframe.backoffice.vo.BbsType1VO"/>
+		<typeAlias alias="bbsType2VO" type="humanframe.backoffice.vo.BbsType2VO"/>
+		<typeAlias alias="bbsType3VO" type="humanframe.backoffice.vo.BbsType3VO"/>
+		<typeAlias alias="bbsType4VO" type="humanframe.backoffice.vo.BbsType4VO"/>
+		<typeAlias alias="bbsType5VO" type="humanframe.backoffice.vo.BbsType5VO"/>
+		<typeAlias alias="bbsType6VO" type="humanframe.backoffice.vo.BbsType6VO"/>
+		<typeAlias alias="bbsType7VO" type="humanframe.backoffice.vo.BbsType7VO"/>
+		<typeAlias alias="bbsType8VO" type="humanframe.backoffice.vo.BbsType8VO"/>
+		<typeAlias alias="bbsEtcItemVO" type="humanframe.backoffice.vo.BbsEtcItemVO"/>
+		<typeAlias alias="bbsEtcItemEXVO" type="humanframe.backoffice.vo.BbsEtcItemExVO"/>
+		<typeAlias alias="bbsSkinVO" type="humanframe.backoffice.vo.BbsSkinVO"/>
+		<typeAlias alias="bbsReportVO" type="humanframe.backoffice.vo.BbsReportVO"/>
+		<typeAlias alias="bbsMiniVO" type="humanframe.backoffice.vo.BbsMiniVO"/>
+
+		<!-- 기능프로그램 -->
+		<typeAlias alias="fnctProgrmVO" type="humanframe.backoffice.vo.FnctProgrmVO"/>
+ 		<typeAlias alias="qestnarVO" type="humanframe.web.vo.QestnarVO" />
+		<typeAlias alias="qestnarQestnVO" type="humanframe.web.vo.QestnarQestnVO" />
+		<typeAlias alias="qestnarQesitmVO" type="humanframe.web.vo.QestnarQesitmVO" />
+<!-- 	<typeAlias alias="termVO" type="humanframe.fnct.vo.term.TermVO"/>
+		<typeAlias alias="crsVO" type="humanframe.fnct.vo.CrsVO"/>
+		<typeAlias alias="eventMemberVO" type="humanframe.fnct.vo.partcptn.event.EventMemberVO" />
+		<typeAlias alias="eventVO" type="humanframe.fnct.vo.partcptn.event.EventVO" /> -->
+
+		<typeAlias alias="cmVO" type="humanframe.backoffice.vo.CmVO"/>
+		<typeAlias alias="cmRespondVO" type="humanframe.backoffice.vo.CmRespondVO"/>
+
+
+		<!-- 배포 -->
+		<typeAlias alias="pblcateVO" type="humanframe.backoffice.vo.PblcateVO" />
+
+		<!-- CMS관리 -->
+		<typeAlias alias="mngMenuVO" type="humanframe.backoffice.vo.MngMenuVO"/>
+		<typeAlias alias="mngAuthorVO" type="humanframe.backoffice.vo.MngAuthorVO"/>
+		<typeAlias alias="mngAuthorMenuVO" type="humanframe.backoffice.vo.MngAuthorMenuVO"/>
+		<typeAlias alias="mngrVO" type="humanframe.backoffice.vo.MngrVO"/>
+		<typeAlias alias="deptVO" type="humanframe.backoffice.vo.DeptVO"/>
+		<typeAlias alias="deptEmpVO" type="humanframe.backoffice.vo.DeptEmpVO"/>
+
+		<!-- 관리로그 -->
+		<typeAlias alias="mngLogVO" type="humanframe.backoffice.vo.MngLogVO"/>
+
+		<!-- 공통 첨부파일 VO -->
+		<typeAlias alias="fileVO" type="humanframe.backoffice.vo.FileVO" />
+		<typeAlias alias="CrdnsVO" type="humanframe.backoffice.vo.CrdnsVO"/>
+
+		<!-- 추가프로그램 -->
+		<typeAlias alias="sampleVO" type="humanframe.web.vo.SampleVO"/>
+		<typeAlias alias="crsVO" type="humanframe.web.vo.CrsVO"/>
+		<typeAlias alias="prjctInqryVO" type="humanframe.web.vo.PrjctInqryVO"/>
+
+		<!-- 회원 -->
+		<typeAlias alias="mberVO" type="humanframe.backoffice.vo.MberVO"/>
+
+		<!-- 통계 -->
+		<typeAlias alias="statsMenuVO" type="humanframe.backoffice.vo.StatsMenuVO"/>
+		<!-- 관리자스케쥴 -->
+		<typeAlias alias="mngSchdulVO" type="humanframe.backoffice.vo.MngSchdulVO"/>
+
+
+	</typeAliases>
+</configuration>

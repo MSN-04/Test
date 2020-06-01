@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.bbsReport">
+
+	<resultMap type="bbsReportVO" id="bbsReportMap">
+		<result property="reportNo" 		column="REPORT_NO" />
+		<result property="bbsNo" 			column="BBS_NO" />
+		<result property="nttNo" 			column="BBS_SCRTY_TY" />
+		<result property="reportTy" 		column="REPORT_TY" />
+		<result property="cn" 				column="CN" />
+		<result property="reportrId" 		column="REPORTR_ID" />
+		<result property="reportrNm" 		column="REPORTR_NM" />
+		<result property="reportDttm" 		column="REPORT_DTTM" />
+		<result property="opetrId" 			column="OPETR_ID" />
+		<result property="opetrNm" 			column="OPETR_NM" />
+		<result property="operatorDttm" 	column="OPERATOR_DTTM" />
+		<result property="processTy" 		column="PROCESS_TY" />
+	</resultMap>
+
+	<select id="selectBbsReport" parameterType="bbsReportVO" resultType="int">
+		/* Query ID : humanframe.bbsReport.selectBbsReport */		
+		SELECT 
+			COUNT(*)
+		FROM TN_BBS_REPORT
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO = #{nttNo}
+		AND REPORTR_ID= #{reportrId}
+		AND CM_NO = NVL(${cmNo}, '0')
+	</select>
+
+	<insert id="insertBbsReport" parameterType="bbsReportVO">
+		/* Query ID : humanframe.bbsReport.insertBbsReport */		
+		<selectKey keyProperty="reportNo" resultType="int" order="BEFORE">
+			SELECT
+				NVL(MAX(REPORT_NO),0) + 1
+			FROM TN_BBS_REPORT
+			WHERE BBS_NO = #{bbsNo}
+			AND NTT_NO = #{nttNo}
+			AND CM_NO = NVL(${cmNo}, '0')
+		</selectKey>
+		INSERT INTO 
+			TN_BBS_REPORT (
+	       	   REPORT_NO,
+	           BBS_NO,
+	           NTT_NO,
+	           REPORT_TY,
+	           CN,
+	           REPORTR_ID,
+	           REPORTR_NM,
+	           REPORT_DTTM,
+	           PROCESS_TY,
+	           CM_NO
+	       ) VALUES (
+	       	   #{reportNo}
+	          ,#{bbsNo}
+	          ,#{nttNo}
+	          ,#{reportTy, jdbcType=VARCHAR}
+          	  ,#{cn, jdbcType=VARCHAR}
+          	  ,#{reportrId, jdbcType=VARCHAR}
+          	  ,#{reportrNm, jdbcType=VARCHAR}
+	          ,SYSDATE
+	          ,#{processTy, jdbcType=VARCHAR}
+	          ,NVL(#{cmNo},'0')
+	       )
+	</insert>
+
+</mapper>

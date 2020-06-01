@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.siteMain">
+
+	<resultMap type="siteMainVO" id="siteMainMap">
+		<result column="SITE_MAIN_NO"	property="siteMainNo" />
+		<result column="SITE_NO"		property="siteNo" />
+		<result column="NTT_CL"			property="nttCl" />
+		<result column="NTT_CL_NM"		property="nttClNm" />
+		<result column="NTT_SJ"			property="nttSj" />
+		<result column="NTT_SUB_SJ"		property="nttSubSj" />
+		<result column="NTT_CN"			property="nttCn" />
+		<result column="CRTR_ID"		property="crtrId" />
+		<result column="CRTR_NM"		property="crtrNm" />
+		<result column="UPDUSR_ID"		property="updusrId" />
+		<result column="UPDUSR_NM"		property="updusrNm" />
+		<result column="LINK_URL"		property="linkUrl" />
+		<result column="LINK_TRGT"		property="linkTrgt" />
+		<result column="WRITNG_DE"		property="writngDe" />
+		<result column="BGN_DTTM"		property="bgnDttm" />
+		<result column="END_DTTM"		property="endDttm" />
+		<result column="USE_AT"			property="useAt" />
+		<collection property="fileList" column="{srvcId=srvc_id, upperNo=site_main_no}" select="humanframe.file.selectFileList" />
+	</resultMap>
+
+	<sql id="listColumn">
+		  SITE_MAIN_NO
+		, SITE_NO
+		, NTT_CL
+		, NTT_SJ
+		, NTT_SUB_SJ
+		, NTT_CN
+		, CRTR_ID
+		, CRTR_NM
+		, CREAT_DTTM
+		, UPDUSR_ID
+		, UPDUSR_NM
+		, UPDT_DTTM
+		, LINK_URL
+		, LINK_TRGT
+		, WRITNG_DE
+		, USE_AT
+		, 'SITEMAIN' AS SRVC_ID
+		, BGN_DTTM
+		, END_DTTM
+	</sql>
+
+	<sql id="searchConditions">
+		<where>
+			<if test="useAt == null or useAt == ''">
+				AND USE_AT = 'Y'
+			</if>
+			<if test="useAt != null and useAt != '' ">
+				AND USE_AT = #{useAt}
+			</if>
+			<if test="siteNo != null and siteNo != 0">
+				AND SITE_NO = #{siteNo}
+			</if>
+			<if test="nttCl != null and nttCl != '' ">
+				AND NTT_CL = #{nttCl}
+			</if>
+			<if test="useAtFront != null and useAtFront != ''">
+				AND (SYSDATE BETWEEN BGN_DTTM AND END_DTTM OR (BGN_DTTM IS NULL AND END_DTTM IS NULL))
+			</if>
+		</where>
+	</sql>
+
+	<sql id="listWhere">
+		<where>
+			<if test="siteNo != null and siteNo != 0">
+				AND SITE_NO = #{siteNo}
+			</if>
+			<if test="srchMainTy != null and srchMainTy != '' ">
+				AND NTT_CL = #{srchMainTy}
+			</if>
+			<if test="srchWord != null and srchWord != '' ">
+				AND NTT_SJ LIKE '%' || #{srchWord} || '%'
+			</if>
+			<if test="useAt == null or useAt == ''">
+				AND USE_AT = 'Y'
+			</if>
+			<if test="useAt != null and useAt != '' ">
+				AND USE_AT = #{useAt}
+			</if>
+			<if test="useAtFront != null and useAtFront != ''">
+				AND (SYSDATE BETWEEN BGN_DTTM AND END_DTTM OR (BGN_DTTM IS NULL AND END_DTTM IS NULL))
+			</if>
+		</where>
+	</sql>
+	
+	<sql id="nttListSearchConditions">
+		<choose>
+			<when test="srchNttMode == 'CNTNTS' ">
+				<if test="srchSj != null and srchSj != '' ">
+			    	AND TC.CNTNTS_SJ LIKE '%'|| #{srchSj} ||'%'
+			    </if>
+			    <if test="srchWritngDe != null and srchWritngDe != '' ">
+					AND TC.PBLCATE_DE = #{srchWritngDe}
+				</if>
+			</when>
+			<when test="srchNttMode == 'BBS' ">
+				<include refid="humanframe.boardSetting.useUnityBbs"/>
+				<if test="bbsTy != null and bbsTy != '5' ">
+					AND (RESVE_AT = 'N' OR (RESVE_AT = 'Y' AND SYSDATE BETWEEN RESVE_BEGIN_DTTM AND RESVE_END_DTTM))
+				</if>
+				<if test="srchSj != null and srchSj != '' ">
+			    	AND SJ LIKE '%'|| #{srchSj} ||'%'
+			    </if>
+				<if test="srchWritngDe != null and srchWritngDe != '' ">
+					AND WRITNG_DE = #{srchWritngDe}
+				</if>
+			</when>
+		</choose>
+	</sql>
+	
+
+	<select id="selectSiteMainCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.siteMain.selectSiteMainCount */
+		SELECT 
+			COUNT(*)
+	  	FROM TN_SITE_MAIN
+		<include refid="listWhere"/>
+	</select>
+
+	<select id="selectSiteMainListVO" parameterType="hashmap" resultMap="siteMainMap">
+		/* Query ID : humanframe.siteMain.selectSiteMainListVO */
+		SELECT
+			<include refid="listColumn"/>
+			, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = NTT_CL AND TC.UPPER_CODE_ID = 'SITE_MAIN') AS NTT_CL_NM
+		FROM (
+			SELECT
+				ROWNUM AS RNUM ,
+				<include refid="listColumn"/>
+			FROM (
+				SELECT	
+					<include refid="listColumn" />
+				FROM TN_SITE_MAIN
+				<include refid="listWhere"/>
+			ORDER BY WRITNG_DE DESC, SITE_MAIN_NO DESC		
+			) WHERE ROWNUM &#60;= #{endNum}
+		) WHERE RNUM > #{startNum}
+	</select>
+
+	<select id="selectSiteMainListAll" resultMap="siteMainMap">
+		/* Query ID : humanframe.siteMain.selectSiteMainListAll */
+		<if test="maxLength != null and maxLength != 0 ">
+			<include refid="LimitMapper.header"/>
+		</if>	
+			SELECT 
+				<include refid="listColumn"/>
+			FROM TN_SITE_MAIN
+			<include refid="searchConditions" />
+			ORDER BY WRITNG_DE DESC, SITE_MAIN_NO DESC
+		<if test="maxLength != null and maxLength != 0 ">
+			<include refid="LimitMapper.footer"/>
+		</if>	
+	</select>
+
+	<select id="selectSiteMain" parameterType="int" resultMap="siteMainMap">
+		/* Query ID : humanframe.siteMain.selectSiteMain */
+		SELECT	
+			<include refid="listColumn" />
+			, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = NTT_CL AND TC.UPPER_CODE_ID = 'SITE_MAIN') AS NTT_CL_NM
+		FROM TN_SITE_MAIN
+		WHERE SITE_MAIN_NO = #{siteMainNo}
+	</select>
+
+	<insert id="insert" parameterType="siteMainVO">
+		/* Query ID : humanframe.siteMain.insert */
+		<selectKey keyProperty="siteMainNo" order="BEFORE" resultType="int">
+		SELECT NVL(MAX(SITE_MAIN_NO),0) + 1 FROM TN_SITE_MAIN
+		</selectKey>
+		INSERT INTO TN_SITE_MAIN (
+			  SITE_MAIN_NO
+			, SITE_NO
+			, NTT_CL
+			, NTT_SJ
+			, NTT_SUB_SJ
+			, NTT_CN
+			, CRTR_ID
+			, CRTR_NM
+			, CREAT_DTTM
+			, UPDUSR_ID
+			, UPDUSR_NM
+			, UPDT_DTTM
+			, LINK_URL
+			, LINK_TRGT
+			, WRITNG_DE
+			, USE_AT
+			, BGN_DTTM
+			, END_DTTM
+		) VALUES (
+			  #{siteMainNo}
+			, #{siteNo}
+			, #{nttCl}
+			, #{nttSj, jdbcType=VARCHAR}
+			, #{nttSubSj, jdbcType=VARCHAR}
+			, #{nttCn, jdbcType=VARCHAR}
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{crtrNm, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{updusrId, jdbcType=VARCHAR}
+			, #{updusrNm, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{linkUrl, jdbcType=VARCHAR}
+			, #{linkTrgt, jdbcType=VARCHAR}
+			, #{writngDe, jdbcType=VARCHAR}
+			, #{useAt, jdbcType=VARCHAR}
+			, TO_DATE(#{bgnDttm, jdbcType=VARCHAR},'yyyy-MM-dd')
+			, TO_DATE(#{endDttm, jdbcType=VARCHAR},'yyyy-MM-dd')
+		)
+	</insert>
+
+	<update id="update" parameterType="siteMainVO">
+		/* Query ID : humanframe.siteMain.update */
+		UPDATE TN_SITE_MAIN SET
+			  SITE_NO = #{siteNo}
+			, NTT_SJ = #{nttSj, jdbcType=VARCHAR}
+			, NTT_SUB_SJ = #{nttSubSj, jdbcType=VARCHAR}
+			, NTT_CN = #{nttCn, jdbcType=VARCHAR}
+			, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+			, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+			, UPDT_DTTM = SYSDATE
+			, LINK_URL = #{linkUrl, jdbcType=VARCHAR}
+			, LINK_TRGT = #{linkTrgt, jdbcType=VARCHAR}
+			, WRITNG_DE = #{writngDe, jdbcType=VARCHAR}
+			, NTT_CL = #{nttCl, jdbcType=VARCHAR}
+			, USE_AT = #{useAt, jdbcType=VARCHAR}
+			, BGN_DTTM = TO_DATE(#{bgnDttm, jdbcType=VARCHAR},'yyyy-MM-dd')
+			, END_DTTM = TO_DATE(#{endDttm, jdbcType=VARCHAR},'yyyy-MM-dd')
+		WHERE SITE_MAIN_NO =  #{siteMainNo}
+	</update>
+
+	<update id="updateUseAt" parameterType="siteMainVO">
+		/* Query ID : humanframe.siteMain.updateUseAt */
+		UPDATE	TN_SITE_MAIN
+		   SET USE_AT = #{useAt}
+		WHERE SITE_MAIN_NO = #{siteMainNo}
+	</update>
+
+	<select id="selectSiteMainNttListCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.siteMain.selectSiteMainNttListCount */
+		SELECT 
+			COUNT(*)
+		FROM (
+	  		<if test="srchNttMode != null and srchNttMode != '' ">
+	  			<choose>
+	  				<when test="srchNttMode == 'CNTNTS' ">
+	  					SELECT 
+	  						TC.CNTNTS_NO AS NTT_NO
+		 			    FROM TN_CNTNTS TC, TN_CNTNTS_MAPNG TCM, TN_PBLCATE_SITE_MENU TPSM
+						WHERE TC.CNTNTS_NO = TCM.CNTNTS_NO
+						AND TCM.MENU_NO = TPSM.MENU_NO
+						AND TCM.MENU_NO = #{srchMenuNo}
+						AND TC.PBLCATE_STTUS_TY = 'P'
+						<include refid="nttListSearchConditions"/>
+	  				</when>
+
+	  				<when test="srchNttMode == 'BBS' ">
+	  					SELECT 
+	  						NTT_NO
+						FROM ${trgtTable}
+						WHERE BBS_NO = #{bbsNo}
+					    AND CONFM_AT = 'Y'
+						AND DELETE_AT = 'N'
+						<include refid="nttListSearchConditions"/>
+	  				</when>
+	  			</choose>
+	  		</if>
+		  )
+	</select>
+
+	<select id="selectSiteMainNttListVO" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.siteMain.selectSiteMainNttListVO */
+		SELECT RNUM
+				 , NTT_NO
+				 , SJ
+				 , NVL(SUMRY, '') AS SUMRY
+				 , WRITNG_DE
+		  FROM (
+				SELECT ROWNUM AS RNUM
+						 , NTT_NO
+						 , SJ
+						 , SUMRY
+				 		 , WRITNG_DE
+				  FROM (
+				  		<if test="srchNttMode != null and srchNttMode != '' ">
+				  			<choose>
+				  				<when test="srchNttMode == 'CNTNTS' ">
+				  					SELECT TC.CNTNTS_NO AS NTT_NO
+											 , TC.CNTNTS_SJ AS SJ
+											 , TC.SUMRY
+					 						 , TC.PBLCATE_DE AS WRITNG_DE
+									  FROM TN_CNTNTS TC, TN_CNTNTS_MAPNG TCM, TN_PBLCATE_SITE_MENU TPSM
+									 WHERE TC.CNTNTS_NO = TCM.CNTNTS_NO
+									    AND TCM.MENU_NO = TPSM.MENU_NO
+									    AND TCM.MENU_NO = #{srchMenuNo}
+									    AND TC.PBLCATE_STTUS_TY = 'P'
+									    <include refid="nttListSearchConditions"/>
+								  ORDER BY TC.PBLCATE_DE DESC, TC.CNTNTS_NO DESC
+				  				</when>
+
+				  				<when test="srchNttMode == 'BBS' ">
+				  					SELECT NTT_NO
+											   , SJ
+											   , SUMRY
+											   , WRITNG_DE
+										FROM ${trgtTable}
+										WHERE BBS_NO = #{bbsNo}
+								            AND CONFM_AT = 'Y'
+											AND DELETE_AT = 'N'
+											<include refid="nttListSearchConditions"/>
+								    ORDER BY NOTICE_AT DESC , TOP_NTT_AT DESC , WRITNG_DE DESC , NTT_NO DESC
+				  				</when>
+				  			</choose>
+				  		</if>
+				  )
+			   )
+		WHERE RNUM &gt; #{startNum}
+		AND RNUM &lt;= #{endNum}
+	</select>
+
+</mapper>

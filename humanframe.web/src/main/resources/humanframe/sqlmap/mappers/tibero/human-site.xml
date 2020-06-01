@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.site">
+
+	<resultMap type="siteVO" id="siteMap">
+		<result property="siteNo"			column="SITE_NO" />
+		<result property="clCodeId"			column="CL_CODE_ID" />
+		<result property="clCodeNm"			column="CL_CODE_NM" />
+		<result property="siteNm"			column="SITE_NM" />
+		<result property="siteUrl"			column="SITE_URL" />
+		<result property="siteSkn"			column="SITE_SKN" />
+		<result property="siteDc"			column="SITE_DC"	/>
+		<result property="firstUriDivYn"	column="FIRST_URI_DIV_YN"/>
+		<result property="firstUri"			column="FIRST_URI"	 />
+		<result property="langCodeId"		column="LANG_CODE_ID" />
+		<result property="langCodeNm"		column="LANG_CODE_NM" />
+		<result property="metaTag"			column="META_TAG" />
+		<result property="mnmnuUseAt"		column="MNMNU_USE_AT" />
+		<result property="sbmnuUseAt"		column="SBMNU_USE_AT" />
+		<result property="useAt"			column="USE_AT" />
+		<result property="creatDttm"		column="CREAT_DTTM"	/>
+		<result property="crtrId"			column="CRTR_ID" />
+		<result property="crtrNm"			column="CRTR_NM" />
+		<result property="updtDttm"			column="UPDT_DTTM" />
+		<result property="updusrId"			column="UPDUSR_ID" />
+		<result property="updusrNm"			column="UPDUSR_NM" />
+		<result property="googleAccesTkn"	column="GOOGLE_ACCES_TKN" />
+		<result property="googleRefreshTkn"	column="GOOGLE_REFRESH_TKN" />
+		<result property="googleProfileId"	column="GOOGLE_PROFILE_ID" />
+		<result property="googleKey"		column="GOOGLE_KEY" />
+		<result property="naverKey"			column="NAVER_KEY" />
+		<result property="mapTy"			column="MAP_TY" />
+		<result property="cmUseAt"			column="CM_USE_AT" />
+		<result property="stsfdgUseAt"		column="STSFDG_USE_AT" />
+		<result property="mnuChargerUseAt"	column="MNU_CHARGER_USE_AT" />
+	</resultMap>
+
+	<resultMap type="siteVO" id="siteMenuMap" extends="siteMap">
+		<collection property="siteMenuList" column="{siteNo=site_no}" select="humanframe.site.menu.selectSiteMenuList" />
+	</resultMap>
+
+	<resultMap type="siteVO" id="pblcateSiteMenuMap" extends="siteMap">
+		<collection property="siteMenuList" column="{siteNo=site_no}" select="humanframe.site.menu.selectPblcateSiteMenuList" />
+	</resultMap>
+
+	<resultMap type="siteVO" id="siteBannerMap">
+		<result property="siteNo"			column="SITE_NO" />
+		<result property="clCodeNm"			column="CL_CODE_NM" />
+		<result property="siteNm"			column="SITE_NM" />
+		<result property="siteUrl"			column="SITE_URL" />
+		<result property="firstUriDivYn"	column="FIRST_URI_DIV_YN"/>
+		<result property="firstUri"			column="FIRST_URI"	 />
+	</resultMap>
+
+	<sql id="searchSiteList">
+		WHERE 1= 1
+		<if test="useAt == null or useAt == ''">
+		AND USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+		AND USE_AT = #{useAt}
+		</if>
+		<if test="srchKey == 'siteNm' and srchText != ''">
+		AND SITE_NM LIKE '%' || #{srchText} || '%'
+		</if>
+		<if test="srchKey == 'siteUrl' and srchText != ''">
+		AND SITE_URL LIKE '%' || #{srchText} || '%'
+		</if>
+		<if test="srchClCodeId !=null and srchClCodeId !='' ">
+		AND CL_CODE_ID = #{srchClCodeId}
+		</if>
+		<if test="siteNos !=null and siteNos !='' ">
+		AND SITE_NO IN
+			<foreach collection="siteNos" item="siteNo" open="(" separator="," close=")">
+				#{siteNo}
+			</foreach>
+		</if>
+		<if test="excludeSiteNo !=null and excludeSiteNo !='' ">
+		AND SITE_NO NOT IN
+			<foreach collection="excludeSiteNo" item="siteNo" open="(" separator="," close=")">
+				#{siteNo}
+			</foreach>
+		</if>
+	</sql>
+
+	<select id="selectSiteListCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.site.selectSiteListCount */
+		SELECT COUNT(*)
+		FROM TN_SITE
+		<include refid="searchSiteList" />
+	</select>
+
+	<select id="selectSiteList" parameterType="java.util.HashMap" resultMap="siteMap">
+		/* Query ID : humanframe.site.selectSiteList */
+		SELECT *
+		FROM (
+			SELECT ROWNUM AS RNUM
+	    			, SITE_NO
+	    			, CL_CODE_ID
+	    			, CL_CODE_NM
+	    			, SITE_NM
+					, SITE_URL
+					, SITE_SKN
+					, SITE_DC
+					, FIRST_URI_DIV_YN
+					, FIRST_URI
+					, LANG_CODE_ID
+					, LANG_CODE_NM
+					, META_TAG
+					, MNMNU_USE_AT
+					, SBMNU_USE_AT
+					, USE_AT
+					, CREAT_DTTM
+					, CRTR_ID
+					, CRTR_NM
+					, UPDT_DTTM
+					, UPDUSR_ID
+					, UPDUSR_NM
+					, GOOGLE_ACCES_TKN
+					, GOOGLE_REFRESH_TKN
+					, GOOGLE_PROFILE_ID
+					, GOOGLE_KEY
+					, NAVER_KEY
+					, MAP_TY
+					, CM_USE_AT
+					, STSFDG_USE_AT
+					, MNU_CHARGER_USE_AT
+			FROM (
+				SELECT SITE_NO
+						, CL_CODE_ID
+						, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.CL_CODE_ID AND TC.UPPER_CODE_ID = 'SITE_CL') AS CL_CODE_NM
+						, SITE_NM
+						, SITE_URL
+						, SITE_SKN
+						, SITE_DC
+						, FIRST_URI_DIV_YN
+						, FIRST_URI
+						, LANG_CODE_ID
+						, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.LANG_CODE_ID AND TC.UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+						, META_TAG
+						, MNMNU_USE_AT
+						, SBMNU_USE_AT
+						, USE_AT
+						, CREAT_DTTM
+						, CRTR_ID
+						, CRTR_NM
+						, UPDT_DTTM
+						, UPDUSR_ID
+						, UPDUSR_NM
+						, GOOGLE_ACCES_TKN
+						, GOOGLE_REFRESH_TKN
+						, GOOGLE_PROFILE_ID
+						, GOOGLE_KEY
+						, NAVER_KEY
+						, MAP_TY
+						, CM_USE_AT
+						, STSFDG_USE_AT
+						, MNU_CHARGER_USE_AT
+				FROM TN_SITE TS
+				<include refid="searchSiteList" />
+				ORDER BY SITE_NO DESC
+			) WHERE ROWNUM &lt;= #{endNum}
+		)WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectSite" parameterType="java.util.HashMap" resultMap="siteMap">
+		/* Query ID : humanframe.site.selectSite */
+		SELECT SITE_NO
+				, CL_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.CL_CODE_ID AND TC.UPPER_CODE_ID = 'SITE_CL') AS CL_CODE_NM
+				, SITE_NM
+				, SITE_URL
+				, SITE_SKN
+				, SITE_DC
+				, FIRST_URI_DIV_YN
+				, FIRST_URI
+				, LANG_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.LANG_CODE_ID AND TC.UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+				, META_TAG
+				, MNMNU_USE_AT
+				, SBMNU_USE_AT
+				, USE_AT
+				, CREAT_DTTM
+				, CRTR_ID
+				, CRTR_NM
+				, UPDT_DTTM
+				, UPDUSR_ID
+				, UPDUSR_NM
+				, GOOGLE_ACCES_TKN
+				, GOOGLE_REFRESH_TKN
+				, GOOGLE_PROFILE_ID
+				, GOOGLE_KEY
+				, NAVER_KEY
+				, MAP_TY
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+		  FROM TN_SITE TS
+		WHERE SITE_NO = #{siteNo}
+	</select>
+
+	<insert id="insertSite" parameterType="siteVO">
+		/* Query ID : humanframe.site.insertSite */
+		<selectKey keyProperty="siteNo" resultType="int" order="BEFORE">
+		SELECT
+			NVL(MAX(SITE_NO),0) + 1
+		FROM TN_SITE
+		</selectKey>
+		INSERT INTO TN_SITE (
+			SITE_NO
+			, CL_CODE_ID
+			, SITE_NM
+			, SITE_URL
+			, SITE_SKN
+			, SITE_DC
+			, FIRST_URI_DIV_YN
+			, FIRST_URI
+			, LANG_CODE_ID
+			, META_TAG
+			, MNMNU_USE_AT
+			, SBMNU_USE_AT
+			, USE_AT
+			, CREAT_DTTM
+			, CRTR_ID
+			, CRTR_NM
+			, GOOGLE_ACCES_TKN
+			, GOOGLE_REFRESH_TKN
+			, GOOGLE_PROFILE_ID
+			, GOOGLE_KEY
+			, NAVER_KEY
+			, MAP_TY
+			, CM_USE_AT
+			, STSFDG_USE_AT
+			, MNU_CHARGER_USE_AT
+		) VALUES (
+			#{siteNo}
+			, #{clCodeId, jdbcType=VARCHAR}
+			, #{siteNm}
+			, #{siteUrl}
+			, #{siteSkn}
+			, #{siteDc, jdbcType=VARCHAR}
+			, #{firstUriDivYn, jdbcType=VARCHAR}
+			, #{firstUri, jdbcType=VARCHAR}
+			, #{langCodeId, jdbcType=VARCHAR}
+			, #{metaTag, jdbcType=VARCHAR}
+			, #{mnmnuUseAt, jdbcType=VARCHAR}
+			, #{sbmnuUseAt, jdbcType=VARCHAR}
+			, #{useAt, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{crtrNm, jdbcType=VARCHAR}
+			, #{googleAccesTkn, jdbcType=VARCHAR}
+			, #{googleRefreshTkn, jdbcType=VARCHAR}
+			, #{googleProfileId, jdbcType=VARCHAR}
+			, #{googleKey, jdbcType=VARCHAR}
+			, #{naverKey, jdbcType=VARCHAR}
+			, #{mapTy}
+			, #{cmUseAt}
+			, #{stsfdgUseAt}
+			, #{mnuChargerUseAt}
+		)
+	</insert>
+
+	<update id="updateSite" parameterType="siteVO">
+		/* Query ID : humanframe.site.updateSite */
+		UPDATE TN_SITE SET
+			SITE_NM = #{siteNm}
+			, CL_CODE_ID = #{clCodeId, jdbcType=VARCHAR}
+			, SITE_URL = #{siteUrl}
+			, SITE_SKN = #{siteSkn}
+			, SITE_DC = #{siteDc, jdbcType=VARCHAR}
+			, FIRST_URI_DIV_YN = #{firstUriDivYn, jdbcType=VARCHAR}
+			, FIRST_URI = #{firstUri, jdbcType=VARCHAR}
+			, LANG_CODE_ID = #{langCodeId, jdbcType=VARCHAR}
+			, META_TAG = #{metaTag, jdbcType=VARCHAR}
+			, MNMNU_USE_AT = #{mnmnuUseAt, jdbcType=VARCHAR}
+			, SBMNU_USE_AT = #{sbmnuUseAt, jdbcType=VARCHAR}
+			, USE_AT = #{useAt, jdbcType=VARCHAR}
+			, UPDT_DTTM = SYSDATE
+			, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+			, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+			, GOOGLE_ACCES_TKN = #{googleAccesTkn, jdbcType=VARCHAR}
+			, GOOGLE_REFRESH_TKN = #{googleRefreshTkn, jdbcType=VARCHAR}
+			, GOOGLE_PROFILE_ID = #{googleProfileId, jdbcType=VARCHAR}
+			, GOOGLE_KEY = #{googleKey, jdbcType=VARCHAR}
+			, NAVER_KEY = #{naverKey, jdbcType=VARCHAR}
+			, MAP_TY = #{mapTy}
+			, CM_USE_AT = #{cmUseAt}
+			, STSFDG_USE_AT = #{stsfdgUseAt}
+			, MNU_CHARGER_USE_AT = #{mnuChargerUseAt}
+		WHERE SITE_NO = #{siteNo}
+	</update>
+
+	<delete id="deleteSite" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.site.deleteSite */
+		DELETE FROM TN_SITE
+		WHERE SITE_NO = #{siteNo}
+	</delete>
+
+	<update id="updateSiteUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.site.updateSiteUseAt */
+		UPDATE TN_SITE SET
+			USE_AT = #{useAt}
+		WHERE SITE_NO = #{siteNo}
+	</update>
+
+
+	<select id="selectDuplicateSiteCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.site.selectDuplicateSiteCount */
+		SELECT COUNT(*) FROM TN_SITE
+	    <where>
+	    	<if test="siteUrl !=null and siteUrl !='' ">SITE_URL||'/'||FIRST_URI = #{siteUrl}</if>
+	    </where>
+	</select>
+
+	<select id="selectSiteListAll" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.site.selectSiteListAll */
+		SELECT SITE_NO
+			 , SITE_NM
+		  FROM TN_SITE
+		<where>
+			<if test="srchGoogleKeyAt != null">
+				AND NVL2(GOOGLE_KEY,'Y','N') = #{srchGoogleKeyAt}
+			</if>
+			<if test="useAt != null">
+				AND USE_AT = #{useAt}
+			</if>
+			<if test="clCodeId !=null and clCodeId !='' ">
+				AND CL_CODE_ID = #{clCodeId}
+			</if>
+			<if test="siteNos !=null and siteNos !='' ">
+			AND SITE_NO IN
+				<foreach collection="siteNos" item="siteNo" open="(" separator="," close=")">
+					#{siteNo}
+				</foreach>
+			</if>
+	    </where>
+		 ORDER BY SITE_NO ASC
+	</select>
+
+
+	<select id="selectSiteMenuListAll" parameterType="java.util.HashMap" resultMap="siteMenuMap">
+		/* Query ID : humanframe.site.selectSiteMenuListAll */
+		SELECT SITE_NO
+				, CL_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.CL_CODE_ID AND TC.UPPER_CODE_ID = 'SITE_CL') AS CL_CODE_NM
+				, SITE_NM
+				, LANG_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.LANG_CODE_ID AND TC.UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+				, SITE_URL
+				, SITE_SKN
+				, SITE_DC
+				, FIRST_URI_DIV_YN
+				, FIRST_URI
+				, META_TAG
+				, MNMNU_USE_AT
+				, SBMNU_USE_AT
+				, USE_AT
+				, GOOGLE_ACCES_TKN
+				, GOOGLE_REFRESH_TKN
+				, GOOGLE_PROFILE_ID
+				, GOOGLE_KEY
+				, NAVER_KEY
+				, MAP_TY
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+		  FROM TN_SITE TS
+		<where>
+	    	<if test="siteUrl !=null and siteUrl !='' ">SITE_URL||'/'||FIRST_URI = #{siteUrl}</if>
+	    </where>
+		ORDER BY FIRST_URI_DIV_YN DESC, SITE_NO ASC
+	</select>
+
+
+	<insert id="insertPblcateSite" parameterType="siteVO">
+		/* Query ID : humanframe.site.insertPblcateSite */
+		INSERT INTO TN_PBLCATE_SITE (
+			SITE_NO
+			, CL_CODE_ID
+			, SITE_NM
+			, SITE_URL
+			, SITE_SKN
+			, SITE_DC
+			, FIRST_URI_DIV_YN
+			, FIRST_URI
+			, LANG_CODE_ID
+			, META_TAG
+			, MNMNU_USE_AT
+			, SBMNU_USE_AT
+			, USE_AT
+			, CREAT_DTTM
+			, CRTR_ID
+			, CRTR_NM
+			, GOOGLE_ACCES_TKN
+			, GOOGLE_REFRESH_TKN
+			, GOOGLE_PROFILE_ID
+			, GOOGLE_KEY
+			, NAVER_KEY
+			, MAP_TY
+			, CM_USE_AT
+			, STSFDG_USE_AT
+			, MNU_CHARGER_USE_AT
+		) VALUES (
+			#{siteNo}
+			, #{clCodeId, jdbcType=VARCHAR}
+			, #{siteNm}
+			, #{siteUrl}
+			, #{siteSkn}
+			, #{siteDc, jdbcType=VARCHAR}
+			, #{firstUriDivYn, jdbcType=VARCHAR}
+			, #{firstUri, jdbcType=VARCHAR}
+			, #{langCodeId, jdbcType=VARCHAR}
+			, #{metaTag, jdbcType=VARCHAR}
+			, #{mnmnuUseAt, jdbcType=VARCHAR}
+			, #{sbmnuUseAt, jdbcType=VARCHAR}
+			, #{useAt, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{crtrNm, jdbcType=VARCHAR}
+			, #{googleAccesTkn, jdbcType=VARCHAR}
+			, #{googleRefreshTkn, jdbcType=VARCHAR}
+			, #{googleProfileId, jdbcType=VARCHAR}
+			, #{googleKey, jdbcType=VARCHAR}
+			, #{naverKey, jdbcType=VARCHAR}
+			, #{mapTy}
+			, #{cmUseAt}
+			, #{stsfdgUseAt}
+			, #{mnuChargerUseAt}
+		)
+	</insert>
+
+	<update id="updatePblcateSite" parameterType="siteVO">
+		/* Query ID : humanframe.site.updatePblcateSite */
+		UPDATE TN_PBLCATE_SITE SET
+			SITE_NM = #{siteNm}
+			, SITE_URL = #{siteUrl}
+			, SITE_SKN = #{siteSkn}
+			, SITE_DC = #{siteDc, jdbcType=VARCHAR}
+			, FIRST_URI_DIV_YN = #{firstUriDivYn, jdbcType=VARCHAR}
+			, FIRST_URI = #{firstUri, jdbcType=VARCHAR}
+			, LANG_CODE_ID = #{langCodeId, jdbcType=VARCHAR}
+			, META_TAG = #{metaTag, jdbcType=VARCHAR}
+			, MNMNU_USE_AT = #{mnmnuUseAt, jdbcType=VARCHAR}
+			, SBMNU_USE_AT = #{sbmnuUseAt, jdbcType=VARCHAR}
+			, USE_AT = #{useAt, jdbcType=VARCHAR}
+			, UPDT_DTTM = SYSDATE
+			, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+			, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+			, GOOGLE_ACCES_TKN = #{googleAccesTkn, jdbcType=VARCHAR}
+			, GOOGLE_REFRESH_TKN = #{googleRefreshTkn, jdbcType=VARCHAR}
+			, GOOGLE_PROFILE_ID = #{googleProfileId, jdbcType=VARCHAR}
+			, GOOGLE_KEY = #{googleKey, jdbcType=VARCHAR}
+			, NAVER_KEY = #{naverKey, jdbcType=VARCHAR}
+			, MAP_TY = #{mapTy}
+			, CM_USE_AT = #{cmUseAt}
+			, STSFDG_USE_AT = #{stsfdgUseAt}
+			, MNU_CHARGER_USE_AT = #{mnuChargerUseAt}
+		WHERE SITE_NO = #{siteNo}
+	</update>
+
+	<delete id="deletePblcateSite" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.site.deletePblcateSite */
+		DELETE FROM TN_PBLCATE_SITE
+		WHERE SITE_NO = #{siteNo}
+	</delete>
+
+	<select id="selectPblcateSite" parameterType="java.util.HashMap" resultMap="siteMap">
+		/* Query ID : humanframe.site.selectPblcateSite */
+		SELECT SITE_NO
+				, CL_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.CL_CODE_ID AND TC.UPPER_CODE_ID = 'SITE_CL') AS CL_CODE_NM
+				, SITE_NM
+				, SITE_URL
+				, SITE_SKN
+				, SITE_DC
+				, FIRST_URI_DIV_YN
+				, FIRST_URI
+				, LANG_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.LANG_CODE_ID AND TC.UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+				, META_TAG
+				, MNMNU_USE_AT
+				, SBMNU_USE_AT
+				, USE_AT
+				, CREAT_DTTM
+				, CRTR_ID
+				, CRTR_NM
+				, UPDT_DTTM
+				, UPDUSR_ID
+				, UPDUSR_NM
+				, GOOGLE_ACCES_TKN
+				, GOOGLE_REFRESH_TKN
+				, GOOGLE_PROFILE_ID
+				, GOOGLE_KEY
+				, NAVER_KEY
+				, MAP_TY
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+		  FROM TN_PBLCATE_SITE TS
+		WHERE SITE_NO = #{siteNo}
+	</select>
+	
+	<select id="selectPblcateSiteListAll" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.site.selectPblcateSiteListAll */
+		SELECT SITE_NO
+			 , SITE_NM
+			 , SITE_URL
+			 , FIRST_URI_DIV_YN
+			 , FIRST_URI
+			 , USE_AT
+			 , CM_USE_AT
+			 , STSFDG_USE_AT
+		  FROM TN_PBLCATE_SITE
+		<where>
+			<if test="useAt != null">
+				AND USE_AT = #{useAt}
+			</if>
+			<if test="cmUseAt != null">
+				AND CM_USE_AT = #{cmUseAt}
+			</if>
+			<if test="stsfdgUseAt != null">
+				AND STSFDG_USE_AT = #{stsfdgUseAt}
+			</if>
+			<if test="siteNos !=null and siteNos !='' ">
+			AND SITE_NO IN
+				<foreach collection="siteNos" item="siteNo" open="(" separator="," close=")">
+					#{siteNo}
+				</foreach>
+			</if>
+	    </where>
+		 ORDER BY SITE_NO ASC
+	</select>
+
+	<select id="selectPblcateSiteMenuListAll" parameterType="java.util.HashMap" resultMap="pblcateSiteMenuMap">
+		/* Query ID : humanframe.site.selectPblcateSiteMenuListAll */
+		SELECT SITE_NO
+				, CL_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.CL_CODE_ID AND TC.UPPER_CODE_ID = 'SITE_CL') AS CL_CODE_NM
+				, SITE_NM
+				, LANG_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TS.LANG_CODE_ID AND TC.UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+				, SITE_URL
+				, SITE_SKN
+				, SITE_DC
+				, FIRST_URI_DIV_YN
+				, FIRST_URI
+				, META_TAG
+				, MNMNU_USE_AT
+				, SBMNU_USE_AT
+				, USE_AT
+				, GOOGLE_ACCES_TKN
+				, GOOGLE_REFRESH_TKN
+				, GOOGLE_PROFILE_ID
+				, GOOGLE_KEY
+				, NAVER_KEY
+				, MAP_TY
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+		  FROM TN_PBLCATE_SITE TS
+		<where>
+	    	<if test="domain !=null and domain !='' ">
+				#{domain} LIKE CASE
+					WHEN FIRST_URI_DIV_YN = 'Y' THEN SITE_URL || '/' || FIRST_URI || '%'
+					ELSE SITE_URL || '%'
+				END
+	    	</if>
+	    </where>
+		ORDER BY FIRST_URI_DIV_YN DESC, SITE_NO ASC
+	</select>
+
+
+	<select  id="selectSiteListByMngr" parameterType="mngrVO" resultType="String">
+		/* Query ID : humanframe.site.selectSiteListByMngr */
+		SELECT
+			TS.SITE_NO
+		FROM
+			TN_SITE TS,
+			TN_MNGR_AUTH TMA
+		WHERE
+			TS.SITE_NO = TMA.SITE_NO
+			AND TMA.AUTH_SE = 'site'
+			AND TMA.MNGR_ID = #{mngrId}
+		ORDER BY
+			TS.SITE_NO DESC
+	</select>
+
+	<select  id="selectMenuListByMngr" parameterType="mngrVO" resultType="egovMap">
+		/* Query ID : humanframe.site.selectMenuListByMngr */
+		SELECT
+			TSM.SITE_NO, TMA.MENU_NO, TSM.FNCT_NO, TSM.BBS_NO
+		FROM
+			TN_SITE_MENU TSM,
+			TN_MNGR_AUTH TMA
+		WHERE
+			TSM.SITE_NO = TMA.SITE_NO
+			AND TSM.MENU_NO = TMA.MENU_NO
+			AND TMA.AUTH_SE = 'menu'
+			AND TMA.MNGR_ID = #{mngrId}
+		ORDER BY
+			TSM.SITE_NO DESC, TMA.MENU_NO ASC
+	</select>
+
+	<select id="selectSiteBannerListCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.site.selectSiteBannerListCount */
+		SELECT COUNT(*)
+		FROM TN_SITE
+		WHERE 1 = 1
+		AND USE_AT = 'Y'
+		<if test="bannerCodeId !=null and bannerCodeId !='' ">
+		AND SITE_NO IN (
+						SELECT SITE_NO
+						FROM TN_BANNER_MAPNG
+						WHERE BANNER_NO IN (
+							SELECT BANNER_NO
+							FROM TN_BANNER
+							WHERE BANNER_CODE_ID = #{bannerCodeId}
+						)
+					)
+		</if>
+	</select>
+
+	<select id="selectSiteBannerList" parameterType="java.util.HashMap" resultMap="siteBannerMap">
+		/* Query ID : humanframe.site.selectSiteBannerList */
+		SELECT *
+		FROM (
+			SELECT
+			ROWNUM AS RNUM,
+			SITE_NO,
+			CL_CODE_NM,
+			SITE_NM,
+			SITE_URL,
+			FIRST_URI_DIV_YN,
+			FIRST_URI
+		FROM
+			(
+				SELECT
+					SITE_NO,
+					(
+						SELECT
+							CODE_NM
+						FROM
+							TC_CODE TC
+						WHERE
+							TC.CODE_ID = TS.CL_CODE_ID
+							AND TC.UPPER_CODE_ID = 'SITE_CL'
+					) AS CL_CODE_NM,
+					SITE_NM,
+					SITE_URL,
+					FIRST_URI_DIV_YN,
+					FIRST_URI
+				FROM
+					TN_SITE TS
+				WHERE
+					1 = 1
+					AND USE_AT = 'Y'
+					<if test="bannerCodeId !=null and bannerCodeId !='' ">
+					AND SITE_NO IN (
+						SELECT SITE_NO
+						FROM TN_BANNER_MAPNG
+						WHERE BANNER_NO IN (
+							SELECT BANNER_NO
+							FROM TN_BANNER
+							WHERE BANNER_CODE_ID = #{bannerCodeId}
+						)
+					)
+					</if>
+				ORDER BY
+					SITE_NO DESC
+			) WHERE ROWNUM &lt;= #{endNum}
+		)WHERE RNUM &gt; #{startNum}
+	</select>
+
+</mapper>

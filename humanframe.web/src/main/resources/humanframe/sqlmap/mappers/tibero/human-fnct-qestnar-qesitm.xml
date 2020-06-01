@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.fnct.qestnarQesitm">
+
+	<resultMap type="qestnarQesitmVO" id="qestnarQesitmMap">
+		<result column="QESITM_NO"			    property="qesitmNo"/>
+		<result column="QESTN_NO"				property="qestnNo"/>
+		<result column="QESTNAR_NO"			    property="qestnarNo"/>
+		<result column="QESITM_TEXT"			property="qesitmText"/>
+		<result column="QESITM_TY"		  	    property="qesitmTy"/>
+		<result column="QESITM_ORDR"			property="qesitmOrdr"/>
+		<result column="NEXT_QESTN_AT"			property="nextQestnAt"/>
+		<result column="NEXT_QESTN_NO"			property="nextQestnNo"/>
+	</resultMap>
+
+	<select id="selectQesitmList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.fnct.qestnarQesitm.selectQesitmList */
+		SELECT
+			  QESITM_NO
+			, QESTN_NO
+			, QESTNAR_NO
+			, QESITM_TEXT
+			, QESITM_TY
+			, QESITM_ORDR
+			, NEXT_QESTN_AT
+			, NEXT_QESTN_NO
+		FROM TF_QESTNAR_QESITM
+		WHERE
+		QESTNAR_NO =#{qestnarNo}
+		<if test="qestnNo !='' and qestnNo !=null"> AND QESTN_NO = #{qestnNo} </if>
+		ORDER BY QESITM_ORDR ASC, QESTN_NO ASC
+	</select>
+
+	<insert id="insertQesitmList" parameterType="hashmap">
+	/* Query ID : humanframe.fnct.qestnarQesitm.insertQesitmList */
+	<selectKey keyProperty="qesitmNo" resultType="int" order="BEFORE">
+		SELECT
+			(NVL( MAX(QESITM_NO ) , 0) + 1)
+		FROM TF_QESTNAR_QESITM
+	</selectKey>		
+		<foreach collection="listQesitm" item="item" index="index" separator=" " open="INSERT ALL" close="SELECT * FROM DUAL">		
+		INTO TF_QESTNAR_QESITM (
+			QESITM_NO
+			,QESTNAR_NO
+			,QESTN_NO
+			,QESITM_TEXT
+			,QESITM_TY
+			,QESITM_ORDR
+			,NEXT_QESTN_AT
+			,NEXT_QESTN_NO
+		) VALUES (
+			#{qesitmNo}+#{index}
+			,#{item.qestnarNo}
+			,#{item.qestnNo}
+			,#{item.qesitmText, jdbcType=VARCHAR}
+			,#{item.qesitmTy, jdbcType=CHAR}
+			,#{item.qesitmOrdr}
+			,#{item.nextQestnAt, jdbcType=VARCHAR}
+			,#{item.nextQestnNo, jdbcType=CHAR}
+		)
+		</foreach>
+	</insert>
+
+	<delete id="deleteQesitmByQestnNo" parameterType="hashmap">
+		/* Query ID : humanframe.fnct.qestnarQesitm.deleteQesitmByQestnNo */
+		DELETE FROM TF_QESTNAR_QESITM
+		WHERE QESTN_NO = #{qestnNo}
+		<if test="qestnarNo !='' and qestnarNo !=null">AND QESTNAR_NO = #{qestnarNo} </if>
+		<if test="qesitmNo !='' and qesitmNo !=null"> AND QESITM_NO = #{qesitmNo} </if>
+	</delete>
+
+	<delete id="deleteQesitmByQesitmNotin" parameterType="hashmap">
+		/* Query ID : humanframe.fnct.qestnarQesitm.deleteQesitmByQesitmNotin */
+		DELETE FROM TF_QESTNAR_QESITM
+		WHERE QESTNAR_NO = #{qestnarNo} 
+		AND QESTN_NO = #{qestnNo} 
+		AND QESITM_NO NOT IN
+		<foreach collection="qesitmNo" item="item" open="(" close=")" separator=",">
+			${item}
+		</foreach>
+	</delete>
+
+	<update id="updateQesitmByQesitmOrdr" parameterType="hashmap">
+		/* Query ID : humanframe.fnct.qestnarQesitm.updateQesitmByQesitmOrdr */
+		UPDATE 
+			TF_QESTNAR_QESITM
+			SET QESITM_ORDR = #{qesitmOrdr}
+		WHERE QESTNAR_NO = #{qestnarNo} 
+		AND QESTN_NO = #{qestnNo} 
+		AND QESITM_NO = #{qesitmNo}
+		AND NEXT_QESTN_AT = #{nextQestnAt} 
+		AND NEXT_QESTN_NO = #{nextQestnNo}
+	</update>
+</mapper>

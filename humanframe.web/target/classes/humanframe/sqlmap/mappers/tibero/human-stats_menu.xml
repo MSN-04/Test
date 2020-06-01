@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.stats.menu">
+
+	<!-- Define Banner Result Map -->
+	<resultMap type="statsMenuVO" id="statsMenuMap">
+		<result column="STATS_YYYY" property="statsYyyy" />
+		<result column="STATS_MM"   property="statsMm" />
+		<result column="STATS_DD"   property="statsDd" />
+		<result column="SITE_NO"    property="siteNo" />
+		<result column="MENU_NO"    property="menuNo" />
+		<result column="SITE_NM"    property="siteNm" />
+		<result column="MENU_NM"    property="menuNm" />
+		<result column="UV"         property="uv" />
+		<result column="PV"         property="pv" />
+		<result column="CREAT_DTTM" property="creatDttm" />
+	</resultMap>
+
+	<sql id="listColumn">
+		<include refid="conditionsColumn" />
+		 SITE_NO
+		,SITE_NM
+		,MENU_NO
+		,MENU_NM
+		,UV
+		,PV
+	</sql>
+
+	<sql id="conditionsColumn">
+		<choose>
+			<when test="srchType == 'Yy'">
+			STATS_YYYY,
+			</when>
+			<when test="srchType == 'Mt'">
+			STATS_YYYY, STATS_MM,
+			</when>
+			<when test="srchType == 'De'">
+			STATS_YYYY, STATS_MM, STATS_DD,
+			</when>
+		</choose>
+	</sql>
+
+	<sql id="orderByColumn">
+		<choose>
+			<when test="srchType == 'Yy'">
+			STATS_YYYY DESC,
+			</when>
+			<when test="srchType == 'Mt'">
+			STATS_YYYY DESC, STATS_MM DESC,
+			</when>
+			<when test="srchType == 'De'">
+			STATS_YYYY DESC, STATS_MM DESC, STATS_DD DESC,
+			</when>
+		</choose>
+	</sql>
+
+	<sql id="searchConditions">
+		<if test="srchType == 'Yy'">
+			<if test="srchStartDay != '' and srchStartDay != null
+					  	and srchEndDay != '' and srchEndDay != null">
+				AND STATS_YYYY BETWEEN SUBSTR(#{srchStartDay},1,4) AND SUBSTR(#{srchEndDay},1,4)
+			</if>
+		</if>
+		<if test="srchType == 'Mt'">
+		<if test="srchStartDay != '' and srchStartDay != null
+					  	and srchEndDay != '' and srchEndDay != null">
+				AND (STATS_YYYY||stats_mm)
+				BETWEEN (SUBSTR(#{srchStartDay},1,4) || SUBSTR(#{srchStartDay},6,2) )
+				AND (SUBSTR(#{srchEndDay},1,4) || SUBSTR(#{srchEndDay},6,2))
+			</if>
+		</if>
+		<if test="srchType == 'De'">
+		<if test="srchStartDay != '' and srchStartDay != null
+					  	and srchEndDay != '' and srchEndDay != null">
+				AND (STATS_YYYY||STATS_MM||STATS_DD)
+				BETWEEN (SUBSTR(#{srchStartDay},1,4) || SUBSTR(#{srchStartDay},6,2) || SUBSTR(#{srchStartDay},9,2))
+				AND  (SUBSTR(#{srchEndDay},1,4) || SUBSTR(#{srchEndDay},6,2) || SUBSTR(#{srchEndDay},9,2))
+			</if>
+		</if>
+		<if test="statsYyyy != null and statsYyyy != ''">
+			AND STATS_YYYY = #{statsYyyy}
+		</if>
+		<if test="statsMm != null and statsMm != '' ">
+			AND STATS_MM = #{statsMm}
+		</if>
+		<if test="statsDd != null and statsDd != '' ">
+			AND STATS_DD = #{statsDd}
+		</if>
+		<if test="serchSiteNo != null and serchSiteNo != '' ">
+			AND SITE_NO = #{serchSiteNo}
+		</if>
+		<if test="serchMenuNo != null and serchMenuNo != '' ">
+			AND MENU_NO = #{serchMenuNo}
+		</if>
+	</sql>
+
+	<sql id="fromTable">
+		<choose>
+			<when test="srchType == 'Yy'">
+				TN_STATS_MENU_YEAR
+			</when>
+			<when test="srchType == 'Mt'">
+				TN_STATS_MENU_MONTH
+			</when>
+			<otherwise>
+				TN_STATS_MENU
+			</otherwise>
+		</choose>
+	</sql>	
+	
+	<sql id="listColumn2">
+		<choose>
+			<when test="(serchSiteNo == null or serchSiteNo == '')
+			            and (serchMenuNo == null or serchMenuNo == '')">
+				SITE_NO
+			  , SITE_NM
+			</when>
+			<otherwise>
+				<include refid="conditionsColumn" />
+				 SITE_NO
+			   , SITE_NM
+			   , MENU_NO
+			   , MENU_NM
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="conditionsColumn2">
+		<choose>
+			<when test="(serchSiteNo == null or serchSiteNo == '')
+			            and (serchMenuNo == null or serchMenuNo == '')">
+				SITE_NO, SITE_NM
+			</when>
+			<otherwise>
+				<include refid="conditionsColumn" />
+				SITE_NO, MENU_NO, SITE_NM, MENU_NM
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<select id="selectStatsMenuListVO" parameterType="java.util.HashMap" resultMap="statsMenuMap">
+		/* Query ID : humanframe.stats.menu.selectStatsMenuListVO */
+		SELECT	<include refid="listColumn" />
+	  	  FROM (
+		         SELECT ROWNUM AS RNUM ,
+		           <include refid="listColumn" />
+		           FROM (
+		                  SELECT
+		                  		<include refid="conditionsColumn" />
+		                  		 SITE_NO
+							   , SITE_NM
+							   , MENU_NO
+							   , MENU_NM
+							   , SUM(UV) UV
+							   , SUM(PV) PV
+		                    FROM <include refid="fromTable" />
+		                   WHERE 1=1
+		                   <include refid="searchConditions" />
+		                   GROUP BY <include refid="conditionsColumn" />
+		                            SITE_NO, MENU_NO, SITE_NM, MENU_NM
+		                   ORDER BY	<include refid="orderByColumn" />
+		                            UV DESC, PV DESC
+		                ) WHERE ROWNUM &lt;= #{endNum}
+		       ) WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectStatsMenuCount" parameterType="java.util.HashMap"	resultType="int">
+		/* Query ID : humanframe.stats.menu.selectStatsMenuCount */
+		SELECT COUNT(*) FROM (
+			SELECT <include refid="listColumn" />
+			  FROM <include refid="fromTable" />
+			  WHERE 1=1
+			 <include refid="searchConditions" />
+			  GROUP BY <include refid="conditionsColumn" />
+			           SITE_NO, MENU_NO, SITE_NM, MENU_NM
+		 )
+	</select>
+
+	<select id="selectStatsMenuListAll" parameterType="java.util.HashMap" resultMap="statsMenuMap">
+		/* Query ID : humanframe.stats.menu.selectStatsMenuListAll */
+		 SELECT <include refid="conditionsColumn" />
+          	    SITE_NO
+		      , SITE_NM
+		      , MENU_NO
+		      , MENU_NM
+		      , SUM(UV) UV
+		      , SUM(PV) PV
+           FROM <include refid="fromTable" />
+          WHERE 1=1
+         <include refid="searchConditions" />
+          GROUP BY <include refid="conditionsColumn" />
+                   SITE_NO, MENU_NO, SITE_NM, MENU_NM
+          ORDER BY <include refid="orderByColumn" />
+                   UV DESC, PV DESC
+	</select>
+
+	<select id="selectStatsMenuGraph" parameterType="java.util.HashMap" resultMap="statsMenuMap">
+		/* Query ID : humanframe.stats.menu.selectStatsMenuGraph */
+		SELECT <include refid="listColumn2" />
+		     , RNUM
+		     , UV
+		     , PV
+	  	  FROM (
+		         SELECT <include refid="listColumn2" />
+		              , UV
+		     		  , PV
+		     		  , ROWNUM AS RNUM
+		           FROM (
+		                   SELECT <include refid="listColumn2" />
+							    , SUM(UV) UV
+							    , SUM(PV) PV
+			                 FROM <include refid="fromTable" />
+			                WHERE 1=1
+			                <include refid="searchConditions" />
+			                GROUP BY
+							<include refid="conditionsColumn2" />
+			                ORDER BY <include refid="conditionsColumn2" />
+			                	     , UV DESC, PV DESC
+		                )
+		       )
+	</select>
+
+	<insert id="insertStatsMenu" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.stats.menu.insertStatsMenu */
+		INSERT INTO	TN_STATS_MENU (
+			,STATS_YYYY
+			,STATS_MM
+			,STATS_DD
+			,SITE_NO
+			,SITE_NM
+			,MENU_NO
+			,MENU_NM
+			,UV
+			,PV
+			,CREAT_DTTM
+		) VALUES (
+			#{statsYyyy, jdbcType=VARCHAR}
+			, #{statsMm, jdbcType=VARCHAR}
+			, #{statsDd, jdbcType=VARCHAR}
+			, #{siteNo}
+			, #{siteNm, jdbcType=VARCHAR}
+			, #{menuNo}
+			, #{menuNm, jdbcType=VARCHAR}
+			, 1
+			, 1
+			, SYSDATE
+		)
+	</insert>
+
+	<update id="updateStatsMenu" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.stats.menu.updateStatsMenu */
+		UPDATE TN_STATS_MENU
+		   SET  STATS_YYYY = #{statsYyyy, jdbcType=VARCHAR}
+			 , STATS_MM = #{statsMm, jdbcType=VARCHAR}
+			 , STATS_DD = #{statsDd, jdbcType=VARCHAR}
+			 , SITE_NO = #{siteNo}
+			 , SITE_NM = #{siteNm, jdbcType=VARCHAR}
+			 , MENU_NO = #{menuNo}
+			 , MENU_NM = #{menuNm, jdbcType=VARCHAR}
+			 <if test="uv != null and uv != ''">
+			 	, UV = #{uv}
+			 </if>
+			 <if test="uvAdd != null and uvAdd != ''">
+			 	, UV = UV + #{uvAdd}
+			 </if>
+			 <if test="pv != null and pv != ''">
+			 	, PV = #{pv}
+			 </if>
+			 <if test="pvAdd != null and pvAdd != ''">
+			 	, PV = PV + #{pvAdd}
+			 </if>
+			 WHERE STATS_YYYY = #{statsYyyy}
+			   AND STATS_MM = #{statsMm}
+			   AND STATS_DD = #{statsDd}
+			   AND SITE_NO = #{siteNo}
+			   AND MENU_NO = #{menuNo}
+	</update>
+
+	<delete id="deleteStatsMenu" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.stats.menu.deleteStatsMenu */
+		DELETE FROM	TN_STATS_MENU
+		 WHERE STATS_YYYY = #{statsYyyy}
+		   AND STATS_MM = #{statsMm}
+		   AND STATS_DD = #{statsDd}
+		   AND SITE_NO = #{siteNo}
+		   AND MENU_NO = #{menuNo}
+	</delete>
+
+	<insert id="mergeStatsMenu" parameterType="hashmap">	
+		/* Query ID : humanframe.stats.menu.mergeStatsMenu */	
+		MERGE INTO TN_STATS_MENU
+		    USING DUAL
+		           ON (STATS_YYYY = #{statsYyyy} AND STATS_MM = #{statsMm} AND STATS_DD = #{statsDd} AND SITE_NO = #{siteNo} AND MENU_NO = #{menuNo})
+		    WHEN MATCHED THEN
+		            UPDATE SET PV = PV + 1
+					<if test="uvAdd != null and uvAdd != ''">
+						, UV = UV + #{uvAdd}
+					</if>
+		    WHEN NOT MATCHED THEN
+		    		INSERT (STATS_YYYY,  STATS_MM,   STATS_DD,   SITE_NO,   SITE_NM,   MENU_NO,   MENU_NM, UV, PV, CREAT_DTTM)
+		    		VALUES (#{statsYyyy, jdbcType=VARCHAR}, #{statsMm, jdbcType=VARCHAR}, #{statsDd, jdbcType=VARCHAR}, #{siteNo}, #{siteNm, jdbcType=VARCHAR}, #{menuNo}, #{menuNm, jdbcType=VARCHAR}, 1, 1, SYSDATE)			          		
+	</insert>
+
+	<!-- 월별 통계 스케쥴러  -->
+	<insert id="insertStatsMenuMonth" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.stats.menu.insertStatsMenuMonth */	
+		INSERT INTO	TN_STATS_MENU_MONTH (
+			   STATS_YYYY
+			 , STATS_MM
+			 , SITE_NO
+			 , SITE_NM
+			 , MENU_NO
+			 , MENU_NM
+			 , UV
+			 , PV
+			 , CREAT_DTTM
+		)
+		SELECT STATS_YYYY
+			 , STATS_MM
+			 , SITE_NO
+			 , SITE_NM
+			 , MENU_NO
+			 , MENU_NM
+			 , SUM(UV)
+			 , SUM(PV)
+			 , SYSDATE
+	 	 FROM TN_STATS_MENU
+	    WHERE STATS_YYYY = #{statsYyyy}
+	      AND STATS_MM = #{statsMm}
+        GROUP BY STATS_YYYY, STATS_MM, SITE_NO, MENU_NO, SITE_NM, MENU_NM
+	</insert>
+
+	<delete id="deleteStatsMenuMonth" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.stats.menu.deleteStatsMenuMonth */	
+		DELETE FROM	TN_STATS_MENU_MONTH
+		 WHERE STATS_YYYY = #{statsYyyy}
+		   AND STATS_MM = #{statsMm}
+	</delete>
+
+	<!-- 년별 통계 스케쥴러  -->
+	<insert id="insertStatsMenuYear" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.stats.menu.insertStatsMenuYear */	
+		INSERT INTO	TN_STATS_MENU_YEAR (
+			    STATS_YYYY
+			  , SITE_NO
+			  , SITE_NM
+			  , MENU_NO
+			  , MENU_NM
+			  , UV
+			  , PV
+			  , CREAT_DTTM
+		)
+		SELECT STATS_YYYY
+			  , SITE_NO
+			  , SITE_NM
+			  , MENU_NO
+			  , MENU_NM
+			  , SUM(UV)
+			  , SUM(PV)
+			  , SYSDATE
+	 	   FROM TN_STATS_MENU
+		  WHERE STATS_YYYY = #{statsYyyy}
+     	  GROUP BY STATS_YYYY, SITE_NO, MENU_NO, SITE_NM, MENU_NM
+	</insert>
+
+	<delete id="deleteStatsMenuYear" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.stats.menu.deleteStatsMenuYear */	
+		DELETE FROM	TN_STATS_MENU_YEAR
+		 WHERE STATS_YYYY = #{statsYyyy}
+	</delete>
+
+</mapper>

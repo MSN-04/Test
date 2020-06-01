@@ -1,0 +1,69 @@
+			<!-- Start Breadcrumb -->
+			<jsp:include page="/WEB-INF/jsp/admin/layout/breadcrumb.jsp">
+				<jsp:param name="pageName" value="CSR 게시판"/>
+			</jsp:include>
+			<!-- End Breadcrumb -->
+
+            <!-- start: page -->
+			<div class="row">
+				<div class="col-md-12">
+				<section class="panel panel-featured panel-featured-primary media-gallery">
+					<header class="panel-heading">
+						<div class="panel-actions">
+
+						</div>
+						<h2 class="panel-title">CSR 등록/수정</h2>
+						<p class="panel-subtitle">
+							블라블라
+						</p>
+					</header>
+					<div class="panel-body">
+
+						<div class="row mg-files" >
+							<div class="col-sm-6 col-md-4 col-lg-3">
+								<div class="thumbnail">
+									<div class="thumb-preview">
+										<a class="thumb-image" href="${globalAdminAssets}/images/projects/project-1.jpg">
+											<img src="${globalAdminAssets}/images/projects/project-1.jpg" class="img-responsive" alt="Project">
+										</a>
+									</div>
+									<h5 class="mg-title text-weight-semibold">SEO</h5>
+									<div class="mg-description">
+										<small class="pull-left text-muted">Design, Websites</small>
+										<small class="pull-right text-muted">07/10/2016</small>
+									</div>
+								</div>
+							</div>
+							<div class="col-sm-6 col-md-4 col-lg-3">
+								<div class="thumbnail">
+									<div class="thumb-preview">
+										<a class="thumb-image" href="${globalAdminAssets}/images/projects/project-1.jpg">
+											<img src="${globalAdminAssets}/images/projects/project-1.jpg" class="img-responsive" alt="Project">
+										</a>
+									</div>
+									<h5 class="mg-title text-weight-semibold">SEO</h5>
+									<div class="mg-description">
+										<small class="pull-left text-muted">Design, Websites</small>
+										<small class="pull-right text-muted">07/10/2016</small>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
+
+					</div>
+					<footer class="panel-footer">
+						<div class="row">
+							<div class="col-sm-12">
+
+							버튼/액션
+
+
+							</div>
+						</div>
+					</footer>
+				</section>
+				</div>
+
+			</div>

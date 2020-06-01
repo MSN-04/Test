@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.bbs.mini">
+
+	<resultMap type="bbsMiniVO" id="bbsListMap">
+		<result property="bbsListId"    	column="BBS_LIST_ID" />
+		<result property="bbsNo"    		column="BBS_NO" />
+		<result property="siteNo"    		column="SITE_NO" />
+		<result property="ctgryNo"    		column="CTGRY_NO" />
+		<result property="name"    			column="NAME" />
+		<result property="listCount"    	column="LIST_COUNT" />
+		<result property="sorting"    		column="SORTING" />
+		<result property="sorting1"    		column="SORTING1" />
+		<result property="sorting2"    		column="SORTING2" />
+		<result property="useAt"    		column="USE_AT" />
+		<result property="createDate"    	column="CREATE_DATE" />
+		<result property="updateDate"    	column="UPDATE_DATE" />
+		<result property="createUserId"    	column="CREATE_USER_ID" />
+		<result property="updateUserId"    	column="UPDATE_USER_ID" />
+		<result property="bbsTy" 	   		column="BBS_TY" />
+	</resultMap>
+
+	<select id="selectBbsCount" parameterType="hashmap" resultType="int" useCache="false">
+		/* Query ID : humanframe.bbs.mini.selectBbsCount */		
+		SELECT
+			COUNT(BBS_LIST_ID)
+		FROM TN_BBS_MINI A
+	    LEFT OUTER JOIN (SELECT MENU_NO, MENU_NM AS CTGRY_NM FROM TN_SITE_MENU) B ON A.CTGRY_NO = B.MENU_NO
+	    LEFT OUTER JOIN (SELECT * FROM TN_BBS_ST WHERE USE_AT = 'Y') C ON A.BBS_NO = C.BBS_NO
+	    LEFT OUTER JOIN (SELECT * FROM TN_SITE WHERE USE_AT = 'Y') D ON A.SITE_NO = D.SITE_NO
+	    WHERE A.USE_AT='Y'
+		<if test="srchKey != null and srchKey != '' ">
+			AND ${srchKey} LIKE '%'||#{srchText}||'%'
+		</if>
+		<if test="srchBeginDt != null and srchBeginDt != '' ">
+			<![CDATA[AND TO_CHAR(A.CREATE_DATE, 'YYYY-MM-DD') >= #{srchBeginDt}]]>
+		</if>
+		<if test="srchEndDt != null and srchEndDt != '' ">
+			<![CDATA[AND TO_CHAR(A.CREATE_DATE, 'YYYY-MM-DD') <= #{srchEndDt}]]>
+		</if>
+	</select>
+
+	<select id="selectBbsList" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.bbs.mini.selectBbsList */		
+		<include refid="LimitMapper.header2"/>
+			SELECT   
+				 BBS_LIST_ID
+				,A.BBS_NO
+			    ,C.BBS_SJ
+			    ,A.SITE_NO
+			    ,D.SITE_NM
+			    ,A.CTGRY_NO
+			    ,B.CTGRY_NM
+			    ,NAME
+			    ,LIST_COUNT
+			    ,SORTING
+			    ,SUBSTR(SORTING, 0, INSTR(SORTING,' ',1)-1) AS SORTING1
+			    ,SUBSTR(SORTING, INSTR(SORTING,' ',1)+1 , LENGTH(SORTING)) AS SORTING2
+			    ,A.USE_AT
+			    ,A.CREATE_DATE
+			    ,A.UPDATE_DATE
+			    ,A.CREATE_USER_ID
+			    ,A.UPDATE_USER_ID
+			FROM TN_BBS_MINI A
+			LEFT OUTER JOIN (SELECT MENU_NO, MENU_NM AS CTGRY_NM FROM TN_SITE_MENU) B ON A.CTGRY_NO = B.MENU_NO
+		    LEFT OUTER JOIN (SELECT * FROM TN_BBS_ST WHERE USE_AT = 'Y') C ON A.BBS_NO = C.BBS_NO
+		    LEFT OUTER JOIN (SELECT * FROM TN_SITE WHERE USE_AT = 'Y') D ON A.SITE_NO = D.SITE_NO
+		    WHERE A.USE_AT='Y'
+			<if test="srchKey != null and srchKey != '' ">
+				AND ${srchKey} LIKE '%'||#{srchText}||'%'
+			</if>
+			<if test="srchBeginDt != null and srchBeginDt != '' ">
+				AND TO_CHAR(A.CREATE_DATE, 'YYYY-MM-DD') &#62;= #{srchBeginDt}
+			</if>
+			<if test="srchEndDt != null and srchEndDt != '' ">
+				AND TO_CHAR(A.CREATE_DATE, 'YYYY-MM-DD') &#60;= #{srchEndDt}
+			</if>
+			ORDER BY A.UPDATE_DATE DESC
+		<include refid="LimitMapper.footer2"/>					
+	</select>
+
+	<select id="detailInfoBbsInfo" parameterType="hashmap" resultMap="bbsListMap" useCache="false">
+		/* Query ID : humanframe.bbs.mini.detailInfoBbsInfo */		
+		SELECT
+			 BBS_LIST_ID
+			,A.BBS_NO
+            ,SITE_NO
+            ,A.CTGRY_NO
+            ,NAME
+            ,LIST_COUNT
+            ,SORTING
+            ,SUBSTR(SORTING,0, INSTR(SORTING,' ',1)-1) AS SORTING1
+            ,SUBSTR(SORTING,INSTR(SORTING,' ',1)+1 , LENGTH(SORTING)) AS SORTING2
+            ,USE_AT
+            ,CREATE_DATE
+            ,UPDATE_DATE
+            ,CREATE_USER_ID
+            ,UPDATE_USER_ID
+            ,(SELECT bbs_ty FROM tn_bbs_st WHERE bbs_no=A.bbs_no AND use_at='Y') AS BBS_TY
+		FROM TN_BBS_MINI A
+		WHERE BBS_LIST_ID = #{bbsListId}
+	</select>
+
+	<select id="selectSiteList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.bbs.mini.selectSiteList */		
+		SELECT
+		 	 SITE_NO
+			,SITE_NM
+		FROM TN_SITE
+		WHERE USE_AT = 'Y'
+		ORDER BY SITE_NO
+	</select>
+
+	<select id="selectCtgryList" parameterType="hashmap" resultType="egovMap">	
+		/* Query ID : humanframe.bbs.mini.selectCtgryList */		
+		SELECT
+		    A.SITE_NO
+		   ,B.UPPER_MENU_NO
+		   ,B.MENU_NO AS CTGRY_NO
+		   ,B.MENU_NM AS CTGRY_NM
+		FROM (
+			SELECT 
+		    	SITE_NO
+		       ,MENU_NO
+		    FROM TN_SITE_MENU
+		    WHERE UPPER_MENU_NO = '0'
+		    ORDER BY SITE_NO, MENU_NO
+		    ) A,
+		    (SELECT 
+		    	A1.*
+		     FROM TN_SITE_MENU A1
+		     WHERE UPPER_MENU_NO &#60;&#62; '0'
+		     ORDER BY SITE_NO, MENU_NO
+		    ) B
+		WHERE 1=1
+		AND A.SITE_NO = #{siteNo}
+		AND A.MENU_NO = B.UPPER_MENU_NO
+		ORDER BY B.SITE_NO, B.SORT_NO		
+	</select>
+
+	<select id="selectAjaxBbsList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.bbs.mini.selectAjaxBbsList */	
+		SELECT
+			 BBS_NO
+		    ,SITE_NM
+		    ,SITE_NO
+		    ,CTGRY_NM
+		    ,CTGRY_NO
+		    ,BBS_SJ
+		    ,BBS_TY
+		    ,SORT_NO
+		FROM (
+			SELECT
+		    	 BBS.BBS_NO
+		        ,(SELECT SITE_NM FROM TN_SITE WHERE SITE_NO = TSM.SITE_NO) AS SITE_NM
+		        ,TSM.SITE_NO
+		        ,(SELECT MENU_NM FROM TN_SITE_MENU WHERE MENU_NO = TSM.UPPER_MENU_NO) AS CTGRY_NM
+		        ,(CASE WHEN LEVEL &#62; 2 THEN TSM.UPPER_MENU_NO ELSE TSM.MENU_NO END) AS CTGRY_NO
+		        ,BBS.BBS_SJ
+		        ,BBS.BBS_TY
+		        ,TSM.SORT_NO
+		    FROM TN_SITE_MENU TSM, TN_BBS_ST BBS
+		    WHERE 1=1
+		    AND TSM.BBS_NO = BBS.BBS_NO(+)
+		    AND TSM.USE_AT = 'Y'
+		    AND TSM.BBS_NO &#60;&#62; '0'
+		    START WITH UPPER_MENU_NO = 0
+		    CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+		    ORDER SIBLINGS BY SORT_NO, MENU_NO
+		)
+		WHERE 1=1
+		AND SITE_NO = #{siteNo}
+		AND CTGRY_NO = #{ctgryNo}
+		ORDER BY SITE_NO,SORT_NO
+	</select>
+
+	<insert id="insertBbsList" parameterType="bbsMiniVO">
+		/* Query ID : humanframe.bbs.mini.selectAjaxBbsList */	
+		<selectKey resultType="int" keyProperty="bbsListId" order="BEFORE">
+			SELECT
+				NVL(MAX(BBS_LIST_ID),0) + 1
+			FROM TN_BBS_MINI
+		</selectKey>
+		INSERT INTO TN_BBS_MINI (
+			 BBS_LIST_ID
+			,BBS_NO
+			,SITE_NO
+			,NAME
+			,LIST_COUNT
+			,SORTING
+			,CREATE_DATE
+			,UPDATE_DATE
+			,CREATE_USER_ID
+			,UPDATE_USER_ID
+			,CTGRY_NO
+		) VALUES (
+			  #{bbsListId , jdbcType=INTEGER}
+			, #{bbsNo , jdbcType=INTEGER}
+			, #{siteNo , jdbcType=INTEGER}
+			, #{name , jdbcType=VARCHAR}
+			, #{listCount , jdbcType=INTEGER}
+			, #{sorting1 , jdbcType=VARCHAR}||' '||#{sorting2 , jdbcType=VARCHAR}
+			, SYSDATE
+			, SYSDATE
+			, #{createUserId , jdbcType=INTEGER}
+			, #{updateUserId , jdbcType=INTEGER}
+			, #{ctgryNo , jdbcType=INTEGER}
+		)
+	</insert>
+
+	<update id="updateBbsList" parameterType="bbsMiniVO">
+		/* Query ID : humanframe.bbs.mini.updateBbsList */	
+		UPDATE 
+			TN_BBS_MINI
+		SET  BBS_NO = #{bbsNo, jdbcType=INTEGER}
+			,SITE_NO = #{siteNo, jdbcType=INTEGER}
+			,NAME = #{name, jdbcType=VARCHAR}
+			,LIST_COUNT = #{listCount, jdbcType=INTEGER}
+			,SORTING = #{sorting1, jdbcType=VARCHAR}||' '||#{sorting2, jdbcType=VARCHAR}
+			,UPDATE_DATE = SYSDATE
+			,UPDATE_USER_ID = #{updateUserId, jdbcType=INTEGER}
+			,CTGRY_NO = #{ctgryNo, jdbcType=INTEGER}
+		WHERE BBS_LIST_ID = #{ bbsListId}
+	</update>
+
+	<delete id="deleteBbsList" parameterType="bbsMiniVO">
+		/* Query ID : humanframe.bbs.mini.deleteBbsList */	
+		UPDATE 
+			TN_BBS_MINI 
+		SET USE_AT='N'
+		   ,UPDATE_DATE = SYSDATE
+		   ,UPDATE_USER_ID = #{updateUserId, jdbcType=INTEGER}
+		WHERE 1=1
+		<if test="bbsListId != null and bbsListId != '' ">
+			AND BBS_LIST_ID = #{ bbsListId }
+		</if>
+		<if test="bbsListIds != null and !bbsListIds.isEmpty ">
+			AND BBS_LIST_ID IN <foreach item="item" index="index" collection="bbsListIds" open="(" close=")" separator=",">#{item}</foreach>
+		</if>
+	</delete>
+
+	<select id="selectBasicQueryBbsTyList" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.bbs.mini.selectBasicQueryBbsTyList */	
+		SELECT 
+			* 
+		FROM (
+			SELECT 
+				 ROWNUM AS NUM
+				,C.* 
+			FROM (
+				SELECT
+					A.BBS_NO
+				   ,A.NTT_NO
+				   ,A.CTGRY_NO
+				   ,A.NOTICE_AT
+				   ,A.SJ
+				   ,A.WRTER
+				   ,A.RDCNT
+				   ,TO_CHAR(A.CREAT_DTTM, 'YYYY-MM-DD') CREAT_DTTM
+				   ,(SELECT
+				   		C.SITE_URL || '/' || D.MENU_URI
+				     FROM TN_SITE C LEFT OUTER JOIN TN_SITE_MENU D ON (C.SITE_NO=D.SITE_NO)
+					 WHERE D.BBS_NO=A.BBS_NO
+					 AND C.SITE_NO=#{siteNo}
+					 AND C.USE_AT='Y'
+					 AND D.USE_AT='Y'
+					 ) AS LINK_URL
+				FROM TN_BBS_TY${bbsTy} A INNER JOIN TN_BBS_ST B ON A.BBS_NO=B.BBS_NO
+				WHERE A.BBS_NO = #{bbsNo}
+				AND A.CONFM_AT = 'Y'
+				AND B.USE_AT = 'Y'
+				AND A.DELETE_AT = 'N'
+				AND (B.NOTICE_TERM_YN = 'N' OR (B.NOTICE_TERM_YN = 'Y' AND TO_CHAR(SYSDATE, 'YYYYMMDDHH24MI') 
+				BETWEEN TO_CHAR(A.BEGIN_DTTM,'YYYYMMDDHH24MI') AND TO_CHAR(A.END_DTTM,'YYYYMMDDHH24MI')))
+				ORDER BY NOTICE_AT DESC, ${sorting1} ${sorting2}
+				) C
+          ) 
+        WHERE NUM &gt; 0 
+        AND NUM &lt;= #{nlistCnt}
+	</select>
+	
+	<select id="selectBasicQueryBbsTy5List" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.bbs.mini.selectBasicQueryBbsTy5List */	
+		SELECT 
+			* 
+		FROM (
+			SELECT 
+				ROWNUM AS NUM
+				,C.* 
+			FROM (
+		       SELECT
+			        A.BBS_NO
+			       ,A.NTT_NO
+			       ,A.CTGRY_NO
+			       ,A.NOTICE_AT
+			       ,A.SJ
+			       ,A.WRTER
+			       ,A.RDCNT
+			       ,TO_CHAR(A.CREAT_DTTM, 'YYYY-MM-DD') CREAT_DTTM
+				   ,(SELECT
+				     	C.SITE_URL||'/'||D.MENU_URI
+				     FROM TN_SITE C LEFT OUTER JOIN TN_SITE_MENU D ON (C.SITE_NO=D.SITE_NO)
+					 WHERE D.BBS_NO=A.BBS_NO
+					 AND C.SITE_NO=#{siteNo}
+					 AND C.USE_AT='Y'
+					 AND D.USE_AT='Y'
+					 ) AS LINK_URL
+				FROM TN_BBS_TY${bbsTy} A 
+				INNER JOIN TN_BBS_ST B ON A.BBS_NO=B.BBS_NO
+				WHERE A.BBS_NO = #{bbsNo}
+				AND B.USE_AT = 'Y'
+				AND A.DELETE_AT = 'N'
+				ORDER BY NOTICE_AT DESC, ${sorting1} ${sorting2}
+			) C
+          ) 
+        WHERE NUM &gt; 0 
+        AND NUM &lt;= #{nlistCnt}
+	</select>
+	
+	<select id="selectBasicQueryBbsTy6List" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.bbs.mini.selectBasicQueryBbsTy6List */	
+		SELECT 
+			* 
+		FROM (
+			SELECT 
+				ROWNUM AS NUM
+			   ,C.* 
+			FROM (
+				SELECT
+					 A.BBS_NO
+				    ,A.NTT_NO
+				    ,A.CTGRY_NO
+				    ,A.NOTICE_AT
+				    ,A.SJ
+				    ,A.WRTER
+				    ,A.RDCNT
+				    ,TO_CHAR(A.CREAT_DTTM, 'YYYY-MM-DD') AS CREAT_DTTM
+				    ,(SELECT
+				    	C.SITE_URL||'/'||D.MENU_URI
+				      FROM TN_SITE C 
+				      LEFT OUTER JOIN TN_SITE_MENU D ON C.SITE_NO=D.SITE_NO
+					  WHERE D.BBS_NO=A.BBS_NO
+					  AND C.site_no=#{siteNo}
+					  AND C.use_at='Y'
+					  AND D.use_at='Y'
+					) AS LINK_URL
+				FROM TN_BBS_TY${bbsTy} A INNER JOIN TN_BBS_ST B ON A.BBS_NO=B.BBS_NO
+				WHERE A.BBS_NO = #{bbsNo}
+				AND A.CONFM_AT = 'Y'
+				AND B.USE_AT = 'Y'
+				AND A.DELETE_AT = 'N'
+				ORDER BY NOTICE_AT DESC, ${sorting1} ${sorting2}
+			) C
+         ) 
+         WHERE NUM &gt; 0 
+         AND NUM &lt;= #{nlistCnt}
+	</select>
+	
+	<select id="selectBasicQueryBbsTy8List" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.bbs.mini.selectBasicQueryBbsTy8List */	
+		SELECT 
+			* 
+		FROM (
+			SELECT 
+				 ROWNUM AS NUM
+				,C.* 
+			FROM (
+				SELECT
+					A.BBS_NO
+				   ,A.NTT_NO
+				   ,A.CTGRY_NO
+				   ,A.NOTICE_AT
+				   ,A.SJ
+				   ,A.WRTER
+				   ,A.RDCNT
+				   ,TO_CHAR(A.CREAT_DTTM, 'YYYY-MM-DD') CREAT_DTTM
+				   ,(SELECT
+				    	C.SITE_URL||'/'||D.MENU_URI
+				     FROM TN_SITE C 
+				     LEFT OUTER JOIN TN_SITE_MENU D ON C.SITE_NO=D.SITE_NO
+					 WHERE D.BBS_NO=A.BBS_NO
+					 AND C.SITE_NO=#{siteNo}
+					 AND C.USE_AT='Y'
+					 AND D.USE_AT='Y'
+					) AS LINK_URL
+				FROM TN_BBS_TY${bbsTy} A 
+				INNER JOIN TN_BBS_ST B ON A.BBS_NO=B.BBS_NO
+				WHERE A.BBS_NO = #{bbsNo}
+				AND A.CONFM_AT = 'Y'
+				AND B.USE_AT = 'Y'
+				AND A.DELETE_AT = 'N'
+				ORDER BY NOTICE_AT DESC, ${sorting1} ${sorting2}
+			) C
+         ) 
+        WHERE NUM &gt; 0 
+        AND NUM &lt;= #{nlistCnt}
+	</select>
+	
+	<select id="selectMiniListAll" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.bbs.mini.selectMiniListAll */	
+		SELECT
+			 BBS_NO
+			,BBS_LIST_ID
+		FROM TN_BBS_MINI
+		WHERE USE_AT='Y'
+	</select>
+</mapper>

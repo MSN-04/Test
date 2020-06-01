@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.mngr">
+
+	<resultMap type="mngrVO" id="mngrMap">
+		<result column="unique_id" 			property="uniqueId" />
+		<result column="mngr_id" 				property="mngrId" />
+		<result column="mngr_password" 	property="mngrPassword" />
+		<result column="mngr_nm" 			property="mngrNm" />
+		<result column="author_ty"	 		property="authorTy" />
+		<result column="author_no"			property="authorNo" />
+		<result column="author_nm"			property="authorNm" />
+		<result column="dept_code" 			property="deptCode" />
+		<result column="dept_nm" 			property="deptNm" />
+		<result column="emp_code" 			property="empCode" />
+		<result column="use_at" 				property="useAt" />
+		<result column="confm_ty" 			property="confmTy" />
+		<result column="telno" 					property="telno" />
+		<result column="dplct_cnfirm_code" 	property="dplctCnfirmCode" />
+		<result column="creat_dttm" 	property="creatDttm" />
+	</resultMap>
+
+	<sql id="searchList">
+			WHERE 1 = 1
+		<if test="useAt == null or useAt == ''">
+			AND MNGR.USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+			AND MNGR.USE_AT = #{useAt}
+		</if>
+		<if test="confmTy !=null and confmTy != ''">
+			AND MNGR.CONFM_TY = #{confmTy}
+		</if>
+		<if test="deptCode != null and deptCode != ''">
+			AND MNGR.DEPT_CODE = #{deptCode}
+		</if>
+		<if test="srchAuthTy != null and srchAuthTy != ''">
+			AND MNGR.AUTHOR_TY = #{srchAuthTy}
+		</if>
+		<if test="srchArrAuthTy != null and srchArrAuthTy != ''">
+			AND MNGR.AUTHOR_TY IN
+			<foreach collection="srchArrAuthTy" item="authTy" open="(" separator="," close=")">
+				#{authTy}
+			</foreach>
+		</if>
+		<if test="srchMngrId != null and srchMngrId != '' ">
+			AND UPPER(MNGR.MNGR_ID) LIKE  '%' || UPPER(#{srchMngrId}) || '%'
+		</if>
+		<if test="srchMngrNm != null and srchMngrNm != '' ">
+			AND MNGR.MNGR_NM LIKE  '%' || #{srchMngrNm} || '%'
+		</if>
+		<if test="srchDeptNmPath != null and srchDeptNmPath != '' ">
+			AND DEPT.DEPT_NM_PATH LIKE  '%' || #{srchDeptNmPath} || '%'
+		</if>
+		<if test="srchWord !='' and srchWord !=null">
+			<choose>
+				<when test="srchType == 'mngrId' ">
+				AND UPPER(MNGR.MNGR_ID) LIKE  '%' || UPPER(#{srchWord}) || '%'
+				</when>
+				<when test="srchType == 'mngrNm' ">
+				AND MNGR.MNGR_NM LIKE  '%' || #{srchWord} || '%'
+				</when>
+				<when test="srchType == 'deptNm' ">
+				AND DEPT.DEPT_NM_PATH LIKE  '%' || #{srchWord} || '%'
+				</when>
+			</choose>
+		</if>
+	</sql>
+	
+
+	<sql id="listColumn">
+		  UNIQUE_ID
+	 	, MNGR_ID
+	 	, MNGR_PASSWORD
+		, MNGR_NM
+	 	, AUTHOR_TY
+		, AUTHOR_NO
+		, AUTHOR_NM
+	 	, DEPT_CODE
+	 	, DEPT_NM
+		, EMP_CODE
+		, USE_AT
+		, CONFM_TY
+		, TELNO
+		, CRTR_UNIQUE_ID
+		, CRTR_ID
+		, CRTR_NM
+		, CREAT_DTTM
+		, UPDUSR_UNIQUE_ID
+		, UPDUSR_ID
+		, UPDUSR_NM
+		, UPDT_DTTM
+	</sql>
+
+	<select id="selectCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.mngr.selectCount */
+		SELECT
+			 COUNT(*)
+		FROM TN_MNGR MNGR
+		LEFT OUTER JOIN TN_DEPT_EMP EMP ON MNGR.EMP_CODE = EMP.EMP_CODE
+		LEFT OUTER JOIN  (
+					SELECT DEPT_CODE,TELNO ,SUBSTR(SYS_CONNECT_BY_PATH(DEPT_NM, '>'), 2) AS DEPT_NM_PATH
+					FROM TN_DEPT
+					START WITH (UPPER_DEPT_CODE = '6260000' OR UPPER_DEPT_CODE = '0')
+					CONNECT BY PRIOR DEPT_CODE = UPPER_DEPT_CODE
+					ORDER SIBLINGS BY LEVEL_NO, SORT_NO
+				) DEPT
+			ON EMP.DEPT_CODE = DEPT.DEPT_CODE
+	<include refid="searchList"/>
+	</select>
+
+	<select id="selectListVO" parameterType="java.util.HashMap" resultMap="mngrMap">
+		/* Query ID : humanframe.mngr.selectListVO */
+		SELECT
+			<include refid="listColumn"/>
+		FROM (
+			SELECT
+				<include refid="listColumn"/>
+				, ROWNUM AS RNUM
+			FROM (
+				SELECT
+					  UNIQUE_ID
+				 	, MNGR_ID
+				 	, MNGR_PASSWORD
+					, MNGR_NM
+				 	, MNGR.AUTHOR_TY
+				 	, MNGR.AUTHOR_NO
+				 	,(SELECT TMA.AUTHOR_NM FROM TN_MNG_AUTHOR TMA WHERE TMA.AUTHOR_NO = MNGR.AUTHOR_NO) AS AUTHOR_NM
+				 	, MNGR.DEPT_CODE
+				 	, DEPT.DEPT_NM_PATH AS DEPT_NM
+					, EMP.TELNO
+					, MNGR.USE_AT
+					, MNGR.CONFM_TY
+					, MNGR.EMP_CODE
+					, MNGR.CRTR_UNIQUE_ID
+					, MNGR.CRTR_ID
+					, MNGR.CRTR_NM
+					, MNGR.CREAT_DTTM
+					, MNGR.UPDUSR_UNIQUE_ID
+					, MNGR.UPDUSR_ID
+					, MNGR.UPDUSR_NM
+					, MNGR.UPDT_DTTM
+				FROM TN_MNGR MNGR
+				LEFT OUTER JOIN TN_DEPT_EMP EMP	ON MNGR.EMP_CODE = EMP.EMP_CODE
+				LEFT OUTER JOIN  (
+								SELECT DEPT_CODE,TELNO ,SUBSTR(SYS_CONNECT_BY_PATH(DEPT_NM, '>'), 2) AS DEPT_NM_PATH
+								FROM TN_DEPT
+								START WITH (UPPER_DEPT_CODE = '6260000' OR UPPER_DEPT_CODE = '0')
+								CONNECT BY PRIOR DEPT_CODE = UPPER_DEPT_CODE
+								ORDER SIBLINGS BY LEVEL_NO, SORT_NO
+				) DEPT
+				ON EMP.DEPT_CODE = DEPT.DEPT_CODE
+				<include refid="searchList"/>
+				ORDER BY UNIQUE_ID DESC		
+			) WHERE ROWNUM &#60;= #{endNum}
+		) WHERE RNUM > #{startNum}	
+	</select>
+
+	<select id="selectMngrList" parameterType="java.util.HashMap" resultMap="mngrMap">
+		/* Query ID : humanframe.mngr.selectMngrList */
+		SELECT
+			  UNIQUE_ID
+		 	, MNGR_ID
+		 	, MNGR_PASSWORD
+			, MNGR_NM
+		 	, MNGR.AUTHOR_TY
+		 	, MNGR.AUTHOR_NO
+		 	,(SELECT TMA.AUTHOR_NM FROM TN_MNG_AUTHOR TMA WHERE TMA.AUTHOR_NO = MNGR.AUTHOR_NO) AS AUTHOR_NM
+		 	, MNGR.DEPT_CODE
+		 	, DEPT.DEPT_NM
+			, EMP.TELNO
+			, MNGR.USE_AT
+			, MNGR.CONFM_TY
+			, MNGR.EMP_CODE
+			, MNGR.CRTR_UNIQUE_ID
+			, MNGR.CRTR_ID
+			, MNGR.CRTR_NM
+			, MNGR.CREAT_DTTM
+			, MNGR.UPDUSR_UNIQUE_ID
+			, MNGR.UPDUSR_ID
+			, MNGR.UPDUSR_NM
+			, MNGR.UPDT_DTTM
+		FROM TN_MNGR MNGR
+		LEFT OUTER JOIN TN_DEPT_EMP EMP	ON MNGR.EMP_CODE = EMP.EMP_CODE
+		LEFT OUTER JOIN TN_DEPT DEPT ON EMP.DEPT_CODE = DEPT.DEPT_CODE
+		<include refid="searchList"/>
+		ORDER BY UNIQUE_ID DESC
+	</select>
+
+
+	<!-- 관리자 아이디 중복검색 -->
+	<select id="selectMngrIdCheck" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.mngr.selectMngrIdCheck */
+		SELECT
+			  UNIQUE_ID
+		FROM TN_MNGR
+		WHERE UPPER(MNGR_ID) = UPPER(#{mngrId})
+	</select>
+
+	<select id="selectMngr" parameterType="java.util.HashMap" resultMap="mngrMap">
+		/* Query ID : humanframe.mngr.selectMngr */
+		SELECT
+				  UNIQUE_ID
+			 	, MNGR_ID
+			 	, MNGR_PASSWORD
+				, MNGR_NM
+			 	, MNGR.AUTHOR_TY
+			 	, MNGR.AUTHOR_NO
+			 	,(SELECT TMA.AUTHOR_NM FROM TN_MNG_AUTHOR TMA WHERE TMA.AUTHOR_NO = MNGR.AUTHOR_NO) AS AUTHOR_NM
+				, MNGR.USE_AT
+				, MNGR.CONFM_TY
+				, MNGR.EMP_CODE
+				, MNGR.CRTR_UNIQUE_ID
+				, MNGR.CRTR_ID
+				, MNGR.CRTR_NM
+				, MNGR.CREAT_DTTM
+				, MNGR.UPDUSR_UNIQUE_ID
+				, MNGR.UPDUSR_ID
+				, MNGR.UPDUSR_NM
+				, MNGR.UPDT_DTTM
+				, MNGR.DPLCT_CNFIRM_CODE
+			 	, DEPT.DEPT_CODE
+			 	, DEPT.DEPT_NM
+				, EMP.TELNO
+		FROM TN_MNGR MNGR
+		LEFT OUTER JOIN TN_DEPT_EMP EMP ON MNGR.EMP_CODE = EMP.EMP_CODE
+		LEFT OUTER JOIN TN_DEPT DEPT ON EMP.DEPT_CODE = DEPT.DEPT_CODE
+		WHERE 1=1
+			<if test="useAt == null or useAt == ''">
+			AND MNGR.USE_AT = 'Y'
+			</if>
+			<if test="useAt != null and useAt != ''">
+			AND MNGR.USE_AT = #{useAt}
+			</if>
+			<if test="mngrId != null and mngrId != ''">
+			AND UPPER(MNGR_ID) = UPPER(#{mngrId})
+			</if>
+			<if test="uniqueId != null and uniqueId != ''">
+			AND UNIQUE_ID = #{uniqueId}
+			</if>
+			<if test="dplctCnfirmCode != null and dplctCnfirmCode != ''">
+			AND DPLCT_CNFIRM_CODE = #{dplctCnfirmCode}
+			</if>
+			<if test="confmTy != null and confmTy != ''">
+			AND MNGR.CONFM_TY = #{confmTy}
+			</if>
+	</select>
+
+	<select id="selectMngrPwCheck" parameterType="java.util.HashMap" resultType="java.lang.String">
+		SELECT distinct mngr_id
+	FROM tn_mngr
+	WHERE UPPER(mngr_id) = UPPER(#{mngrId})
+		AND mngr_password = #{mngrPassword}
+	</select>
+	
+	<insert id="insertMngr" parameterType="mngrVO">
+		/* Query ID : humanframe.mngr.insertMngr */
+		<selectKey keyProperty="uniqueId" resultType="java.lang.String" order="BEFORE">
+		SELECT 'MNGINFO_'||LPAD(SEQ_TN_MNGR.NEXTVAL, 12, '0') FROM DUAL
+		</selectKey>
+		INSERT INTO TN_MNGR (
+			  UNIQUE_ID
+		 	, MNGR_ID
+		 	, MNGR_PASSWORD
+			, MNGR_NM
+		 	, AUTHOR_TY
+			, AUTHOR_NO
+		 	, DEPT_CODE
+			, EMP_CODE
+			, USE_AT
+			, CONFM_TY
+			, CRTR_UNIQUE_ID
+			, CRTR_ID
+			, CRTR_NM
+			, CREAT_DTTM
+		) VALUES (
+			#{uniqueId}
+		 	, #{mngrId, jdbcType=VARCHAR}
+		 	, #{mngrPassword, jdbcType=VARCHAR}
+			, #{mngrNm, jdbcType=VARCHAR}
+		 	, #{authorTy, jdbcType=VARCHAR}
+			, #{authorNo, jdbcType=VARCHAR}
+		 	, #{deptCode, jdbcType=VARCHAR}
+			, #{empCode, jdbcType=VARCHAR}
+			, #{useAt, jdbcType=VARCHAR}
+			, #{confmTy, jdbcType=VARCHAR}
+			, #{crtrUniqueId, jdbcType=VARCHAR}
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{crtrNm, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+
+
+	<!-- 관리자정보 업데이트 -->
+	<update id="updateMngr" parameterType="mngrVO">
+		/* Query ID : humanframe.mngr.updateMngr */
+		UPDATE TN_MNGR 
+			SET AUTHOR_TY = #{authorTy, jdbcType=VARCHAR}
+				, AUTHOR_NO = #{authorNo}
+				, DEPT_CODE = #{deptCode}
+				, MNGR_NM = #{mngrNm}
+				, EMP_CODE = #{empCode}
+				<if test="mngrPassword != null and mngrPassword != ''">
+				, MNGR_PASSWORD = #{mngrPassword, jdbcType=VARCHAR}
+				</if>
+				, USE_AT = #{useAt, jdbcType=VARCHAR}
+				, CONFM_TY = #{confmTy, jdbcType=VARCHAR}
+			    , UPDUSR_UNIQUE_ID = #{updusrUniqueId}
+			    , UPDUSR_ID = #{updusrId}
+				, UPDUSR_NM = #{updusrNm}
+				, UPDT_DTTM = SYSDATE
+				, DPLCT_CNFIRM_CODE = #{dplctCnfirmCode, jdbcType=VARCHAR}
+		WHERE UNIQUE_ID = #{uniqueId}
+	</update>
+
+	<!-- 관리자정보 GPKI인증서 등록 -->
+	<update id="updateMngrDpcode" parameterType="mngrVO">
+		/* Query ID : humanframe.mngr.updateMngrDpcode */
+		UPDATE TN_MNGR 
+			SET DPLCT_CNFIRM_CODE = #{dplctCnfirmCode, jdbcType=VARCHAR}
+		WHERE UNIQUE_ID = #{uniqueId}
+	</update>
+
+	<!-- 관리자정보 GPKI인증서 삭제 -->
+	<update id="deleteMngrDpcode" parameterType="mngrVO">
+		/* Query ID : humanframe.mngr.deleteMngrDpcode */
+		UPDATE TN_MNGR 
+			SET	DPLCT_CNFIRM_CODE = ''
+		WHERE UNIQUE_ID = #{uniqueId}
+	</update>
+
+
+	<insert id="insertMngrAuth" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mngr.insertMngrAuth */
+		<selectKey keyProperty="authNo" resultType="int" order="BEFORE">
+			SELECT
+				(NVL( MAX(AUTH_NO ) , 0) + 1)
+			FROM TN_MNGR_AUTH
+		</selectKey>
+		INSERT INTO TN_MNGR_AUTH (AUTH_NO, AUTH_SE, SITE_NO, MENU_NO, MNGR_ID) VALUES
+		<foreach collection="arrMngrId" item="item" index="index" separator=",">
+			(#{authNo}+#{index}, #{authSe}, #{siteNo}, #{menuNo}, #{item})
+		</foreach>
+	</insert>
+
+	<delete id="deleteMngrAuth" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mngr.deleteMngrAuth */
+		DELETE FROM TN_MNGR_AUTH
+		WHERE AUTH_SE = #{authSe}
+		AND SITE_NO = #{siteNo}
+		    <if test="menuNo != null and menuNo != ''">
+		    AND MENU_NO = #{menuNo}
+		    </if>
+	</delete>
+
+	<select id="selectMenuMngrList" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.mngr.selectMenuMngrList */
+		SELECT
+			TMA.MNGR_ID,
+			TM.MNGR_NM,
+			(SELECT TD.DEPT_NM FROM TN_DEPT TD WHERE TD.DEPT_CODE = TM.DEPT_CODE) AS DEPT_NM
+		FROM TN_MNGR_AUTH TMA, TN_MNGR TM
+		WHERE TMA.MNGR_ID = TM.MNGR_ID
+		AND TMA.SITE_NO = #{siteNo}
+		AND TMA.MENU_NO = #{menuNo}
+		AND TM.AUTHOR_TY = #{authorTy}
+		AND TM.USE_AT = #{useAt}
+	</select>
+
+	<select id="selectSiteMngrList" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.mngr.selectSiteMngrList */
+		SELECT
+			TMA.MNGR_ID,
+			TM.MNGR_NM,
+			(SELECT TD.DEPT_NM FROM TN_DEPT TD WHERE TD.DEPT_CODE = TM.DEPT_CODE) AS DEPT_NM
+		FROM TN_MNGR_AUTH TMA, TN_MNGR TM
+		WHERE TMA.MNGR_ID = TM.MNGR_ID
+		AND TMA.SITE_NO = #{siteNo}
+		AND TM.AUTHOR_TY = #{authorTy}
+		AND TM.USE_AT = #{useAt}
+	</select>
+	
+	<update id="setPassNotFail" parameterType="java.util.HashMap">
+		UPDATE 
+			TN_MNGR 
+		SET MNGR_PASS_COUNT = NVL(mngr_pass_count,0)+1
+		WHERE MNGR_ID = #{mngrId}
+	</update>
+	
+	<select id="setPassNotFailCount" parameterType="java.util.HashMap" resultType="int">
+		SELECT 
+			NVL(MNGR_PASS_COUNT,0)
+		FROM TN_MNGR
+		WHERE MNGR_ID = #{mngrId}
+	</select>
+	
+	<update id="setPassNotFailReset" parameterType="java.util.HashMap">
+		UPDATE 
+			TN_MNGR 
+		SET MNGR_PASS_COUNT = 0
+		WHERE MNGR_ID = #{mngrId}
+	</update>
+
+</mapper>

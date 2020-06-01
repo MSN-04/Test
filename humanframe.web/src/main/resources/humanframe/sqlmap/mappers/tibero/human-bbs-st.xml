@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.boardSetting">
+
+	<resultMap type="bbsSettingVO" id="bbsListMap">
+		<result property="bbsNo" 			column="BBS_NO" />
+		<result property="siteNm"			column="SITE_NM" />
+		<result property="bbsSj" 			column="BBS_SJ" />
+		<result property="bbsTy" 			column="BBS_TY" />
+		<result property="useAt" 			column="USE_AT" />
+		<result property="ctgryNm" 			column="CTGRY_NM" />
+		<result property="unityBbsUseAt" 	column="UNITY_BBS_USE_AT" />
+		<result property="unityBbsSiteTy"	column="UNITY_BBS_SITE_TY" />
+		<result property="ctgryUseAt" 		column="CTGRY_USE_AT" />
+		<result property="groupBbsUseAt" 	column="GROUP_BBS_USE_AT" />
+		<collection property="useMenuList"  column="{bbsNo=bbs_no}" select="selectBbsUseMenuList" />
+	</resultMap>
+
+	<resultMap type="bbsSettingVO" id="bbsGroupListMap" extends="bbsListMap">
+		<collection property="unityBbsSiteList" column="{cl_code_id=unity_bbs_site_ty}" select="humanframe.site.selectSiteListAll" />
+		<collection property="ctgryList" column="{bbsNo=bbs_no}" select="humanframe.boardCtgry.listCtgry" />
+	</resultMap>
+
+	<resultMap type="bbsSettingVO" id="bbsSettingMap">
+		<result property="bbsNo" 						column="BBS_NO" />
+		<result property="menuUri" 						column="MENU_URI" />
+		<result property="bbsSj" 						column="BBS_SJ" />
+		<result property="bbsTy" 						column="BBS_TY" />
+		<result property="uriWrd"						column="URI_WRD" />
+		<result property="dsplayTy" 					column="DSPLAY_TY" />
+		<result property="mngrAuthor"					column="MNGR_AUTHOR" typeHandler="stringToArrayHandler"/>
+		<result property="mberAuthor"					column="MBER_AUTHOR" typeHandler="stringToArrayHandler"/>
+		<result property="nmbrAuthor"					column="NMBR_AUTHOR" typeHandler="stringToArrayHandler"/>
+		<result property="atchmnflAt" 					column="ATCHMNFL_AT" />
+		<result property="atchmnflCo" 					column="ATCHMNFL_CO" />
+		<result property="atchmnflSize" 				column="ATCHMNFL_SIZE" />
+		<result property="atchmnflExtsnValue" 			column="ATCHMNFL_EXTSN"/>
+		<result property="editrUseAt" 					column="EDITR_USE_AT" />
+		<result property="ctgryUseAt" 					column="CTGRY_USE_AT" />
+		<result property="ctgryDsplayTy" 				column="CTGRY_DSPLAY_TY"/>
+		<result property="bbsInfo" 						column="BBS_INFO" />
+		<result property="useAt" 						column="USE_AT" />
+		<result property="bbsSknTy" 					column="BBS_SKN_TY" />
+		<result property="etcIemAt" 					column="ETC_IEM_AT" />
+		<result property="listOutpt" 					column="LIST_OUTPT" />
+		<result property="detailOutpt" 					column="DETAIL_OUTPT" />
+		<result property="indvdlinfoColctAgreAt" 		column="INDVDLINFO_COLCT_AGRE_AT" />
+		<result property="indvdlinfoColctAgreWords" 	column="INDVDLINFO_COLCT_AGRE_WORDS" />
+		<result property="crtfcMthd" 					column="CRTFC_MTHD" />
+		<result property="wrterIndict" 					column="WRTER_INDICT" />
+		<result property="etcIndictLineFeedAt" 			column="ETC_INDICT_LINE_FEED_AT" />
+		<result property="reptitNtceTime" 				column="REPTIT_NTCE_TIME" />
+		<result property="cclAt" 						column="CCL_AT" />
+		<result property="nttConfmUseAt" 				column="NTT_CONFM_USE_AT" />
+		<result property="newNttImageUseAt" 			column="NEW_NTT_IMAGE_USE_AT" />
+		<result property="newNttImage" 					column="NEW_NTT_IMAGE" />
+		<result property="newNttApplcPd" 				column="NEW_NTT_APPLC_PD" />
+		<result property="popularNttUseAt" 				column="POPULAR_NTT_USE_AT" />
+		<result property="popularNttApplcCo" 			column="POPULAR_NTT_APPLC_CO" />
+		<result property="popularNttColor" 				column="POPULAR_NTT_COLOR" />
+		<result property="nttListOutptCo" 				column="NTT_LIST_OUTPT_CO" />
+		<result property="cmCoIndictAt" 				column="CM_CO_INDICT_AT" />
+		<result property="answerCoIndictAt" 			column="ANSWER_CO_INDICT_AT" />
+		<result property="searchColctPermAt" 			column="SEARCH_COLCT_PERM_AT" />
+		<result property="rssAt" 						column="RSS_AT" />
+		<result property="brftrNttAt" 					column="BRFTR_NTT_AT" />
+		<result property="thumbAt" 						column="THUMB_AT" />
+		<result property="hashTagAt" 					column="HASHTAG_AT" />
+		<result property="recomendOppsAt" 				column="RECOMEND_OPPS_AT" />
+		<result property="reportAt" 					column="REPORT_AT" />
+		<result property="cmmnTableAt" 					column="CMMN_TABLE_AT" />
+		<result property="trgtTable" 					column="TRGT_TABLE" />
+		<result property="ctgryNo" 						column="CTGRY_NO" />
+		<result property="unityBbsUseAt" 				column="UNITY_BBS_USE_AT" />
+		<result property="unityBbsSiteTy" 				column="UNITY_BBS_SITE_TY" />
+		<result property="groupBbsUseAt" 				column="GROUP_BBS_USE_AT" />
+		<result property="mlg" 							column="MLG" />
+		<result property="openAt" 						column="OPEN_AT" />
+		<result property="emailUseAt" 					column="EMAIL_USE_AT" />
+		<result property="positionUseAt" 				column="POSITION_USE_AT" />
+		<result property="tellUseAt" 					column="TELL_USE_AT" />
+		<result property="nttOrgUseAt" 					column="NTT_ORG_USE_AT" />
+		<result property="nearNttAt" 					column="NEAR_NTT_AT" />
+		<result property="bbsCopyAt" 					column="BBS_COPY_AT" />
+		<result property="noticeTermYn" 				column="NOTICE_TERM_YN" />
+		<collection property="groupBbsList" column="{bbsNo=bbs_no}" select="selectGroupBbsList" />
+		<collection property="nttNewImgFileList" column="{upperNo=bbs_no, fileTy=ntt_new_img, srvcId=bbs_file_ty}" select="humanframe.bbs.file.selectFileList" />
+	</resultMap>
+
+	<!-- 통합게시판 사용 -->
+	<sql id="useUnityBbs">
+		<if test='unityBbsUseAt != null and unityBbsUseAt.equals("Y")'>
+			AND (SITE_NTCE_NO = #{siteNtceNo} OR SITE_NTCE_NO = 0)
+			AND EXISTS(
+					SELECT 
+						1 
+					FROM TN_SITE
+						WHERE 1=1
+						<where>
+							AND (SITE_NO = SITE_NTCE_NO OR SITE_NTCE_NO = 0)
+							AND SITE_NO = #{siteNtceNo}
+							<if test='unityBbsSiteTy != null and not unityBbsSiteTy.equals("A")'>
+								AND CL_CODE_ID = #{unityBbsSiteTy}
+							</if>							
+						</where>
+				    )
+		</if>
+	</sql>
+
+	<sql id="listWhere">
+		<where>
+			<choose>
+				<when test="useAt == null">
+				AND BOARD.USE_AT = 'Y'
+				</when>
+				<otherwise>
+				AND BOARD.USE_AT = #{useAt}
+				</otherwise>
+			</choose>
+			<if test="srchText != null and srchText != '' ">
+				AND BOARD.BBS_SJ LIKE '%' || #{srchText} || '%'
+			</if>
+			<if test="srchBbsTy != null and srchBbsTy != '' ">
+				AND BOARD.BBS_TY = #{srchBbsTy}
+			</if>
+			<if test="srchSiteNo != null and srchSiteNo != '' ">
+				AND SITE.SITE_NO = #{srchSiteNo}
+				AND MENU.MENU_TY = '3'
+			</if>
+			<if test='excludeGroupBbs != null and excludeGroupBbs.equals("Y") '>
+				AND BOARD.GROUP_BBS_USE_AT = 'N'
+			</if>
+			<if test="siteNos !=null and siteNos !='' ">
+				AND SITE.SITE_NO IN <foreach collection="siteNos" item="siteNo" open="(" separator="," close=")">#{siteNo}</foreach>
+			</if>
+			<if test="bbsNos !=null and bbsNos !='' ">
+				AND MENU.BBS_NO IN <foreach collection="bbsNos" item="bbsNo" open="(" separator="," close=")">#{bbsNo}</foreach>
+			</if>
+		</where>
+	</sql>
+
+	<select id="selectBoardCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.boardSetting.selectBoardCount */		
+		SELECT 
+			COUNT(*)
+  	  	FROM TN_BBS_ST BOARD
+  	  	<if test="(srchSiteNo != null and srchSiteNo != '') or (siteNos !=null and siteNos !='')">
+	   	INNER JOIN TN_SITE_MENU MENU ON MENU.BBS_NO = BOARD.BBS_NO
+	   	INNER JOIN TN_SITE SITE ON MENU.SITE_NO = SITE.SITE_NO
+   		</if>
+		<include refid="listWhere"/>
+	</select>
+
+	<select id="selectBoardListVO" parameterType="hashmap" resultMap="bbsListMap">
+		/* Query ID : humanframe.boardSetting.selectBoardListVO */		
+		<include refid="LimitMapper.header2"/>
+			SELECT 
+				 BOARD.BBS_NO
+				,BOARD.BBS_SJ
+				,BOARD.BBS_TY
+				,BOARD.USE_AT
+				,BOARD.UNITY_BBS_USE_AT
+				,BOARD.UNITY_BBS_SITE_TY
+				,BOARD.CTGRY_USE_AT
+				,BOARD.GROUP_BBS_USE_AT
+			FROM TN_BBS_ST BOARD
+			<if test="(srchSiteNo != null and srchSiteNo != '') or (siteNos !=null and siteNos !='')">
+			INNER JOIN TN_SITE_MENU MENU ON MENU.BBS_NO = BOARD.BBS_NO
+   			INNER JOIN TN_SITE SITE ON MENU.SITE_NO = SITE.SITE_NO
+   			</if>
+			<include refid="listWhere"/>
+			ORDER BY BOARD.BBS_NO DESC
+		<include refid="LimitMapper.footer2"/>		
+	</select>
+
+	<select id="selectBoardGroupListVO" parameterType="hashmap" resultMap="bbsGroupListMap">
+		/* Query ID : humanframe.boardSetting.selectBoardGroupListVO */
+		<include refid="LimitMapper.header2"/>
+			SELECT 
+				 BOARD.BBS_NO
+				,BOARD.BBS_SJ
+				,BOARD.BBS_TY
+				,BOARD.USE_AT
+				,BOARD.UNITY_BBS_USE_AT
+				,BOARD.UNITY_BBS_SITE_TY
+				,BOARD.CTGRY_USE_AT
+				,BOARD.GROUP_BBS_USE_AT
+			FROM TN_BBS_ST BOARD
+			<if test="srchSiteNo != null and srchSiteNo != '' ">
+			INNER JOIN TN_SITE_MENU MENU ON MENU.BBS_NO = BOARD.BBS_NO
+   			INNER JOIN TN_SITE SITE ON MENU.SITE_NO = SITE.SITE_NO
+   			</if>
+			<include refid="listWhere"/>
+			ORDER BY BOARD.BBS_NO DESC
+		<include refid="LimitMapper.footer2"/>		
+	</select>
+
+	<select id="selectBoardSetting" parameterType="hashmap"  resultMap="bbsSettingMap">
+		/* Query ID : humanframe.boardSetting.selectBoardSetting */
+		SELECT
+			 BOARD.BBS_NO
+			,BBS_SJ
+			,BBS_TY
+			,NVL(DSPLAY_TY, '1') AS DSPLAY_TY
+			,MNGR_AUTHOR
+			,MBER_AUTHOR
+			,NMBR_AUTHOR
+			,NVL(ATCHMNFL_AT, 'N') AS ATCHMNFL_AT
+			,ATCHMNFL_CO
+			,ATCHMNFL_SIZE
+			,ATCHMNFL_EXTSN
+			,NVL(EDITR_USE_AT, 'N') AS EDITR_USE_AT
+			,NVL(CTGRY_USE_AT, 'N') AS CTGRY_USE_AT
+			,CTGRY_DSPLAY_TY
+			,BBS_INFO
+			,BOARD.USE_AT
+			,BBS_SKN_TY
+			,ETC_IEM_AT
+			<if test="siteNo != null and siteNo != '' ">
+			,MENU.MENU_URI
+			</if>
+			,BOARD.LIST_OUTPT
+			,BOARD.DETAIL_OUTPT
+			,INDVDLINFO_COLCT_AGRE_AT
+			,INDVDLINFO_COLCT_AGRE_WORDS
+			,CRTFC_MTHD
+			,WRTER_INDICT
+			,ETC_INDICT_LINE_FEED_AT
+			,CCL_AT
+			,NTT_CONFM_USE_AT
+			,NEW_NTT_IMAGE_USE_AT
+			,NEW_NTT_IMAGE
+			,NEW_NTT_APPLC_PD
+			,POPULAR_NTT_APPLC_CO
+			,POPULAR_NTT_COLOR
+			,POPULAR_NTT_USE_AT
+			,NTT_LIST_OUTPT_CO
+			,CM_CO_INDICT_AT
+			,ANSWER_CO_INDICT_AT
+			,SEARCH_COLCT_PERM_AT
+			,RSS_AT
+			,BRFTR_NTT_AT
+			,THUMB_AT
+			,HASHTAG_AT
+			,RECOMEND_OPPS_AT
+			,REPORT_AT
+			,CMMN_TABLE_AT
+			,TRGT_TABLE
+			,CTGRY_NO
+			,'NTTNEWIMG' AS NTT_NEW_IMG
+			,'BBSST' AS BBS_FILE_TY
+			,UNITY_BBS_USE_AT
+			,UNITY_BBS_SITE_TY
+			,GROUP_BBS_USE_AT
+			,MLG
+			,OPEN_AT
+			,EMAIL_USE_AT
+			,POSITION_USE_AT
+			,TELL_USE_AT
+			,NTT_ORG_USE_AT
+			,NEAR_NTT_AT
+			,BBS_COPY_AT
+			,NOTICE_TERM_YN		  
+		FROM TN_BBS_ST BOARD <if test="siteNo != null and siteNo != '' ">, TN_PBLCATE_SITE_MENU MENU </if>
+		WHERE BOARD.BBS_NO = #{bbsNo}
+		<if test="siteNo != null and siteNo != '' ">
+		    AND MENU.SITE_NO = #{siteNo}
+		    AND MENU.BBS_NO = BOARD.BBS_NO
+	    </if>
+	</select>
+
+	<insert id="insertBoardSetting" parameterType="bbsSettingVO">
+		/* Query ID : humanframe.boardSetting.insertBoardSetting */
+		<selectKey resultType="int" keyProperty="bbsNo" order="BEFORE">
+		SELECT
+			NVL(MAX(BBS_NO),0) + 1
+		FROM TN_BBS_ST
+		</selectKey>
+		INSERT INTO 
+			TN_BBS_ST (
+				 BBS_NO
+				,BBS_SJ
+				,BBS_TY
+				,DSPLAY_TY
+				,MNGR_AUTHOR
+				,MBER_AUTHOR
+				,NMBR_AUTHOR
+				,ATCHMNFL_AT
+				,ATCHMNFL_CO
+				,ATCHMNFL_SIZE
+				,ATCHMNFL_EXTSN
+				,EDITR_USE_AT
+				,CTGRY_USE_AT
+				,CTGRY_DSPLAY_TY
+				,BBS_INFO
+				,USE_AT
+				,BBS_SKN_TY
+				,ETC_IEM_AT
+				,LIST_OUTPT
+				,DETAIL_OUTPT
+				,INDVDLINFO_COLCT_AGRE_AT
+				,INDVDLINFO_COLCT_AGRE_WORDS
+				,CRTFC_MTHD
+				,WRTER_INDICT
+				,ETC_INDICT_LINE_FEED_AT
+				,REPTIT_NTCE_TIME
+				,CCL_AT
+				,NTT_CONFM_USE_AT
+				,NEW_NTT_IMAGE_USE_AT
+				,NEW_NTT_IMAGE
+				,NEW_NTT_APPLC_PD
+				,POPULAR_NTT_APPLC_CO
+				,POPULAR_NTT_COLOR
+				,POPULAR_NTT_USE_AT
+				,NTT_LIST_OUTPT_CO
+				,CM_CO_INDICT_AT
+				,ANSWER_CO_INDICT_AT
+				,SEARCH_COLCT_PERM_AT
+				,RSS_AT
+				,BRFTR_NTT_AT
+				,THUMB_AT
+				,HASHTAG_AT
+				,RECOMEND_OPPS_AT
+				,REPORT_AT
+				,CMMN_TABLE_AT
+				,TRGT_TABLE
+				,CTGRY_NO
+				,UNITY_BBS_USE_AT
+				,UNITY_BBS_SITE_TY
+				,GROUP_BBS_USE_AT
+				,MLG
+				,OPEN_AT
+				,EMAIL_USE_AT
+				,POSITION_USE_AT
+				,TELL_USE_AT
+				,NTT_ORG_USE_AT
+				,NEAR_NTT_AT
+				,BBS_COPY_AT
+				,NOTICE_TERM_YN
+			) VALUES (
+				 #{bbsNo}
+				,#{bbsSj, jdbcType=VARCHAR}
+				,#{bbsTy, jdbcType=VARCHAR}
+				,#{dsplayTy, jdbcType=VARCHAR}
+				,#{mngrAuthorValue, jdbcType=VARCHAR}
+				,#{mberAuthorValue, jdbcType=VARCHAR}
+				,#{nmbrAuthorValue, jdbcType=VARCHAR}
+				,#{atchmnflAt, jdbcType=VARCHAR}
+				,#{atchmnflCo}
+				,#{atchmnflSize}
+				,#{atchmnflExtsnValue, jdbcType=VARCHAR}
+				,#{editrUseAt, jdbcType=VARCHAR}
+				,#{ctgryUseAt, jdbcType=VARCHAR}
+				,#{ctgryDsplayTy, jdbcType=VARCHAR}
+				,#{bbsInfo, jdbcType=VARCHAR}
+				,#{useAt}
+				,#{bbsSknTy}
+				,#{etcIemAt}
+				,#{listOutpt, jdbcType=VARCHAR}
+				,#{detailOutpt, jdbcType=VARCHAR}
+				,#{indvdlinfoColctAgreAt, jdbcType=VARCHAR}
+				,#{indvdlinfoColctAgreWords, jdbcType=VARCHAR}
+				,#{crtfcMthd, jdbcType=VARCHAR}
+				,#{wrterIndict, jdbcType=VARCHAR}
+				,#{etcIndictLineFeedAt, jdbcType=VARCHAR}
+				,#{reptitNtceTime}
+				,#{cclAt, jdbcType=VARCHAR}
+				,#{nttConfmUseAt, jdbcType=VARCHAR}
+				,#{newNttImageUseAt, jdbcType=VARCHAR}
+				,#{newNttImage, jdbcType=VARCHAR}
+				,#{newNttApplcPd}
+				,#{popularNttApplcCo}
+				,#{popularNttColor, jdbcType=VARCHAR}
+				,#{popularNttUseAt, jdbcType=VARCHAR}
+				,#{nttListOutptCo}
+				,#{cmCoIndictAt, jdbcType=VARCHAR}
+				,#{answerCoIndictAt, jdbcType=VARCHAR}
+				,#{searchColctPermAt, jdbcType=VARCHAR}
+				,#{rssAt, jdbcType=VARCHAR}
+				,#{brftrNttAt, jdbcType=VARCHAR}
+				,#{thumbAt, jdbcType=VARCHAR}
+				,#{hashTagAt, jdbcType=VARCHAR}
+				,#{recomendOppsAt, jdbcType=VARCHAR}
+				,#{reportAt, jdbcType=VARCHAR}
+				,#{cmmnTableAt, jdbcType=VARCHAR}
+				,#{trgtTable, jdbcType=VARCHAR}
+				,#{ctgryNo}
+				,#{unityBbsUseAt, jdbcType=VARCHAR}
+				,#{unityBbsSiteTy, jdbcType=VARCHAR}
+				,#{groupBbsUseAt, jdbcType=VARCHAR}
+				,#{mlg}
+				,#{openAt, jdbcType=VARCHAR}
+				,#{emailUseAt, jdbcType=VARCHAR}
+				,#{positionUseAt, jdbcType=VARCHAR}
+				,#{tellUseAt, jdbcType=VARCHAR}
+				,#{nttOrgUseAt , jdbcType=VARCHAR}
+				,#{nearNttAt, jdbcType=VARCHAR}
+				,#{bbsCopyAt, jdbcType=VARCHAR}
+				,#{noticeTermYn, jdbcType=VARCHAR}
+			)
+	</insert>
+
+	<update id="updateBoardSetting" parameterType="bbsSettingVO">
+		/* Query ID : humanframe.boardSetting.updateBoardSetting */
+		UPDATE 
+			TN_BBS_ST 
+		SET  BBS_SJ = #{bbsSj}
+			,BBS_TY = #{bbsTy}
+			,DSPLAY_TY = #{dsplayTy}
+			,MNGR_AUTHOR = #{mngrAuthorValue}
+			,MBER_AUTHOR = #{mberAuthorValue}
+			,NMBR_AUTHOR = #{nmbrAuthorValue}
+			,ATCHMNFL_AT = #{atchmnflAt}
+			,ATCHMNFL_CO = #{atchmnflCo}
+			,ATCHMNFL_SIZE = #{atchmnflSize}
+			,ATCHMNFL_EXTSN = #{atchmnflExtsnValue}
+			,EDITR_USE_AT = #{editrUseAt}
+			,CTGRY_USE_AT = #{ctgryUseAt}
+			,CTGRY_DSPLAY_TY = #{ctgryDsplayTy}
+			,BBS_INFO = #{bbsInfo}
+			,USE_AT = #{useAt}
+			,BBS_SKN_TY = #{bbsSknTy}
+			,ETC_IEM_AT = #{etcIemAt}
+			,INDVDLINFO_COLCT_AGRE_AT = #{indvdlinfoColctAgreAt}
+			,INDVDLINFO_COLCT_AGRE_WORDS =#{indvdlinfoColctAgreWords}
+			,CRTFC_MTHD = #{crtfcMthd}
+			,WRTER_INDICT = #{wrterIndict}
+			,ETC_INDICT_LINE_FEED_AT = #{etcIndictLineFeedAt}
+			,REPTIT_NTCE_TIME = #{reptitNtceTime}
+			,CCL_AT = #{cclAt, jdbcType=VARCHAR}
+			,NTT_CONFM_USE_AT = #{nttConfmUseAt, jdbcType=VARCHAR}
+			,NEW_NTT_IMAGE_USE_AT = #{newNttImageUseAt, jdbcType=VARCHAR}
+			,NEW_NTT_IMAGE = #{newNttImage, jdbcType=VARCHAR}
+			,NEW_NTT_APPLC_PD = #{newNttApplcPd}
+			,POPULAR_NTT_APPLC_CO = #{popularNttApplcCo}
+			,POPULAR_NTT_COLOR = #{popularNttColor, jdbcType=VARCHAR}
+			,POPULAR_NTT_USE_AT = #{popularNttUseAt, jdbcType=VARCHAR}
+			,NTT_LIST_OUTPT_CO = #{nttListOutptCo}
+			,CM_CO_INDICT_AT = #{cmCoIndictAt, jdbcType=VARCHAR}
+			,ANSWER_CO_INDICT_AT = #{answerCoIndictAt, jdbcType=VARCHAR}
+			,SEARCH_COLCT_PERM_AT = #{searchColctPermAt, jdbcType=VARCHAR}
+			,RSS_AT = #{rssAt, jdbcType=VARCHAR}
+			,BRFTR_NTT_AT = #{brftrNttAt, jdbcType=VARCHAR}
+			,THUMB_AT = #{thumbAt, jdbcType=VARCHAR}
+			,HASHTAG_AT = #{hashTagAt, jdbcType=VARCHAR}
+			,RECOMEND_OPPS_AT = #{recomendOppsAt, jdbcType=VARCHAR}
+			,REPORT_AT = #{reportAt, jdbcType=VARCHAR}
+			,CMMN_TABLE_AT = #{cmmnTableAt, jdbcType=VARCHAR}
+			,TRGT_TABLE = #{trgtTable, jdbcType=VARCHAR}
+			,CTGRY_NO = #{ctgryNo}
+			,UNITY_BBS_USE_AT = #{unityBbsUseAt, jdbcType=VARCHAR}
+			,UNITY_BBS_SITE_TY = #{unityBbsSiteTy, jdbcType=VARCHAR}
+			,GROUP_BBS_USE_AT = #{groupBbsUseAt, jdbcType=VARCHAR}
+			,MLG = #{mlg}
+			,OPEN_AT = #{openAt, jdbcType=VARCHAR}
+			,EMAIL_USE_AT = #{emailUseAt, jdbcType=VARCHAR}
+			,POSITION_USE_AT = #{positionUseAt, jdbcType=VARCHAR}
+			,TELL_USE_AT = #{tellUseAt, jdbcType=VARCHAR}
+			,NTT_ORG_USE_AT = #{nttOrgUseAt , jdbcType=VARCHAR}
+			,NEAR_NTT_AT = #{nearNttAt, jdbcType=VARCHAR}	
+			<if test="detailOutpt != null and detailOutpt != '' ">,DETAIL_OUTPT = #{detailOutpt, jdbcType=VARCHAR}</if>		
+			,BBS_COPY_AT = #{bbsCopyAt, jdbcType=VARCHAR}
+			,NOTICE_TERM_YN = #{noticeTermYn, jdbcType=VARCHAR}
+		WHERE BBS_NO = #{bbsNo}
+	</update>
+
+	<update id="updateBoardSettingOutpt" parameterType="bbsSettingVO">
+		/* Query ID : humanframe.boardSetting.updateBoardSettingOutpt */
+		UPDATE TN_BBS_ST
+			<set>
+				<if test="listOutpt != null and listOutpt != '' ">LIST_OUTPT = #{listOutpt, jdbcType=VARCHAR}</if>
+				<if test="detailOutpt != null and detailOutpt != '' ">DETAIL_OUTPT = #{detailOutpt, jdbcType=VARCHAR}</if>
+			</set>
+		WHERE BBS_NO = #{bbsNo}
+	</update>
+
+	<insert id="insertGroupBbsMapng" parameterType="hashmap">
+		/* Query ID : humanframe.boardSetting.insertGroupBbsMapng */
+		INSERT INTO 
+			TN_BBS_GROUP_MAPNG (
+				 BBS_NO
+				,GROUP_BBS_NO
+				,SITE_NTCE_NO
+				,CTGRY_NO
+		) VALUES
+		<foreach collection="groupBbsList" item="item" separator=",">
+		(
+			  #{item.bbsNo}
+			, #{item.groupBbsNo}
+			,
+			<choose>
+				<when test="item.siteNtceNo == null or item.siteNtceNo == '' ">0</when>
+				<otherwise>#{item.siteNtceNo}</otherwise>
+			</choose>
+			,
+			<choose>
+				<when test="item.ctgryNo == null or item.ctgryNo == '' ">0</when>
+				<otherwise>#{item.ctgryNo}</otherwise>
+			</choose>
+
+		)
+		</foreach>
+	</insert>
+
+	<delete id="deleteGroupBbsMapng" parameterType="bbsSettingVO">
+		/* Query ID : humanframe.boardSetting.deleteGroupBbsMapng */
+		DELETE TN_BBS_GROUP_MAPNG
+		WHERE BBS_NO = #{bbsNo}
+	</delete>
+
+	<select id="selectBbsUseMenuList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.boardSetting.selectBbsUseMenuList */
+		SELECT 
+			B.SITE_NM || '>' || A.MENU_NM AS MENU_NM
+		FROM (
+		  	SELECT 
+		  		TSM.SITE_NO
+		  	   ,SUBSTR(SYS_CONNECT_BY_PATH(TSM.MENU_NM, '>'), 7) AS MENU_NM
+			FROM TN_SITE_MENU TSM
+			WHERE TSM.MENU_TY = '3'
+			AND TSM.BBS_NO = #{bbsNo}
+			START WITH TSM.UPPER_MENU_NO = 0
+			CONNECT BY PRIOR TSM.MENU_NO = TSM.UPPER_MENU_NO
+			ORDER BY TSM.SITE_NO ASC
+		)A 
+		INNER JOIN TN_SITE B ON A.SITE_NO = B.SITE_NO
+	</select>
+
+	<select id="selectGroupBbsList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.boardSetting.selectGroupBbsList */
+		SELECT 
+			 MAPNG.BBS_NO
+			,MAPNG.GROUP_BBS_NO
+			,MAPNG.SITE_NTCE_NO
+			,MAPNG.CTGRY_NO
+			,ST.BBS_SJ
+			,CASE WHEN ST.UNITY_BBS_USE_AT = 'Y' AND MAPNG.SITE_NTCE_NO = 0
+			 	  THEN '전체'
+				  ELSE SITE.SITE_NM
+			 END AS SITE_NM
+			,CASE WHEN ST.CTGRY_USE_AT = 'Y' AND CTGRY.CTGRY_NO IS NULL
+				  THEN '전체'
+				  ELSE CTGRY.CTGRY_NM
+		     END AS CTGRY_NM
+		FROM TN_BBS_GROUP_MAPNG MAPNG
+		LEFT OUTER JOIN TN_BBS_ST ST ON ST.BBS_NO = MAPNG.GROUP_BBS_NO
+		LEFT OUTER JOIN TN_SITE SITE ON MAPNG.SITE_NTCE_NO = SITE.SITE_NO
+		LEFT OUTER JOIN TN_BBS_CTGRY CTGRY ON CTGRY.BBS_NO = MAPNG.GROUP_BBS_NO AND MAPNG.CTGRY_NO = CTGRY.CTGRY_NO
+		WHERE MAPNG.BBS_NO = #{bbsNo}
+	</select>
+
+	<select id="selectSkinList" parameterType="hashmap" resultType="egovMap"  useCache="false">
+		/* Query ID : humanframe.boardSetting.selectSkinList */
+		SELECT
+	         SKIN_ID
+	        ,SKIN_NAME
+	    FROM TN_SKIN
+	    ORDER BY SKIN_ID
+	</select>
+
+	<select id="selectBoardList" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.boardSetting.selectBoardList */
+		SELECT
+		    ST.BBS_NO,
+		    ST.BBS_SJ,
+		    ST.BBS_TY,
+		    ST.TRGT_TABLE
+		FROM TN_BBS_ST ST
+		WHERE ST.BBS_TY = 1
+		<if test ='bbsSj != null and bbsSj != ""'>
+		AND ST.BBS_SJ LIKE '%' || #{bbsSj} || '%'
+		AND ST.USE_AT = 'Y'
+		</if>
+	</select>
+
+	<select id="selectBbsCopyListVO" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.boardSetting.selectBbsCopyListVO */
+		SELECT 
+			 TS.BBS_NO
+	        ,TS.BBS_SJ
+	        ,TS.BBS_TY
+	    FROM (
+	        SELECT 
+	        	 BBS.BBS_NO
+	            ,BBS.BBS_SJ
+	            ,BBS.BBS_TY
+	        FROM TN_BBS_ST BBS
+	        WHERE 1=1
+	        AND BBS.USE_AT = 'Y'
+	        AND BBS.BBS_TY = #{srchBbsTy}
+	    ) TS, TN_BBS_COPY_GROUP CO
+	    WHERE TS.BBS_NO = CO.C_BBS_NO
+	    AND CO.BBS_NO = #{notBbsNo}
+	    ORDER BY BBS_SJ
+	</select>
+
+	<select id="selectBbsCopyList" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.boardSetting.selectBbsCopyList */
+		SELECT 
+	     	 DISTINCT BBS.BBS_NO
+            ,BBS.BBS_SJ
+            ,BBS.BBS_TY
+        FROM TN_BBS_ST BBS
+        WHERE 1=1
+        AND BBS.USE_AT = 'Y'
+        AND BBS.BBS_TY = #{bbsTy}
+        <if test='bbsNo != null and bbsNo !=""'>
+        	AND BBS.BBS_NO NOT IN (SELECT CO.C_BBS_NO FROM TN_BBS_COPY_GROUP CO WHERE CO.BBS_NO = #{bbsNo})
+        </if>
+	    <if test='searchBbsName != null and searchBbsName !=""'>
+	    	AND BBS_SJ LIKE '%' || #{searchBbsName} || '%'
+	    </if>
+	</select>
+
+	<insert id="insertBbsCopyGroup" parameterType="hashmap" flushCache="true">
+		/* Query ID : humanframe.boardSetting.insertBbsCopyGroup */	
+		<selectKey resultType="int" keyProperty="gId" order="BEFORE">
+		SELECT
+			NVL(MAX(GID),0) + 1
+		FROM TN_BBS_COPY_GROUP
+		</selectKey>
+		INSERT INTO 
+			TN_BBS_COPY_GROUP (
+			   GID
+			  ,BBS_NO
+			  ,C_BBS_NO
+			) VALUES (
+			  #{gId},
+			  #{bbsNo},
+			  #{groupId}
+			)
+	</insert>
+
+	<delete id="deleteBbsCopyGroup" parameterType="hashmap" flushCache="true">
+		/* Query ID : humanframe.boardSetting.deleteBbsCopyGroup */	
+		DELETE 
+			TN_BBS_COPY_GROUP 
+		WHERE BBS_NO = #{bbsNo}
+	</delete>
+
+	<select id="selectBbsCopyGroup" parameterType="hashmap" resultType="egovMap"  useCache="false">
+		/* Query ID : humanframe.boardSetting.selectBbsCopyGroup */	
+		SELECT 
+			 TS.BBS_NO
+            ,TS.BBS_SJ
+            ,TS.BBS_TY
+        FROM (
+        	SELECT
+        		 BBS.BBS_NO
+                ,BBS.BBS_SJ
+                ,BBS.BBS_TY
+        	FROM TN_BBS_ST BBS
+	        WHERE 1=1
+	        AND BBS.USE_AT = 'Y'
+	        AND BBS.BBS_TY = #{bbsTy}
+        ) TS, TN_BBS_COPY_GROUP CO
+        WHERE TS.BBS_NO = CO.C_BBS_NO
+        AND CO.BBS_NO = #{bbsNo}
+	</select>
+
+	<select id="selectBbsTrgtTable" parameterType="int" resultType="String" useCache="false">
+		/* Query ID : humanframe.boardSetting.selectBbsTrgtTable */
+		SELECT 
+			TRGT_TABLE
+		FROM TN_BBS_ST
+		WHERE BBS_NO = #{parm}
+	</select>
+
+	<select id="selectBoardReptitNtceTimeCheck" parameterType="hashmap" resultType="java.lang.String"  useCache="false">
+		/* Query ID : humanframe.boardSetting.selectBoardReptitNtceTimeCheck */
+		SELECT
+			NVL(DAYS+HH24S+MISS, '-1') AS REPTIT_TIME
+		FROM(
+			SELECT
+				 (TO_CHAR(SYSDATE,'yyyymmdd')*24*60*60)- TO_CHAR(MAX(CREAT_DTTM),'yyyymmdd')*24*60*60 AS DAYS
+				,(TO_CHAR(SYSDATE,'HH24')*60*60) - (to_char(max(creat_dttm),'HH24')*60*60) AS HH24S
+				,(TO_CHAR(SYSDATE,'MI')*60+TO_CHAR(SYSDATE,'ss')) - (TO_CHAR(MAX(CREAT_DTTM),'MI')*60+TO_CHAR(MAX(CREAT_DTTM),'ss')) AS MISS
+	        FROM ${trgtTable}
+	        WHERE BBS_NO = #{bbsNo}
+	        AND CRTR_ID = #{mngrId}
+	    )    
+	</select>
+</mapper>

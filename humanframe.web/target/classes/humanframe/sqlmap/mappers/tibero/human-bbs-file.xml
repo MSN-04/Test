@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.bbs.file">
+
+	<resultMap type="fileVO" id="fileMap">
+		<result property="srvcId"			column="SRVC_ID" />
+		<result property="upperNo"			column="UPPER_NO" />
+		<result property="fileTy"			column="FILE_TY" />
+		<result property="fileNo"			column="FILE_NO" />
+		<result property="flpth"			column="FLPTH" />
+		<result property="orginlFileNm"		column="ORGINL_FILE_NM" />
+		<result property="streFileNm"		column="STRE_FILE_NM" />
+		<result property="fileExtsn"		column="FILE_EXTSN" />
+		<result property="fileSize"			column="FILE_SIZE" />
+		<result property="fileDc"			column="FILE_DC" />
+		<result property="dwldCo"			column="DWLD_CO" />
+		<result property="creatDttm"		column="CREAT_DTTM" />
+		<result property="useAt"			column="USE_AT" />
+	</resultMap>
+
+	<select id="selectFileList" parameterType="java.util.HashMap" resultMap="fileMap">
+		/* Query ID : humanframe.bbs.file.selectFileList */		
+		SELECT 
+			 BBS_SRVC_TY AS SRVC_ID
+			,NTT_NO AS UPPER_NO
+			,FILE_TY
+			,FILE_NO
+			,FLPTH
+			,ORGINL_FILE_NM
+			,STRE_FILE_NM
+			,FILE_EXTSN
+			,FILE_SIZE
+			,FILE_DC
+			,DWLD_CO
+			,CREAT_DTTM
+			,USE_AT
+		FROM TN_BBS_FILE
+	  	WHERE USE_AT = 'Y'
+	  	AND BBS_SRVC_TY = #{srvcId}
+	    AND NTT_NO = #{upperNo}
+	  	<if test="fileTy != null and fileTy != ''">
+	  		AND FILE_TY = #{fileTy}
+	  	</if>	  
+	  	ORDER BY NTT_NO, FILE_NO
+	</select>
+
+	<select id="selectFileByFilter" parameterType="java.util.HashMap" resultMap="fileMap">
+		/* Query ID : humanframe.bbs.file.selectFileByFilter */		
+		SELECT 
+			 BBS_SRVC_TY AS SRVC_ID
+			,NTT_NO AS UPPER_NO
+			,FILE_TY
+			,FILE_NO
+			,FLPTH
+			,ORGINL_FILE_NM
+			,STRE_FILE_NM
+			,FILE_EXTSN
+			,FILE_SIZE
+			,FILE_DC
+			,DWLD_CO
+			,CREAT_DTTM
+			,USE_AT
+		FROM TN_BBS_FILE
+	  	WHERE USE_AT = 'Y'
+	  	AND BBS_SRVC_TY = #{srvcId}
+	    AND NTT_NO = #{upperNo}	  	
+	  	AND FILE_NO = #{fileNo}	  	
+	  	<if test="fileTy != null and fileTy != ''">
+	  		AND FILE_TY = #{fileTy}
+	  	</if>
+	</select>
+
+	<select id="selectDelTrgtFileList" parameterType="java.util.HashMap" resultMap="fileMap">
+		/* Query ID : humanframe.bbs.file.selectDelTrgtFileList */		
+		SELECT 
+			 BBS_SRVC_TY AS SRVC_ID
+			,NTT_NO AS UPPER_NO
+			,FILE_TY
+			,FILE_NO
+			,FLPTH
+			,ORGINL_FILE_NM
+			,STRE_FILE_NM
+			,FILE_EXTSN
+			,FILE_SIZE
+			,FILE_DC
+			,DWLD_CO
+			,CREAT_DTTM
+			,USE_AT
+		FROM TN_BBS_FILE
+		WHERE USE_AT = 'N'
+		AND TO_CHAR(CREAT_DTTM, 'YYYYMMDD') &lt; TO_CHAR(SYSDATE-#{dateGap}, 'YYYYMMDD')
+	</select>
+
+	<insert id="insertFileInfo" parameterType="fileVO">
+		/* Query ID : humanframe.bbs.file.insertFileInfo */		
+		INSERT INTO 
+			TN_BBS_FILE (
+			  BBS_SRVC_TY
+			 ,NTT_NO
+			 ,FILE_TY
+			 ,FILE_NO
+			 ,FLPTH
+			 ,ORGINL_FILE_NM
+			 ,STRE_FILE_NM
+			 ,FILE_EXTSN
+			 ,FILE_SIZE
+			 ,FILE_DC
+			 ,CREAT_DTTM
+			 ,DWLD_CO
+			 ,USE_AT
+		) VALUES (
+			 #{srvcId}
+			,#{upperNo}
+			,#{fileTy}
+            <if test="fileNo = null or fileNo = ''">
+            	,(SELECT NVL(MAX(FILE_NO), 0) + 1 FROM TN_BBS_FILE WHERE BBS_SRVC_TY = #{srvcId} AND NTT_NO = #{upperNo} AND FILE_TY = #{fileTy})
+            </if>
+            <if test="fileNo != null and fileNo != ''">
+            	,#{fileNo}
+            </if>
+			,#{flpth}
+			,#{orginlFileNm}
+			,#{streFileNm}
+			,#{fileExtsn}
+			,#{fileSize}
+			,#{fileDc, jdbcType=VARCHAR}
+			,SYSDATE
+			,#{dwldCo}
+			,#{useAt}
+		)
+	</insert>
+
+	<update id="updateDwldCo" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.bbs.file.updateDwldCo */		
+		UPDATE 
+			TN_BBS_FILE 
+		SET	DWLD_CO = DWLD_CO + 1
+		WHERE BBS_SRVC_TY = #{srvcId}
+		AND NTT_NO = #{upperNo}		
+		AND FILE_NO = #{fileNo}
+		<if test="fileTy != null and fileTy != ''">
+			AND FILE_TY = #{fileTy}
+		</if>
+	</update>
+
+	<update id="updateFileDc" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.bbs.file.updateFileDc */		
+		UPDATE 
+			TN_BBS_FILE 
+		SET	FILE_DC = #{fileDc}
+		WHERE BBS_SRVC_TY = #{srvcId}
+		AND NTT_NO = #{upperNo}
+		AND FILE_NO = #{fileNo}
+		<if test="fileTy != null and fileTy != ''">
+			AND FILE_TY = #{fileTy}
+		</if>
+	</update>
+
+
+	<update id="deleteFileByNo" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.bbs.file.deleteFileByNo */		
+		UPDATE 
+			TN_BBS_FILE 
+		SET	USE_AT = 'N'
+		WHERE BBS_SRVC_TY = #{srvcId}
+		AND NTT_NO = #{upperNo}
+		AND FILE_NO IN <foreach collection="fileNo" item="no" open="(" separator="," close=")">	#{no} </foreach>
+		<if test="fileTy != null and fileTy != ''">
+			AND FILE_TY = #{fileTy}
+		</if>		
+	</update>
+
+	<update id="deleteFileByUpperNo" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.bbs.file.deleteFileByUpperNo */		
+		UPDATE 
+			TN_BBS_FILE 
+		SET USE_AT = 'N'
+		WHERE BBS_SRVC_TY = #{srvcId}
+		AND NTT_NO = #{upperNo}
+	</update>
+
+	<delete id="deleteFile" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.bbs.file.deleteFile */		
+		DELETE TN_BBS_FILE
+		WHERE BBS_SRVC_TY = #{srvcId}
+		AND NTT_NO = #{upperNo}
+		AND FILE_NO = #{fileNo}
+		<if test="fileTy != null and fileTy != ''">
+			AND FILE_TY = #{fileTy}
+		</if>
+	</delete>
+	
+	<insert id="copyBbsFileInsert" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.bbs.file.copyBbsFileInsert */		
+		INSERT INTO 
+			TN_BBS_FILE (
+				 BBS_SRVC_TY
+				,NTT_NO
+				,FILE_TY
+				,FILE_NO
+				,FLPTH
+				,ORGINL_FILE_NM
+				,STRE_FILE_NM
+				,FILE_EXTSN
+				,ILE_SIZE
+				,FILE_DC
+				,CREAT_DTTM
+				,DWLD_CO
+				,USE_AT
+			) SELECT
+				 BBS_SRVC_TY
+				,#{newNttNo}
+				,FILE_TY
+	            ,FILE_NO
+				,FLPTH
+				,ORGINL_FILE_NM
+				,STRE_FILE_NM
+				,FILE_EXTSN
+				,FILE_SIZE
+				,FILE_DC
+				,SYSDATE
+				,DWLD_CO
+				,USE_AT
+			  FROM TN_BBS_FILE
+			  WHERE BBS_SRVC_TY = #{bbsSrvcTy}
+			  AND NTT_NO = #{oldNttNo}
+	</insert>
+
+</mapper>

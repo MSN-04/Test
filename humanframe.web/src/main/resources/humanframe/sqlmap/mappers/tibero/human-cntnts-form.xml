@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.cntnts.form">
+
+	<resultMap id="cntntsFormMap" type="cntntsFormVO">
+		<result property="cntntsFormNo" column="CNTNTS_FORM_NO"/>
+		<result property="formSj" 	 	column="FORM_SJ"/>
+		<result	property="formCn" 	 	column="FORM_CN" />
+		<result property="formCss"		column="FORM_CSS"/>
+		<result property="crtrId"		column="CRTR_ID"/>
+		<result property="crtrNm"		column="CRTR_NM"/>
+		<result property="creatDttm"	column="CREAT_DTTM"	/>
+		<result property="updusrId"		column="UPDUSR_ID"/>
+		<result property="updusrNm"		column="UPDUSR_NM"/>
+		<result	property="updtDttm"	 	column="UPDT_DTTM"/>
+	</resultMap>
+
+	<sql id="listColumn">
+		  CNTNTS_FORM_NO
+		, FORM_SJ
+		, FORM_CN
+		, FORM_CSS
+		, CRTR_ID
+		, CRTR_NM
+		, CREAT_DTTM
+		, UPDUSR_ID
+		, UPDUSR_NM
+		, UPDT_DTTM
+	</sql>
+	
+	<sql id="searchConditions">
+		<if test="srchWord != null and srchWord != '' ">
+			<choose>
+				<when test='srchKey != null and srchKey == "formSj" '>AND FORM_SJ LIKE '%'|| #{srchWord} ||'%'</when>
+				<when test='srchKey != null and srchKey == "crtrNm" '>AND CRTR_NM LIKE '%'|| #{srchWord} ||'%'</when>
+				<otherwise>
+					AND (FORM_SJ LIKE '%'|| #{srchWord} ||'%' OR CRTR_NM LIKE '%'|| #{srchWord} ||'%')
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+	
+	<select id="selectCntntsFormCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.cntnts.form.selectCntntsFormCount */	
+        SELECT COUNT(*)
+          FROM TN_CNTNTS_FORM TC
+         WHERE 1=1
+		<include refid="searchConditions"/>
+	</select>
+
+	<select id="selectCntntsFormListVO" parameterType="java.util.HashMap" resultMap="cntntsFormMap">
+		/* Query ID : humanframe.cntnts.form.selectCntntsFormListVO */	
+	    SELECT <include refid="listColumn"/>
+		  FROM (
+			SELECT
+				ROWNUM AS RNUM ,
+				<include refid="listColumn"/>
+			FROM (
+				SELECT
+		  	 	<include refid="listColumn" />
+				FROM TN_CNTNTS_FORM
+				WHERE 1=1
+				<include refid="searchConditions" />
+				ORDER BY CNTNTS_FORM_NO DESC
+			) WHERE ROWNUM &lt;= #{endNum}
+		) WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectCntntsForm" parameterType="java.util.HashMap" resultMap="cntntsFormMap">
+		/* Query ID : humanframe.cntnts.form.selectCntntsForm */	
+		SELECT <include refid="listColumn"/>
+		  FROM TN_CNTNTS_FORM
+		 WHERE CNTNTS_FORM_NO = #{cntntsFormNo}
+	</select>
+
+	<insert id="insertCntntsForm" parameterType="cntntsFormVO">
+		/* Query ID : humanframe.cntnts.form.insertCntntsForm */		
+	    <selectKey keyProperty="cntntsFormNo" order="BEFORE" resultType="int">
+	    SELECT NVL(MAX(CNTNTS_FORM_NO),0) + 1
+	      FROM TN_CNTNTS_FORM
+	    </selectKey>
+	    INSERT INTO TN_CNTNTS_FORM (
+		       CNTNTS_FORM_NO
+		     , FORM_SJ
+		     , FORM_CN
+		     , FORM_CSS
+		     , CRTR_ID
+		     , CRTR_NM
+		     , CREAT_DTTM
+		     , UPDUSR_ID
+		     , UPDUSR_NM
+		     , UPDT_DTTM
+	     ) VALUES (
+	     	   #{cntntsFormNo}
+	     	 , #{formSj}
+	     	 , #{formCn, jdbcType=VARCHAR}
+	     	 , #{formCss, jdbcType=VARCHAR}
+	     	 , #{crtrId}
+	     	 , #{crtrNm}
+	     	 , SYSDATE
+	     	 , #{updusrId}
+	     	 , #{updusrNm}
+	     	 , SYSDATE
+	     )
+	</insert>
+	
+	<update id="updateCntntsForm" parameterType="cntntsFormVO">
+		/* Query ID : humanframe.cntnts.form.updateCntntsForm */
+	    UPDATE TN_CNTNTS_FORM
+	       SET FORM_SJ        = #{formSj}                    
+	    	 , FORM_CN        = #{formCn, jdbcType=VARCHAR}  
+	    	 , FORM_CSS       = #{formCss, jdbcType=VARCHAR} 
+	    	 , UPDUSR_ID      = #{updusrId}                  
+	    	 , UPDUSR_NM      = #{updusrNm}                  
+	    	 , UPDT_DTTM      = SYSDATE
+	     WHERE CNTNTS_FORM_NO = #{cntntsFormNo}                  
+	</update>
+
+	<delete id="deleteCntntsForm" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.cntnts.form.deleteCntntsForm */
+	    DELETE TN_CNTNTS_FORM
+	     WHERE CNTNTS_FORM_NO = #{cntntsFormNo}
+	</delete>
+
+</mapper>

@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.cm">
+
+	<!-- Define Banner Result Map  -->
+	<resultMap type="cmVO" id="cmMap">
+		<result property="cmNo"				  column="cm_no"/>		
+		<result property="siteNo"             column="site_no"/>		
+		<result property="menuNo"             column="menu_no"/>		
+		<result property="bbsNo"              column="bbs_no"/>			
+		<result property="nttNo"              column="ntt_no"/>			
+		<result property="cntntsNo"           column="cntnts_no"/>		
+		<result property="hideAt"             column="hide_at"/>
+		<result property="deleteAt"           column="delete_at"/>		
+		<result property="secretAt"           column="secret_at"/>		
+		<result property="siteNm"             column="site_nm"/>	
+		<result property="menuNmPath"         column="menu_nm_path"/> 	
+		<result property="cmUrl"              column="cm_url"/>
+		<result property="wrter"	          column="wrter"/>
+		<result property="password"           column="password"/>
+		<result property="crtrId"             column="crtr_id"/>
+		<result property="crtrMm"             column="crtr_mm"/>
+		<result property="crtrUniqueId"       column="crtr_unique_id"/>	
+		<result property="creatDttm"          column="creat_dttm"/>		
+		<result property="updusrId"           column="updusr_id"/>		
+		<result property="updusrMm"           column="updusr_mm"/>		
+		<result property="updusrUniqueId"     column="updusr_unique_id"/>
+		<result property="updtDttm"           column="updt_dttm"/>		
+		<result property="recomendCo"         column="recomend_co"/>	
+		<result property="oppsCo"             column="opps_co"/>		
+		<result property="reportCo"           column="report_co"/>		
+		<result property="cn"                 column="cn"/>				
+	</resultMap>
+	
+	<sql id="trgtTable">
+		  FROM TN_CM CM
+		<if test="mapngAt != null and mapngAt != ''">
+		  JOIN TN_CM_MAPNG_${mapngAt} MAPNG ON CM.CM_NO = MAPNG.CM_NO
+		</if>
+		<if test="respondAt != null and respondAt != ''">
+		  JOIN TN_CM_RESPOND RES ON CM.CM_NO = RES.CM_NO
+		</if>
+		 WHERE 1 = 1
+		<if test="siteNo != null and siteNo != ''">
+		   AND CM.SITE_NO = #{siteNo}
+		</if>
+		<if test="menuNo != null and menuNo != ''">
+		   AND CM.MENU_NO = #{menuNo}
+		</if>
+		<choose>
+			<when test="mapngAt != null and mapngAt == 'bbs'">
+			   AND MAPNG.BBS_NO = #{bbsNo}
+			   AND MAPNG.NTT_NO = #{nttNo}
+			</when>
+			<when test="mapngAt != null and mapngAt == 'cntnts'">
+			   AND MAPNG.CNTNTS_NO = #{cntntsNo}
+			</when>
+		</choose>
+		<choose>
+			<when test="deleteAt == null or deleteAt == ''">
+			   AND DELETE_AT = 'N'
+			</when>
+			<otherwise>
+			   AND DELETE_AT = #{deleteAt}
+			</otherwise>
+		</choose>
+		<if test="hideAt != null and hideAt != ''">
+		   AND HIDE_AT = #{hideAt}
+		</if>
+		<if test="srchCn != null and srchCn != ''">
+		   AND CN like '%' || #{srchCn} || '%'
+		</if>
+		<if test="srchWrter != null and srchWrter != ''">
+		   AND WRTER like '%' || #{srchWrter} || '%'
+		</if>
+	</sql>
+	
+	<select id="selectCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframework.cm.selectCount */	
+		SELECT COUNT(CM.CM_NO)
+		<include refid="trgtTable" />
+	</select>
+	
+	<select id="selectListVO" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframework.cm.selectListVO */	
+	    SELECT 
+	    	TNCM.RNUM
+   			,TNCM.CM_NO
+			,TNCM.SITE_NO
+			,TNCM.MENU_NO
+			,TNCM.HIDE_AT
+			,TNCM.DELETE_AT
+			,TNCM.SECRET_AT
+			,TNCM.SITE_NM
+			,TNCM.MENU_NM_PATH
+			,TNCM.CM_URL
+			,TNMBER.MBER_ID
+			,NVL(TNMBER.MBER_NM, TNCM.WRTER) AS WRTER
+			,NVL(TNMBER.EMAIL, TNCM.EMAIL_ADRES) AS EMAIL
+			,TNCM.CRTR_UNIQUE_ID
+			,TO_CHAR(TNCM.CREAT_DTTM, 'yyyy-mm-dd hh:mi:ss') CREAT_DTTM
+			,TNCM.RECOMEND_CO
+			,TNCM.OPPS_CO
+			,TNCM.REPORT_CO
+			,TNCM.CN
+	      FROM (
+	    		SELECT 
+	    			ROWNUM AS RNUM
+	    			, CM_NO
+					, SITE_NO
+					, MENU_NO
+					, HIDE_AT
+					, DELETE_AT
+					, SECRET_AT
+					, SITE_NM
+					, MENU_NM_PATH
+					, CM_URL
+					, WRTER
+					, EMAIL_ADRES
+					, CRTR_ID
+					, CRTR_MM
+					, CRTR_UNIQUE_ID
+					, CREAT_DTTM
+					, RECOMEND_CO
+					, OPPS_CO
+					, REPORT_CO
+					, CN
+				 FROM (
+					SELECT 
+						CM.CM_NO
+						, CM.SITE_NO
+						, CM.MENU_NO
+						, CM.HIDE_AT
+						, CM.DELETE_AT
+						, CM.SECRET_AT
+						, CM.SITE_NM
+						, CM.MENU_NM_PATH
+						, CM.CM_URL
+						, CM.WRTER
+						, CM.EMAIL_ADRES
+						, CM.CRTR_ID
+						, CM.CRTR_MM
+						, CM.CRTR_UNIQUE_ID
+						, CM.CREAT_DTTM
+						, CM.RECOMEND_CO
+						, CM.OPPS_CO
+						, CM.REPORT_CO
+						, CM.CN
+					<include refid="trgtTable" />
+					 ORDER BY CM.CREAT_DTTM DESC, CM.CM_NO DESC
+				)
+			) TNCM
+		 LEFT OUTER JOIN TN_MBER TNMBER ON TNCM.CRTR_UNIQUE_ID = TNMBER.UNIQUE_ID		 
+		 WHERE RNUM &gt; #{startNum}
+		 AND RNUM &lt;= #{endNum}
+	</select>
+	
+	<select id="selectCm" parameterType="cmVO" resultMap="cmMap">
+		/* Query ID : humanframework.cm.selectCm */	
+   		SELECT 
+   			CM_NO
+			,SITE_NO
+			,MENU_NO
+			,HIDE_AT
+			,DELETE_AT
+			,SECRET_AT
+			,SITE_NM
+			,MENU_NM_PATH
+			,CM_URL
+			,WRTER
+			,EMAIL_ADRES
+			,CRTR_ID
+			,CRTR_MM
+			,CRTR_UNIQUE_ID
+			,CREAT_DTTM
+			,RECOMEND_CO
+			,OPPS_CO
+			,REPORT_CO
+			,CN
+		FROM TN_CM
+		WHERE CM_NO = #{cmNo}
+	</select>
+	
+	<!-- Define tn_stssdg Insert Query -->
+	<insert id="insertCm" parameterType="cmVO">
+		/* Query ID : humanframework.cm.insertCm */
+		<selectKey keyProperty="cmNo" resultType="int" order="BEFORE">
+			SELECT SEQ_TN_CM_NO.NEXTVAL
+		</selectKey>
+		INSERT INTO TN_CM (
+			CM_NO
+			, SITE_NO
+			, MENU_NO
+			, SECRET_AT
+			, SITE_NM
+			, MENU_NM_PATH
+			, CM_URL
+			, WRTER
+			, PASSWORD
+			, EMAIL_ADRES
+			, CRTR_ID
+			, CRTR_MM
+			, CRTR_UNIQUE_ID
+			, CREAT_DTTM
+			, UPDUSR_ID
+			, UPDUSR_MM
+			, UPDUSR_UNIQUE_ID
+			, UPDT_DTTM
+			, RECOMEND_CO
+			, OPPS_CO
+			, REPORT_CO
+			, CN
+		) VALUES (
+	    	#{cmNo}
+	    	, #{siteNo}
+	    	, #{menuNo}
+	    	<choose>
+	    	<when test="secretAt != null and secretAt != ''">, #{secretAt}</when>
+	    	<otherwise>, 'N'</otherwise>
+	    	</choose>
+			, #{siteNm, jdbcType=VARCHAR}
+			, #{menuNmPath, jdbcType=VARCHAR}
+			, #{cmUrl, jdbcType=VARCHAR}
+			, #{wrter, jdbcType=VARCHAR}
+			, #{password, jdbcType=VARCHAR}
+			, #{emailAdres, jdbcType=VARCHAR}
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{crtrMm, jdbcType=VARCHAR}
+			, #{crtrUniqueId, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{updusrId, jdbcType=VARCHAR}
+			, #{updusrMm, jdbcType=VARCHAR}
+			, #{updusrUniqueId, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{recomendCo}
+			, #{oppsCo}
+			, #{reportCo}
+			, #{cn, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<insert id="insertCmMapngBbs" parameterType="cmVO">
+		/* Query ID : humanframework.cm.insertCmMapngBbs */
+		INSERT INTO TN_CM_MAPNG_BBS (
+			CM_NO
+			, BBS_NO
+			, NTT_NO 
+		) values (
+			#{cmNo}
+			, #{bbsNo}
+			, #{nttNo}
+		)
+	</insert>
+	
+	<insert id="insertCmMapngCntnts" parameterType="cmVO">
+		/* Query ID : humanframework.cm.insertCmMapngCntnts */
+		INSERT INTO TN_CM_MAPNG_CNTNTS (
+			CM_NO
+			, CNTNTS_NO
+		) values (
+			#{cmNo}
+			, #{cntntsNo}
+		)
+	</insert>
+	
+	<update id="updateCm" parameterType="cmVO">
+		/* Query ID : humanframework.cm.updateCm */
+		UPDATE TN_CM
+		   SET EMAIL_ADRES = #{emailAdres, jdbcType=VARCHAR}
+			 , CN = #{cn, jdbcType=VARCHAR}
+			 , UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+			 , UPDUSR_MM = #{updusrMm, jdbcType=VARCHAR}
+			 , UPDUSR_UNIQUE_ID = #{updusrUniqueId, jdbcType=VARCHAR}
+			 , UPDT_DTTM = SYSDATE
+		 WHERE CM_NO = #{cmNo}
+	</update>
+	
+	<update id="updateCmStatus" parameterType="cmVO">
+		/* Query ID : humanframework.cm.updateCmStatus */
+		UPDATE TN_CM
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="hideAt != null and hideAt != ''">
+			       HIDE_AT = #{hideAt},
+			</if>
+			<if test="deleteAt != null and deleteAt != ''">
+			       DELETE_AT = #{deleteAt},
+			</if>
+			<if test="secretAt != null and secretAt != ''">
+			       SECRET_AT = #{secretAt},
+			</if>
+		</trim>
+		 WHERE CM_NO = #{cmNo}
+	</update>
+	
+	<select id="selectCmRespondListVO" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframework.cm.selectCmRespondListVO */	
+	    SELECT 
+	    	TNCM.RNUM
+   			, TNCM.CM_NO
+			, TNCM.SITE_NO
+			, TNCM.MENU_NO
+			, TNCM.HIDE_AT
+			, TNCM.DELETE_AT
+			, TNCM.SECRET_AT
+			, TNCM.SITE_NM
+			, TNCM.MENU_NM_PATH
+			, TNCM.CM_URL
+			, TNMBER.MBER_ID
+			, NVL(TNMBER.MBER_NM, TNCM.WRTER) AS WRTER
+			, NVL(TNMBER.EMAIL, TNCM.EMAIL_ADRES) AS EMAIL
+			, TNCM.CRTR_UNIQUE_ID
+			, TO_CHAR(TNCM.CREAT_DTTM, 'yyyy-mm-dd hh:mi:ss') CREAT_DTTM
+			, TNCM.RECOMEND_CO
+			, TNCM.OPPS_CO
+			, TNCM.REPORT_CO
+			, TNCM.CN
+			, TNCM.RESPOND_ANSWER
+			, TNCM.RESPOND_NM
+			, TNCM.RESPOND_TELNO
+			, TNCM.RESPOND_ADRES
+	      FROM (
+	    		SELECT 
+	    			ROWNUM AS RNUM
+	    			, CM_NO
+					, SITE_NO
+					, MENU_NO
+					, HIDE_AT
+					, DELETE_AT
+					, SECRET_AT
+					, SITE_NM
+					, MENU_NM_PATH
+					, CM_URL
+					, WRTER
+					, EMAIL_ADRES
+					, CRTR_ID
+					, CRTR_MM
+					, CRTR_UNIQUE_ID
+					, CREAT_DTTM
+					, RECOMEND_CO
+					, OPPS_CO
+					, REPORT_CO
+					, CN
+					, RESPOND_ANSWER
+					, RESPOND_NM
+					, RESPOND_TELNO
+					, RESPOND_ADRES
+				 FROM (
+					SELECT 
+						CM.CM_NO
+						, CM.SITE_NO
+						, CM.MENU_NO
+						, CM.HIDE_AT
+						, CM.DELETE_AT
+						, CM.SECRET_AT
+						, CM.SITE_NM
+						, CM.MENU_NM_PATH
+						, CM.CM_URL
+						, CM.WRTER
+						, CM.EMAIL_ADRES
+						, CM.CRTR_ID
+						, CM.CRTR_MM
+						, CM.CRTR_UNIQUE_ID
+						, CM.CREAT_DTTM
+						, CM.RECOMEND_CO
+						, CM.OPPS_CO
+						, CM.REPORT_CO
+						, CM.CN
+						, RES.RESPOND_ANSWER
+						, RES.RESPOND_NM
+						, RES.RESPOND_TELNO
+						, RES.RESPOND_ADRES
+					<include refid="trgtTable" />
+					 ORDER BY CM.CREAT_DTTM DESC, CM.CM_NO DESC
+				)
+			) TNCM
+		 LEFT OUTER JOIN TN_MBER TNMBER ON TNCM.CRTR_UNIQUE_ID = TNMBER.UNIQUE_ID		 
+		 WHERE RNUM &gt; #{startNum}
+		 AND RNUM &lt;= #{endNum}
+	</select>
+	
+	<select id="selectCmRespond" parameterType="cmRespondVO" resultType="egovMap">
+		/* Query ID : humanframework.cm.selectCmRespond */	
+		SELECT 
+			CM.CM_NO
+			, CM.SITE_NO
+			, CM.MENU_NO
+			, CM.HIDE_AT
+			, CM.DELETE_AT
+			, CM.SECRET_AT
+			, CM.SITE_NM
+			, CM.MENU_NM_PATH
+			, CM.CM_URL
+			, CM.WRTER
+			, CM.EMAIL_ADRES
+			, CM.CRTR_ID
+			, CM.CRTR_MM
+			, CM.CRTR_UNIQUE_ID
+			, CM.CREAT_DTTM
+			, CM.RECOMEND_CO
+			, CM.OPPS_CO
+			, CM.REPORT_CO
+			, CM.CN
+			, RES.RESPOND_ANSWER
+			, RES.RESPOND_NM
+			, RES.RESPOND_TELNO
+			, RES.RESPOND_ADRES
+		  FROM TN_CM CM
+		  JOIN TN_CM_RESPOND RES ON CM.CM_NO = RES.CM_NO
+		 WHERE CM.CM_NO = #{cmNo}
+	</select>
+	
+	<!-- Define tn_stssdg Insert Query -->
+	<insert id="insertCmRespond" parameterType="cmRespondVO">
+		/* Query ID : humanframework.cm.insertCmRespond */
+		INSERT INTO TN_CM_RESPOND (
+			CM_NO
+			, RESPOND_ANSWER
+			, RESPOND_NM
+			, RESPOND_TELNO
+			, RESPOND_ADRES
+		) VALUES (
+	    	#{cmNo}
+	    	, #{respondAnswer}
+	    	, #{respondNm, jdbcType=VARCHAR}
+			, #{respondTelno, jdbcType=VARCHAR}
+			, #{respondAdres, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<update id="updateCmRespond" parameterType="cmRespondVO">
+		/* Query ID : humanframework.cm.updateCmRespond */
+		UPDATE TN_CM_RESPOND
+		   SET RESPOND_ANSWER = #{respondAnswer}
+		     , RESPOND_NM = #{respondNm, jdbcType=VARCHAR}
+		     , RESPOND_TELNO = #{respondTelno, jdbcType=VARCHAR}
+		     , RESPOND_ADRES = #{respondAdres, jdbcType=VARCHAR}
+		 WHERE CM_NO = #{cmNo}
+	</update>
+	
+	<select id="selectCmPassword" parameterType="cmVO" resultType="int">
+		/* Query ID : humanframework.cm.selectCmPassword */	
+		SELECT COUNT(1)
+		  FROM TN_CM
+		 WHERE CM_NO = #{cmNo}
+		 AND PASSWORD = #{password}
+	</select>
+	
+	<select id="selectCmRespondAnswerList" parameterType="cmRespondVO" resultType="egovMap">
+		/* Query ID : humanframework.cm.selectCmRespondAnswerList */	
+		SELECT ANSWER
+		     , DETAIL
+		  FROM TN_CM_RESPOND_ANSWER
+		 WHERE MENU_NO = #{menuNo}
+		 ORDER BY ANSWER
+	</select>
+	
+</mapper>

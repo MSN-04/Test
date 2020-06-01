@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.mber">
+
+	<resultMap type="mberVO" id="mberMap">
+		<result property="uniqueId" 		column="UNIQUE_ID" />
+		<result property="mberId"	   	    column="MBER_ID" />
+		<result property="password"   	    column="PASSWORD" />
+		<result property="mberNm"   	    column="MBER_NM" />
+		<result property="telno"   	        column="TELNO" />
+		<result property="email"   	        column="EMAIL" />
+		<result property="useAt" 		    column="USE_AT" />
+		<result property="lastVisitDttm" 	column="LAST_VISIT_DTTM" />
+		<result property="lastVisitIp" 	    column="LAST_VISIT_IP" />
+		<result property="dupLoginAt" 	    column="DUP_LOGIN_AT" />
+		<result property="crtrId" 	        column="CRTR_ID" />
+		<result property="creatDttm" 	    column="CREAT_DTTM" />
+		<result property="updusrId" 	    column="UPDUSR_ID" />
+		<result property="updtDttm" 		column="UPDT_DTTM" />
+	</resultMap>
+
+	<sql id="listColumn">
+		  UNIQUE_ID
+		, MBER_ID
+		, PASSWORD
+		, MBER_NM
+		, TELNO
+	    , EMAIL
+		, USE_AT
+		, LAST_VISIT_DTTM
+		, LAST_VISIT_IP
+		, DUP_LOGIN_AT
+		, CRTR_ID
+		, CREAT_DTTM
+		, UPDUSR_ID
+		, UPDT_DTTM
+	</sql>
+
+	<sql id="searchConditions">
+		<if test="srchWord != null and srchWord != '' ">
+			<choose>
+				<when test='srchKey != null and srchKey == "mberId" '>AND MBER_ID LIKE '%'|| #{srchWord} ||'%'</when>
+				<when test='srchKey != null and srchKey == "mberNm" '>AND MBER_NM LIKE '%'|| #{srchWord} ||'%'</when>
+				<otherwise>
+					AND (MBER_ID LIKE '%'|| #{srchWord} ||'%' OR MBER_NM LIKE '%'|| #{srchWord} ||'%')
+				</otherwise>
+			</choose>
+		</if>
+		<if test="uniqueId != null and uniqueId != '' ">
+		   AND UNIQUE_ID = #{uniqueId}
+		 </if>
+		<if test="mberId != null and mberId != '' ">
+			AND MBER_ID = #{mberId}
+		</if>
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt != null and useAt != '' ">
+			AND USE_AT = #{useAt}
+		</if>
+	</sql>
+
+	<select id="selectMberCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.mber.selectMberCount */
+        SELECT COUNT(*)
+          FROM TN_MBER TM
+         WHERE 1=1
+		<include refid="searchConditions"/>
+	</select>
+
+	<select id="selectMberListVO" parameterType="java.util.HashMap" resultMap="mberMap">
+		/* Query ID : humanframe.mber.selectMberListVO */
+	    SELECT <include refid="listColumn"/>
+		  FROM (
+			SELECT
+				ROWNUM AS RNUM ,
+				<include refid="listColumn"/>
+			FROM (
+				SELECT
+		  	 	<include refid="listColumn" />
+				FROM TN_MBER
+				WHERE 1=1
+				<include refid="searchConditions" />
+				ORDER BY UNIQUE_ID DESC
+			) WHERE ROWNUM &lt;= #{endNum}
+		) WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectMber" parameterType="java.util.HashMap" resultMap="mberMap">
+		/* Query ID : humanframe.mber.selectMber */
+		SELECT <include refid="listColumn"/>
+		  FROM TN_MBER
+		 WHERE 1=1
+		 <if test="uniqueId != null and uniqueId != '' ">
+		   AND UNIQUE_ID = #{uniqueId}
+		 </if>
+		 <if test="mberId != null and mberId != '' ">
+		   AND MBER_ID = #{mberId}
+		 </if>
+		 <if test="useAt != null and useAt != '' ">
+		  	AND USE_AT = #{useAt}
+		 </if>
+	</select>
+
+	<insert id="insertMber" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mber.insertMber */
+	    <selectKey keyProperty="uniqueId" order="BEFORE" resultType="java.lang.String">
+	    SELECT 'MBRINFO_'||LPAD(SEQ_TN_MBER.NEXTVAL, 12, '0') FROM DUAL
+	    </selectKey>
+	    INSERT INTO TN_MBER (
+		       UNIQUE_ID
+		     , MBER_ID
+		     , PASSWORD
+		     , MBER_NM
+			 , TELNO
+	    	 , EMAIL
+		     , USE_AT
+		     , LAST_VISIT_DTTM
+		     , LAST_VISIT_IP
+			 , DUP_LOGIN_AT
+		     , CRTR_ID
+		     , CREAT_DTTM
+		     , UPDUSR_ID
+		     , UPDT_DTTM
+	     ) VALUES (
+	     	   #{uniqueId}
+	     	 , #{mberId}
+	     	 , #{password, jdbcType=VARCHAR}
+	     	 , #{mberNm, jdbcType=VARCHAR}
+	     	 , #{telno, jdbcType=VARCHAR}
+	     	 , #{email, jdbcType=VARCHAR}
+	     	 , 'Y'
+	     	 , SYSDATE
+	     	 , #{lastVisitIp, jdbcType=VARCHAR}
+	     	 , #{dupLoginAt, jdbcType=VARCHAR}
+	     	 , #{crtrId, jdbcType=VARCHAR}
+	     	 , SYSDATE
+	     	 , #{updusrId, jdbcType=VARCHAR}
+	     	 , SYSDATE
+	     )
+	</insert>
+
+	<update id="updateAllMber" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mber.updateAllMber */
+	    UPDATE TN_MBER
+	       SET  MBER_ID         = #{mberId, jdbcType=VARCHAR}
+	    	 , MBER_NM         = #{mberNm, jdbcType=VARCHAR}
+	    	 , TELNO           = #{telno, jdbcType=VARCHAR}
+	    	 , EMAIL           = #{email, jdbcType=VARCHAR}
+	    	 <if test="useAt != null and useAt != ''">
+	    	 , USE_AT          = #{useAt, jdbcType=VARCHAR}
+	    	 </if>
+	    	 , UPDUSR_ID       = #{updusrId}
+	    	 , UPDT_DTTM       = SYSDATE
+	     WHERE UNIQUE_ID = #{uniqueId}
+	     <if test="mberId != null and mberId != ''">
+	    	 AND MBER_ID = #{mberId}
+	     </if>
+	</update>
+
+	<update id="updateExistMber" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mber.updateExistMber */
+	    UPDATE TN_MBER
+	       SET
+			<trim suffix="" prefixOverrides=",">
+				<if test="mberId != null and mberId != ''">
+					MBER_ID = #{mberId, jdbcType=VARCHAR}
+				</if>
+				<if test="mberNm != null and mberNm != ''">
+					, MBER_NM = #{mberNm, jdbcType=VARCHAR}
+				</if>
+				<if test="telno != null and telno != ''">
+					, TELNO = #{telno, jdbcType=VARCHAR}
+				</if>
+				<if test="email != null and email != ''">
+					, EMAIL = #{email, jdbcType=VARCHAR}
+				</if>
+				<if test="useAt != null and useAt != ''">
+					, USE_AT = #{useAt, jdbcType=VARCHAR}
+				</if>
+				<if test="lastVisitDttm != null and lastVisitDttm != ''">
+					<choose>
+						<when test="lastVisitDttm = 'sysdate'">
+							, LAST_VISIT_DTTM = SYSDATE
+						</when>
+						<otherwise>
+							, LAST_VISIT_DTTM =  #{last_visit_dttm}
+						</otherwise>
+					</choose>
+	    	 	</if>
+	    	 	<if test="lastVisitIp != null and lastVisitIp != ''">
+		    	    , LAST_VISIT_IP   = #{lastVisitIp, jdbcType=VARCHAR}
+		    	 </if>
+		    	 <if test="dupLoginAt != null and dupLoginAt != ''">
+		    	    , DUP_LOGIN_AT    = #{dupLoginAt}
+		    	 </if>
+				<if test="updusrId != null and updusrId != ''">
+					, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+				</if>
+					, UPDT_DTTM = SYSDATE
+			</trim>
+	     WHERE UNIQUE_ID = #{uniqueId}
+	     <if test="mberId != null and mberId != ''">
+	       AND MBER_ID = #{mberId}
+	     </if>
+	</update>
+
+	<update id="updatePasswdMber" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mber.updatePasswdMber */
+	    UPDATE TN_MBER
+	       SET
+			<trim suffix="" prefixOverrides=",">
+				<if test="password != null and password != ''">
+					, PASSWORD = #{password, jdbcType=VARCHAR}
+				</if>
+				<if test="updusrId != null and updusrId != ''">
+					, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+				</if>
+					, UPDT_DTTM = SYSDATE
+			</trim>
+	     WHERE UNIQUE_ID = #{uniqueId}
+	     <if test="mberId != null and mberId != ''">
+	       AND MBER_ID = #{mberId}
+	     </if>
+	</update>
+
+	<delete id="deleteMber" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mber.deleteMber */
+	    DELETE TN_MBER
+	     WHERE UNIQUE_ID = #{uniqueId}
+	     <if test="mberId != null and mberId != ''">
+	       AND MBER_ID = #{mberId}
+	     </if>
+	</delete>
+
+	<insert id="insertDelMber" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mber.insertDelMber */
+	    INSERT INTO TN_MBER_DEL (
+		       UNIQUE_ID
+		     , MBER_ID
+		     , CRTR_ID
+		     , DEL_DTTM
+	     ) VALUES (
+	     	   #{uniqueId}
+	     	 , #{mberId}
+	     	 , #{crtrId}
+	     	 , SYSDATE
+	     )
+	</insert>
+
+
+
+</mapper>

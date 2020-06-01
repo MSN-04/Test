@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.code.lang">
+
+	<resultMap type="codeLangVO" id="codeLangMap">
+		<result property="codeId" 		column="CODE_ID" />
+		<result property="codeGroupId" 	column="CODE_GROUP_ID" />
+		<result property="langCodeId" 	column="LANG_CODE_ID" />
+		<result property="langCodeNm" 	column="LANG_CODE_NM" />
+		<result property="codeNm" 		column="CODE_NM" />
+	</resultMap>
+
+	<select id="selectCodeLangList" parameterType="java.util.HashMap" resultMap="codeLangMap">
+		/* Query ID : humanframe.code.lang.selectCodeLangList */
+		SELECT
+			  CODE_ID
+			, CODE_GROUP_ID
+			, LANG_CODE_ID
+			, (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = TCL.LANG_CODE_ID AND TC.UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+			, CODE_NM
+		FROM TC_CODE_LANG TCL
+		WHERE  CODE_ID = #{codeId}
+		    AND CODE_GROUP_ID = #{codeGroupId}
+	</select>
+
+	<insert id="insertCodeLang" parameterType="codeLangVO">
+		/* Query ID : humanframe.code.lang.insertCodeLang */
+		INSERT INTO TC_CODE_LANG (
+			  CODE_ID
+			, CODE_GROUP_ID
+			, LANG_CODE_ID
+			, CODE_NM
+		) VALUES (
+			  #{codeId}
+			, #{codeGroupId}
+			, #{langCodeId}
+			, #{codeNm}
+		)
+	</insert>
+
+	<update id="updateCodeLang" parameterType="codeLangVO">
+		/* Query ID : humanframe.code.lang.updateCodeLang */
+		UPDATE TC_CODE_LANG SET
+			  CODE_NM = #{codeNm}
+		WHERE  CODE_ID =  #{codeId}
+			AND LANG_CODE_ID = #{langCodeId}
+			AND CODE_GROUP_ID = #{codeGroupId}
+	</update>
+
+	<delete id="deleteCodeLang" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.code.lang.deleteCodeLang */
+		DELETE TC_CODE_LANG
+		WHERE CODE_ID = #{codeId}
+			AND CODE_GROUP_ID = #{codeGroupId}
+			<if test="langCodeId !=null and langCodeId != ''">
+			AND LANG_CODE_ID IN
+			<foreach collection="delLangCodeId" item="langCodeId" open="(" separator="," close=")">
+				#{langCodeId}
+			</foreach>
+			</if>
+	</delete>
+
+</mapper>

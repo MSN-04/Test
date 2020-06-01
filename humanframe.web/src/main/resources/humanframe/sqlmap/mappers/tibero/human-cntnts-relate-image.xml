@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.cntntsRelateImage">
+
+	<resultMap id="cntntsRelateImageMap" type="cntntsRelateImageVO">
+		<result column="RELATE_IMAGE_NO" property="relateImageNo" />
+		<result column="CNTNTS_NO" 		 property="cntntsNo" 	/>
+		<result column="REPRSNT_AT" 	 property="reprsntAt" 	/>
+		<result column="FILE_NO" 		 property="fileNo" 	/>
+		<result column="MEDIA_NO"		 property="mediaNo"	/>
+		<result column="SORT_NO"		 property="sortNo"	/>
+		<result column="CRTR_ID"		 property="crtrId"	/>
+		<result column="CRTR_NM"		 property="crtrNm"	/>
+		<result column="CREAT_DTTM"		 property="creatDttm"	/>
+		
+		<collection property="mediaVO" column="{mediaNo=media_no}" select="humanframe.media.selectMedia" />
+	</resultMap>
+
+	<sql id="listColumn">
+		  RELATE_IMAGE_NO
+		, CNTNTS_NO
+		, REPRSNT_AT
+		, FILE_NO
+		, MEDIA_NO
+		, SORT_NO
+		, CRTR_ID
+		, CRTR_NM
+		, CREAT_DTTM
+	</sql>
+	
+	<sql id="searchConditions">
+		<if test="relateImageNo != null and relateImageNo != ''">
+			<![CDATA[  AND RELATE_IMAGE_NO = #{relateImageNo} ]]>
+		</if>
+		<if test="cntntsNo != null and cntntsNo != ''">
+			<![CDATA[  AND CNTNTS_NO = #{cntntsNo} ]]>
+		</if>
+		<if test="reprsntAt != null and reprsntAt != ''">
+			<![CDATA[  AND REPRSNT_AT = #{reprsntAt} ]]>
+		</if>
+		<if test="fileNo != null and fileNo != ''">
+			<![CDATA[  AND FILE_NO = #{fileNo} ]]>
+		</if>
+		<if test="mediaNo != null and mediaNo != ''">
+			<![CDATA[  AND MEDIA_NO = #{mediaNo} ]]>
+		</if>
+		<if test="sortNo != null and sortNo != ''">
+			<![CDATA[  AND SORT_NO = #{sortNo} ]]>
+		</if>
+	</sql>
+	
+	<!-- Define tn_cntnts_relate_image Count Query -->
+	<select id="selectCntntsRelateImageCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.cnHist.selectCntntsRelateImageCount */	
+		SELECT	COUNT(RELATE_IMAGE_NO)
+		  FROM	TN_CNTNTS_RELATE_IMAGE
+		 WHERE	1=1
+		<include refid="searchConditions"/>
+	</select>
+	
+	<!-- Define tn_cntnts_relate_image List Query -->
+	<select id="selectCntntsRelateImageListVO" parameterType="hashmap" resultMap="cntntsRelateImageMap">
+		/* Query ID : humanframe.cnHist.selectCntntsRelateImageListVO */	
+		SELECT <include refid="listColumn"/>
+		  FROM (
+				SELECT ROWNUM AS RNUM ,
+					   <include refid="listColumn"/>
+				  FROM (
+						SELECT
+						<include refid="listColumn"/>
+						  FROM TN_CNTNTS_RELATE_IMAGE
+						 WHERE 1=1
+						<include refid="searchConditions" />
+					     ORDER BY SORT_NO ASC
+				  )  WHERE ROWNUM &lt;= #{endNum}
+			   ) WHERE RNUM &gt; #{startNum}
+	</select>
+	
+	<!-- Define tn_cntnts_relate_image List Query -->
+	<select id="selectCntntsRelateImageListAll" parameterType="hashmap" resultMap="cntntsRelateImageMap">
+		/* Query ID : humanframe.cnHist.selectCntntsRelateImageListAll */	
+		SELECT <include refid="listColumn"/>
+		  FROM TN_CNTNTS_RELATE_IMAGE
+		 WHERE 1=1
+			<include refid="searchConditions" />
+	     ORDER BY SORT_NO ASC
+	</select>
+
+	<!-- Define tn_cntnts_relate_image Detail Query -->
+	<select id="selectCntntsRelateImage" parameterType="int" resultMap="cntntsRelateImageMap">
+		/* Query ID : humanframe.cnHist.selectCntntsRelateImage */	
+		SELECT	<include refid="listColumn"/>
+		  FROM	TN_CNTNTS_RELATE_IMAGE
+	 	 WHERE  RELATE_IMAGE_NO = #{relateImageNo}
+	</select>
+
+	<!-- Define tn_cntnts_relate_image Insert Query -->
+	<insert id="insertCntntsRelateImage" parameterType="cntntsRelateImageVO">
+		/* Query ID : humanframe.cnHist.insertCntntsRelateImage */	
+		<selectKey keyProperty="relateImageNo" resultType="int" order="BEFORE">
+			SELECT NVL(MAX(RELATE_IMAGE_NO), 0) + 1
+			  FROM TN_CNTNTS_RELATE_IMAGE
+		</selectKey>
+		INSERT INTO TN_CNTNTS_RELATE_IMAGE (
+					  RELATE_IMAGE_NO
+					, CNTNTS_NO
+					, REPRSNT_AT
+					, FILE_NO
+					, MEDIA_NO
+					, SORT_NO
+					, CRTR_ID
+					, CRTR_NM
+					, CREAT_DTTM
+	  	   ) VALUES (
+				      #{relateImageNo}
+				    , #{cntntsNo}
+				    , #{reprsntAt, jdbcType=VARCHAR}
+				    , #{fileNo}
+				    , #{mediaNo}
+				    , #{sortNo}
+					, #{crtrId, jdbcType=VARCHAR}
+					, #{crtrNm, jdbcType=VARCHAR}
+					, SYSDATE
+		            )
+	</insert>
+
+	<!-- Define tn_cntnts_relate_image Delete Query -->
+	<delete id="deleteCntntsRelateImage" parameterType="hashmap">
+		/* Query ID : humanframe.cnHist.deleteCntntsRelateImage */	
+		DELETE TN_CNTNTS_RELATE_IMAGE
+		 WHERE CNTNTS_NO = #{cntntsNo}
+	</delete>
+</mapper>

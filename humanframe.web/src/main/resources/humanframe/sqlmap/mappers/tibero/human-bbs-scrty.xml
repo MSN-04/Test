@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.boardSecurity">
+
+	<resultMap type="bbsScrtyVO" id="boardSecurityMap">
+		<result property="bbsNo" 		column="BBS_NO" />
+		<result property="bbsScrtyTy" 	column="BBS_SCRTY_TY" />
+		<result property="scrtyValue" 	column="SCRTY_VALUE" />
+	</resultMap>
+
+	<sql id="listWhere">
+		<where>
+			<if test="bbsNo != null and bbsNo != '' ">
+			AND BBS_NO = #{bbsNo}
+			</if>
+			<if test="bbsScrtyTy != null and bbsScrtyTy != '' ">
+			AND BBS_SCRTY_TY = #{bbsScrtyTy}
+			</if>
+			<if test="bbsScrtyTyList != null and !bbsScrtyTyList.isEmpty ">
+				AND BBS_SCRTY_TY IN <foreach collection="bbsScrtyTyList" item="sType" open="(" separator="," close=")">#{sType}</foreach>
+			</if>
+		</where>
+	</sql>
+
+	<select id="selectBoardSecurityCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.boardSecurity.selectBoardSecurityCount */		
+		SELECT COUNT(1)
+		FROM TN_BBS_SCRTY
+		<include refid="listWhere"/>
+	</select>
+
+	<select id="selectBoardSecurityList" parameterType="hashmap"  resultMap="boardSecurityMap">
+		/* Query ID : humanframe.boardSecurity.selectBoardSecurityList */		
+		SELECT 
+			 BBS_NO
+			,BBS_SCRTY_TY
+			,SCRTY_VALUE
+		  FROM TN_BBS_SCRTY
+			<include refid="listWhere"/>
+	    ORDER BY SCRTY_VALUE ASC
+	</select>
+
+	<insert id="insertBoardSecurity" parameterType="bbsScrtyVO">
+		/* Query ID : humanframe.boardSecurity.insertBoardSecurity */		
+		INSERT INTO 
+			TN_BBS_SCRTY (
+	            BBS_NO
+	           ,BBS_SCRTY_TY
+	           ,SCRTY_VALUE
+	       ) VALUES (
+	           #{bbsNo}
+	          ,#{bbsScrtyTy, jdbcType=VARCHAR}
+	          ,#{scrtyValue, jdbcType=VARCHAR}
+	       )
+	</insert>
+
+	<delete id="deleteBoardSecurity" parameterType="bbsScrtyVO">
+		/* Query ID : humanframe.boardSecurity.deleteBoardSecurity */		
+		DELETE TN_BBS_SCRTY
+		WHERE BBS_NO = #{bbsNo}
+	</delete>
+</mapper>

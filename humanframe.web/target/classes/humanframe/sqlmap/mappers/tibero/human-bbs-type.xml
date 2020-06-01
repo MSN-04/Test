@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.bbs.type">
+
+	<sql id="listWhere">
+		<where>
+			<choose>
+				<when test="searchMode == 'CONFM'">
+					<if test="confmAt == null or confmAt == '' ">
+						AND CONFM_AT = 'Y'
+					</if>
+					<if test="confmAt != null and confmAt != '' ">
+						AND CONFM_AT = #{confmAt}
+					</if>
+				</when>
+				<when test="searchMode == 'USR'">
+						AND (RESVE_AT = 'N' OR (RESVE_AT = 'Y' AND SYSDATE BETWEEN RESVE_BEGIN_DTTM AND RESVE_END_DTTM))
+				</when>
+			</choose>
+
+			<if test='groupBbsUseAt == null or groupBbsUseAt.equals("N")'>
+				AND BBS_NO = #{bbsNo}
+			</if>
+
+			<choose>
+				<when test="deleteAt == null or deleteAt == '' ">
+					AND DELETE_AT = 'N'
+				</when>
+				<otherwise>
+					AND DELETE_AT = #{deleteAt}
+				</otherwise>
+			</choose>
+
+			<if test="srchCtgry != null and srchCtgry != '' ">
+				AND CTGRY_NO = #{srchCtgry}
+			</if>
+			<if test="srchText != null and srchText != '' ">
+				<choose>
+					<when test="srchKey  == 'sj'">AND SJ LIKE '%' || #{srchText} || '%'</when>
+					<when test="srchKey  == 'cn'">AND CN LIKE '%' || #{srchText} || '%'</when>
+					<when test="srchKey  == 'wrter'">AND WRTER LIKE '%' || #{srchText} || '%'</when>
+					<when test="srchKey  == 'ctrtNm'">AND WRTER LIKE '%' || #{srchText} || '%'</when>
+					<when test="srchKey  == 'sjcn'">AND ((SJ LIKE '%' || #{srchText} || '%') OR (CN LIKE '%' || #{srchText} || '%'))</when>
+					<when test='srchKey == null or srchKey == "" '>AND((SJ like '%'|| #{srchText} ||'%') OR (CN LIKE '%'|| #{srchText} ||'%') OR (WRTER LIKE '%'|| #{srchText} ||'%'))</when>
+				</choose>
+			</if>
+			<if test="srchBeginDt != null and srchBeginDt != '' and srchEndDt != null and srchEndDt != ''">
+				AND REPLACE(REPLACE(WRITNG_DE,'-',''),'.','') BETWEEN REPLACE(#{srchBeginDt},'-','') AND REPLACE(#{srchEndDt},'-','')
+
+			</if>
+			<if test="noticeAt != null and noticeAt != '' ">
+				AND NOTICE_AT = #{noticeAt}
+			</if>
+			<if test="secretAt != null and secretAt != '' ">
+				AND SECRET_AT = #{secretAt}
+			</if>
+			<if test='noticeTermYn != null and noticeTermYn == "Y"'>
+				AND SYSDATE BETWEEN BEGIN_DTTM AND END_DTTM
+			</if>
+			<include refid="humanframe.boardSetting.useUnityBbs"/>
+		</where>
+	</sql>
+
+	<sql id="trgtTable">
+		<choose>
+			<when test='groupBbsUseAt != null and groupBbsUseAt.equals("Y")'>
+			   (
+				SELECT 
+					BBS.* 
+				FROM ${trgtTable} BBS 
+				INNER JOIN TN_BBS_GROUP_MAPNG MAPNG ON BBS.BBS_NO = MAPNG.GROUP_BBS_NO
+				AND MAPNG.SITE_NTCE_NO = 0
+				AND MAPNG.CTGRY_NO = 0
+				AND MAPNG.BBS_NO = #{bbsNo}
+				UNION ALL
+				SELECT 
+					BBS.* 
+				FROM ${trgtTable} BBS 
+				INNER JOIN TN_BBS_GROUP_MAPNG MAPNG ON BBS.BBS_NO = MAPNG.GROUP_BBS_NO
+				AND BBS.SITE_NTCE_NO = MAPNG.SITE_NTCE_NO
+				AND MAPNG.SITE_NTCE_NO != 0
+				AND MAPNG.CTGRY_NO = 0
+				AND MAPNG.BBS_NO = #{bbsNo}
+				UNION ALL
+				SELECT 
+					BBS.* 
+				FROM ${trgtTable} BBS 
+				INNER JOIN TN_BBS_GROUP_MAPNG MAPNG ON BBS.BBS_NO = MAPNG.GROUP_BBS_NO
+				AND BBS.CTGRY_NO = MAPNG.CTGRY_NO
+				AND MAPNG.CTGRY_NO != 0
+				AND MAPNG.SITE_NTCE_NO = 0
+				AND MAPNG.BBS_NO = #{bbsNo}
+				UNION ALL
+				SELECT 
+					BBS.* 
+				FROM ${trgtTable} BBS 
+				INNER JOIN TN_BBS_GROUP_MAPNG MAPNG	ON BBS.BBS_NO = MAPNG.GROUP_BBS_NO
+				AND BBS.SITE_NTCE_NO = MAPNG.SITE_NTCE_NO
+				AND BBS.CTGRY_NO = MAPNG.CTGRY_NO
+				AND MAPNG.CTGRY_NO != 0
+				AND MAPNG.SITE_NTCE_NO != 0
+				AND MAPNG.BBS_NO = #{bbsNo}
+			   )
+			</when>
+			<otherwise>${trgtTable}</otherwise>
+		</choose>
+	</sql>
+
+	<update id="updateDelNtt" parameterType="hashmap">
+		/* Query ID : humanframe.bbs.type.updateDelNtt */		
+		UPDATE 
+			${trgtTable} 
+		SET	DELETE_AT = #{deleteAt}
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO = #{nttNo}
+	</update>
+
+	<update id="updateRdcnt" parameterType="hashmap">
+		/* Query ID : humanframe.bbs.type.updateRdcnt */		
+		UPDATE 
+			${trgtTable} 
+		SET RDCNT = RDCNT + 1
+		WHERE NTT_NO = #{nttNo}
+	</update>
+
+	<update id="updateRecomendOppsCo" parameterType="hashmap">
+		/* Query ID : humanframe.bbs.type.updateRecomendOppsCo */		
+		UPDATE 
+			${trgtTable} 
+		SET
+			<choose>
+				<when test="updateMode == 'recomend'">RECOMEND_CO = RECOMEND_CO + 1</when>
+				<when test="updateMode == 'opps'">OPPS_CO = OPPS_CO + 1</when>
+			</choose>
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO = #{nttNo}
+	</update>
+
+	<select id="selectRecomendOppsCo" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.bbs.type.selectRecomendOppsCo */	
+		SELECT
+			 RECOMEND_CO
+			,OPPS_CO
+		FROM ${trgtTable}
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO = #{nttNo}
+	</select>
+
+	<select id="passwordChk" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.bbs.type.passwordChkS */	
+		SELECT 
+			COUNT(*)
+		FROM ${trgtTable}
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO = #{nttNo}
+		AND PASSWORD= #{password}
+	</select>
+
+	<update id="updateNttListUseAt" parameterType="hashmap">
+		/* Query ID : humanframe.bbs.type.updateNttListUseAt */	
+		UPDATE 
+			${trgtTable} 
+		SET USE_AT = #{useAt}
+		   ,UPDT_DTTM = SYSDATE
+		   ,UPDUSR_NM = #{updusrNm}
+		WHERE NTT_NO IN	<foreach collection="arrNttNo" item="nttNo" open="(" separator="," close=")">#{nttNo}</foreach>
+		AND BBS_NO = #{bbsNo}
+	</update>
+
+	<update id="updateNttListConfmUseAt" parameterType="hashmap">
+		/* Query ID : humanframe.bbs.type.updateNttListConfmUseAt */	
+		UPDATE ${trgtTable} SET UPDT_DTTM = SYSDATE
+			<choose>
+				<when test="updateMode == 'confm'">,confm_at = #{updateAt}</when>
+				<when test="updateMode == 'deleteUpdate'">,delete_at = #{updateAt}</when>
+			</choose>
+			,UPDUSR_NM = #{updusrNm}
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO IN <foreach collection="arrNttNo" item="nttNo" open="(" separator="," close=")">#{nttNo}</foreach>
+	</update>
+
+	<delete id="deleteNtt" parameterType="hashmap">
+		/* Query ID : humanframe.bbs.type.deleteNtt */	
+		DELETE 
+			${trgtTable}
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO IN <foreach collection="arrNttNo" item="nttNo" open="(" separator="," close=")">#{nttNo}</foreach>
+	</delete>
+	
+	<select id="selectMainList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.bbs.type.selectMainList */	
+		<include refid="LimitMapper.header"/>
+			SELECT
+				 NTT_NO
+				,SJ
+				,SUMRY
+				,WRITNG_DE
+			FROM ${trgtTable}
+			WHERE (RESVE_AT = 'N' OR (RESVE_AT = 'Y' AND SYSDATE BETWEEN RESVE_BEGIN_DTTM AND RESVE_END_DTTM))
+			AND BBS_NO = #{trgtBbsNo}
+			AND DELETE_AT = 'N'
+	   		AND SECRET_AT = 'N' --비밀글
+			<if test="siteNtceNo != null and siteNtceNo != '' ">
+	   		   AND (SITE_NTCE_NO = #{siteNtceNo} OR SITE_NTCE_NO = 0)
+			</if>
+			ORDER BY NOTICE_AT DESC, TOP_NTT_AT DESC, WRITNG_DE DESC, NTT_NO DESC
+		<include refid="LimitMapper.footer"/>		
+	</select>
+	
+	<select id="selectBbsReportList" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.bbs.type.selectBbsReportList */	
+		SELECT
+             RE.REPORT_NO
+            ,RE.BBS_NO
+            ,RE.NTT_NO
+            ,RE.CN
+            ,RE.REPORTR_ID
+            ,RE.REPORT_TY
+            ,RE.REPORTR_NM
+            ,TO_CHAR(RE.REPORT_DTTM, 'YYYY.MM.DD') AS REPORT_DTTM
+            ,CODE.CODE_NM
+        FROM TN_BBS_REPORT RE
+        INNER JOIN TC_CODE CODE ON REPORT_TY = CODE_ID
+        WHERE RE.BBS_NO = #{bbsNo}
+        AND RE.NTT_NO = #{nttNo}
+	</select>
+	
+	<select id="selectNearBbsList"  parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.bbs.type.selectNearBbsList */	
+		SELECT
+			 BBS_NO,
+			,NTT_NO,
+			,SJ,
+			,'' AS SITE_URL
+			,'' AS SEARCH_URL
+		FROM ${trgtTable}
+		WHERE BBS_NO = #{relatedBbsNo}
+		AND NTT_NO = #{relatedNttNo}
+	</select>
+	
+	<insert id="insertNearNttGroup" parameterType="hashmap" flushCache="true">
+		/* Query ID : humanframe.bbs.type.insertNearNttGroup */	
+		INSERT INTO 
+		 TN_BBS_RELATED (
+			BBS_NO,
+			NTT_NO,
+			RELATED_BBS_NO,
+			RELATED_NTT_NO
+		) VALUES (
+			#{bbsNo},
+			#{nttNo},
+			#{relatedBbsNo},
+			#{relatedNttNo}
+		)
+	</insert>
+
+	<delete id="deleteNearNttGroup" parameterType="hashmap" flushCache="true">
+		/* Query ID : humanframe.bbs.type.deleteNearNttGroup */	
+		DELETE 
+			TN_BBS_RELATED
+		WHERE BBS_NO = #{bbsNo}
+		<if test='nttNo != null and nttNo != ""'>
+			AND NTT_NO = #{nttNo}
+		</if>
+		<if test='arrNttNo != null and arrNttNo != ""'>
+			AND NTT_NO IN <foreach collection="arrNttNo" item="nttNo" open="(" separator="," close=")">#{nttNo}</foreach>
+		</if>
+	</delete>
+	
+	<select id="selectBbsTrgtTable" parameterType="hashmap" resultType="String" useCache="false">
+		/* Query ID : humanframe.bbs.type.selectBbsTrgtTable */	
+		SELECT
+			TRGT_TABLE
+		FROM TN_BBS_ST
+		WHERE BBS_NO = #{relatedBbsNo}
+	</select>
+	
+	<select id="selectBoardNttList" parameterType="hashmap" resultType="egovMap"  useCache="false"  flushCache="true">
+		/* Query ID : humanframe.bbs.type.selectBbsTrgtTable */			
+		SELECT 
+			*
+		FROM (
+			SELECT
+			     ROWNUM AS RNUM
+			    ,A.*
+			FROM (
+				 SELECT
+			          ROWNUM AS RN
+			         ,BBS_NO
+			         ,NTT_NO
+			         ,SJ
+			         ,WRTER
+			         ,WRITNG_DE
+				  FROM ${trgtTable}
+				  WHERE BBS_NO = #{bbsNo}
+				  AND DELETE_AT = 'N'
+				  AND NOTICE_AT = 'N'
+				  AND CONFM_AT = 'Y'
+				<if test='search_text != null and search_text != ""'>
+					AND ${search_select} LIKE '%' || #{search_text} || '%'
+				</if>
+				  ORDER BY CREAT_DTTM DESC
+			) A
+		) NTT
+		WHERE NTT.RNUM &#60; 100
+	</select>
+	
+	<select id="selectBbsRelatedList" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.bbs.type.selectBbsRelatedList */			
+		SELECT 
+			*
+		FROM TN_BBS_RELATED
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO = #{nttNo}
+	</select>
+	
+	<select id="selectSiteMenuInfo" parameterType="hashmap" resultType="egovMap" useCache="false">
+		/* Query ID : humanframe.bbs.type.selectSiteMenuInfo */		
+		SELECT
+	         A.SITE_NO
+	       	,A.SITE_NM
+	        ,A.SITE_URL
+	        ,B.MENU_NO
+	        ,B.MENU_NM
+	        ,B.MENU_URI
+	        ,B.BBS_NO
+        FROM TN_SITE A, TN_SITE_MENU B
+        WHERE A.SITE_NO = B.SITE_NO
+        AND A.USE_AT = 'Y'
+        AND B.USE_AT = 'Y'
+		AND B.BBS_NO = #{bbsNo}
+	</select>
+</mapper>

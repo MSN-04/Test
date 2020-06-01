@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+
+	<!-- admin Template -->
+	<definition name=".admin_layout" template="/WEB-INF/jsp/admin/layout/admin_layout.jsp">
+		<put-attribute name="header" 	value="/WEB-INF/jsp/admin/layout/header.jsp" />
+		<put-attribute name="sidebar-left" 	value="/WEB-INF/jsp/admin/layout/sidebar_left.jsp" />
+		<put-attribute name="content" 	value="" />
+		<put-attribute name="sidebar-right" 	value="/WEB-INF/jsp/admin/layout/sidebar_right.jsp" />
+	</definition>
+
+	<definition name=".admin_popup_layout" template="/WEB-INF/jsp/admin/layout/popup/admin_popup_layout.jsp" />
+	<definition name="/admin/*/popup/*" extends=".admin_popup_layout">
+		<put-attribute name="content" 	value="/WEB-INF/jsp/admin/{1}/popup/{2}.jsp" />
+	</definition>
+	<definition name="/admin/*/*/popup/*" extends=".admin_popup_layout">
+		<put-attribute name="content" 	value="/WEB-INF/jsp/admin/{1}/{2}/popup/{3}.jsp" />
+	</definition>
+
+	<!-- 관리자 로그인 페이지 -->
+	<definition name="/admin/login/login" template="/WEB-INF/jsp/admin/login/login.jsp" />
+	<definition name="/admin/popup/popup" template="/WEB-INF/jsp/admin/popup/popup.jsp" />
+	<definition name="/admin/login/mngrReqForm" template="/WEB-INF/jsp/admin/login/mngrReqForm.jsp" />
+
+	<definition name="/admin/fnct/*/BBSList" template="/WEB-INF/jsp/admin/fnct/{1}/BBSList.jsp" />
+
+	<definition name="/admin/*/*/excel" template="/WEB-INF/jsp/admin/{1}/{2}/excel.jsp" />
+	<definition name="/admin/*/*/*/excel" template="/WEB-INF/jsp/admin/{1}/{2}/{3}/excel.jsp" />
+	<definition name="/admin/*/*/*Excel" template="/WEB-INF/jsp/admin/{1}/{2}/{3}Excel.jsp" />
+	<definition name="/admin/*/*/*/*Excel" template="/WEB-INF/jsp/admin/{1}/{2}/{3}/{4}Excel.jsp" />
+
+	<definition name="/admin/*/*" extends=".admin_layout">
+		<put-attribute name="content" 	value="/WEB-INF/jsp/admin/{1}/{2}.jsp" />
+	</definition>
+	<definition name="/admin/*/*/*" extends=".admin_layout">
+		<put-attribute name="content" 	value="/WEB-INF/jsp/admin/{1}/{2}/{3}.jsp" />
+	</definition>
+	<definition name="/admin/*/*/*/*" extends=".admin_layout">
+		<put-attribute name="content" 	value="/WEB-INF/jsp/admin/{1}/{2}/{3}/{4}.jsp" />
+	</definition>
+
+
+	<!-- theme layout -->
+	<definition name="/front/*/common/aside/*" template="/WEB-INF/jsp/theme/{1}/common/aside/{2}.jsp" />
+	<definition name="/front/*/common/index/*" template="/WEB-INF/jsp/theme/{1}/common/index/{2}.jsp"  />
+	<definition name="/front/*/common/submain/*" template="/WEB-INF/jsp/theme/{1}/common/submain/{2}.jsp" />
+
+	<definition name="/front/*/common/cntnts/*" template="/WEB-INF/jsp/theme/{1}/common/cntnts/{2}.jsp"  />
+	<definition name="/front/*/common/banner/*" template="/WEB-INF/jsp/theme/{1}/common/banner/{2}.jsp"  />
+	<definition name="/front/*/common/sitemain/*" template="/WEB-INF/jsp/theme/{1}/common/sitemain/{2}.jsp"  />
+
+	<definition name="/front/*/common/popup/*/*" template="/WEB-INF/jsp/theme/{1}/layout/popup/base_layout.jsp">
+		<put-attribute name="content" 		value="/WEB-INF/jsp/theme/{1}/common/popup/{2}/{3}.jsp" />
+	</definition>
+
+	<definition name="/front/*/*/*/popup/*" template="/WEB-INF/jsp/theme/{1}/layout/popup/base_layout.jsp">
+		<put-attribute name="content" 		value="/WEB-INF/jsp/theme/{1}/{2}/{3}/popup/{4}.jsp" />
+	</definition>
+
+	<definition name="/front/*/*/excel" template="/WEB-INF/jsp/theme/{1}/{2}/excel.jsp" />
+	<definition name="/front/*/*/*/excel" template="/WEB-INF/jsp/theme/{1}/{2}/{3}/excel.jsp" />
+
+  	<definition name="/front/*/index/index" 	template="/WEB-INF/jsp/theme/{1}/layout/base_layout.jsp">
+		<put-attribute name="header" 		value="/WEB-INF/jsp/theme/{1}/layout/header.jsp" />
+		<put-attribute name="breadcrumb" 		value="" />
+		<put-attribute name="aside" 			value="" />
+		<put-attribute name="content" 		value="/WEB-INF/jsp/theme/{1}/index/index.jsp" />
+		<put-attribute name="footer" 		value="/WEB-INF/jsp/theme/{1}/layout/footer.jsp" />
+	</definition>
+
+	<!-- 공통게시판 스킨 -->
+	<definition name="/front/*/commBbs/*/*" template="/WEB-INF/jsp/theme/{1}/layout/base_layout.jsp">
+		<put-attribute name="header" 		value="/WEB-INF/jsp/theme/{1}/layout/header.jsp" />
+		<put-attribute name="breadcrumb" 		value="/WEB-INF/jsp/theme/{1}/layout/breadcrumb.jsp" />
+		<put-attribute name="aside" 			value="/WEB-INF/jsp/theme/{1}/layout/aside.jsp" />
+		<put-attribute name="content" 		value="/WEB-INF/jsp/theme/busan/{2}/{3}.jsp" />
+		<put-attribute name="footer" 		value="/WEB-INF/jsp/theme/{1}/layout/footer.jsp" />
+	</definition>
+
+	<definition name="/front/*/*" template="/WEB-INF/jsp/theme/{1}/layout/base_layout.jsp">
+		<put-attribute name="header" 		value="/WEB-INF/jsp/theme/{1}/layout/header.jsp" />
+		<put-attribute name="breadcrumb" 		value="/WEB-INF/jsp/theme/{1}/layout/breadcrumb.jsp" />
+		<put-attribute name="aside" 			value="/WEB-INF/jsp/theme/{1}/layout/aside.jsp" />
+		<put-attribute name="content" 		value="/WEB-INF/jsp/theme/{1}/{2}.jsp" />
+		<put-attribute name="footer" 		value="/WEB-INF/jsp/theme/{1}/layout/footer.jsp" />
+	</definition>
+	<definition name="/front/*/*/*" template="/WEB-INF/jsp/theme/{1}/layout/base_layout.jsp">
+		<put-attribute name="header" 		value="/WEB-INF/jsp/theme/{1}/layout/header.jsp" />
+		<put-attribute name="breadcrumb" 		value="/WEB-INF/jsp/theme/{1}/layout/breadcrumb.jsp" />
+		<put-attribute name="aside" 			value="/WEB-INF/jsp/theme/{1}/layout/aside.jsp" />
+		<put-attribute name="content" 		value="/WEB-INF/jsp/theme/{1}/{2}/{3}.jsp" />
+		<put-attribute name="footer" 		value="/WEB-INF/jsp/theme/{1}/layout/footer.jsp" />
+	</definition>
+	<definition name="/front/*/*/*/*" template="/WEB-INF/jsp/theme/{1}/layout/base_layout.jsp">
+		<put-attribute name="header" 		value="/WEB-INF/jsp/theme/{1}/layout/header.jsp" />
+		<put-attribute name="breadcrumb" 		value="/WEB-INF/jsp/theme/{1}/layout/breadcrumb.jsp" />
+		<put-attribute name="aside" 			value="/WEB-INF/jsp/theme/{1}/layout/aside.jsp" />
+		<put-attribute name="content" 		value="/WEB-INF/jsp/theme/{1}/{2}/{3}/{4}.jsp" />
+		<put-attribute name="footer" 		value="/WEB-INF/jsp/theme/{1}/layout/footer.jsp" />
+	</definition>
+
+	<definition name="/common/msg" 	template="/WEB-INF/jsp/common/msg.jsp"/>
+	<definition name="/common/dummy" 	template="/WEB-INF/jsp/common/dummy.jsp"/>
+	<definition name="/common/commonError" 	template="/WEB-INF/jsp/common/commonError.jsp"/>
+
+</tiles-definitions>

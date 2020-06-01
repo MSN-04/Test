@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.fnct.qestnarResult">
+	
+	<sql id="searchQestnarResultList">
+		WHERE 1=1
+		AND tqr.qestnar_no = #{qestnarNo}
+		AND tqr.qestn_no = #{qestnNo}
+		AND tqr.qesitm_no = #{qesitmNo}
+	<if test="srchText !=null and srchText !='' "> AND tqq.qesitm_text = #{srchText} </if>
+	</sql>
+
+	<sql id="listColumn">
+		RESULT_NO
+		,QESTNAR_NO
+		,QESTN_NO
+		,QESITM_NO
+		,ETC_ANSWER
+		,DPLCT_CNFIRM_CODE
+		,CREAT_DTTM
+		,CRTR_UNIQUE_ID
+		,CRTR_NM
+		,IP
+		,QESITM_TEXT
+	</sql>
+	
+	<!-- Define Search Condition -->
+	<sql id="searchConditions">
+		<if test="srchText != null and srchText != '' ">
+			<choose>
+				<when test="srchType == 'cl' ">
+				AND CRTR_UNIQUE_ID LIKE '%' || #{srchText} || '%'
+				</when>
+				<when test="srchType == 'nm' ">
+				AND NM LIKE '%' || #{srchText} || '%'
+				</when>
+				<when test="srchType == 'email' ">
+				AND EMAIL LIKE '%' || #{srchText} || '%'
+				</when>
+				<when test="srchType == 'telno' ">
+				AND TELNO LIKE '%' || #{srchText} || '%'
+				</when>
+			</choose>
+		</if>
+	</sql>
+
+	<select id="selectApplyCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.fnct.qestnarResult.selectApplyCount */
+		SELECT
+			COUNT(1)
+		FROM TF_QESTNAR_RESULT
+		WHERE QESTNAR_NO = #{qestnarNo}
+		AND DPLCT_CNFIRM_CODE = #{dplctCnfirmCode}
+	</select>
+
+	<insert id="insertQestnarResult" parameterType="hashmap">
+		/* Query ID : humanframe.fnct.qestnarResult.insertQestnarResult */
+		<selectKey keyProperty="resultNo" resultType="int" order="BEFORE">
+		SELECT
+			NVL(MAX(RESULT_NO),0) + 1
+		FROM TF_QESTNAR_RESULT
+		</selectKey>
+		INSERT INTO TF_QESTNAR_RESULT (
+			 RESULT_NO
+			,QESTNAR_NO
+			,QESTN_NO
+			,QESITM_NO
+			,ETC_ANSWER
+			,DPLCT_CNFIRM_CODE
+			,CREAT_DTTM
+			,CRTR_UNIQUE_ID
+			,CRTR_NM
+			,IP
+		) VALUES (
+			 #{resultNo}
+			,#{qestnarNo, jdbcType=NUMERIC}
+			,#{qestnNo, jdbcType=NUMERIC}
+			,#{qesitmNo, jdbcType=NUMERIC}
+			,#{etcAnswer, jdbcType=VARCHAR}
+			,#{dplctCnfirmCode, jdbcType=VARCHAR}
+			,SYSDATE
+			,#{crtrUniqueId}
+			,#{crtrNm, jdbcType=VARCHAR}
+			,#{ip, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<insert id="insertQestnarResultList" parameterType="hashmap">
+	/* Query ID : humanframe.fnct.qestnarResult.insertQestnarResultList */
+	<selectKey keyProperty="resultNo" resultType="int" order="BEFORE">
+		SELECT
+			NVL(MAX(RESULT_NO),0) + 1
+		FROM TF_QESTNAR_RESULT
+	</selectKey>
+		INSERT
+		INTO TF_QESTNAR_RESULT (
+			 RESULT_NO
+			,QESTNAR_NO
+			,QESTN_NO
+			,QESITM_NO
+			,ETC_ANSWER
+			,NM
+			,EMAIL
+			,TELNO
+			,DPLCT_CNFIRM_CODE
+			,CREAT_DTTM
+			,CRTR_UNIQUE_ID
+			,CRTR_NM
+			,IP
+			,COUNTRY
+			,NATIONALITY
+			,ADDRESS
+		) VALUES
+	<foreach collection="listQestnarResult" item="item" index="index" separator=",">
+		(
+			#{resultNo}+#{index}
+			,#{item.qestnarNo, jdbcType=NUMERIC}
+			,#{item.qestnNo, jdbcType=NUMERIC}
+			,#{item.qesitmNo, jdbcType=NUMERIC}
+			,#{item.etcAnswer, jdbcType=VARCHAR}
+			,#{item.nm, jdbcType=VARCHAR}
+			,#{item.email, jdbcType=VARCHAR}
+			,#{item.telno, jdbcType=VARCHAR}
+			,#{item.dplctCnfirmCode}
+			,SYSDATE
+			,#{item.crtrUniqueId}
+			,#{item.crtrNm, jdbcType=VARCHAR}
+			,#{item.ip, jdbcType=VARCHAR}
+			,#{item.country, jdbcType=VARCHAR}
+			,#{item.nationality, jdbcType=VARCHAR}
+			,#{item.address, jdbcType=VARCHAR}
+		)
+	</foreach>
+	</insert>
+
+	<delete id="deleteQestnarResult" parameterType="hashmap">
+		/* Query ID : humanframe.fnct.qestnarResult.deleteQestnarResult */
+		DELETE TF_QESTNAR_RESULT
+		WHERE QESTNAR_NO = #{qestnarNo}
+		<if test="resultNo !='' and resultNo !=null"> AND RESULT_NO = #{resultNo} </if>
+	</delete>
+
+
+	<select id="selectCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.fnct.qestnarResult.selectCount */
+		SELECT
+			COUNT(1)
+		FROM TF_QESTNAR_QESITM TQQ 
+		INNER JOIN TF_QESTNAR_RESULT TQR ON TQQ.QESTNAR_NO=TQR.QESTNAR_NO 
+		AND TQQ.QESTN_NO=TQR.QESTN_NO 
+		AND TQQ.QESITM_NO=TQR.QESITM_NO
+		<include refid="searchQestnarResultList"/>
+	</select>
+
+	<select id="selectListVO" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.fnct.qestnarResult.selectListVO */
+		SELECT
+			<include refid="listColumn"/>
+		FROM (
+			SELECT
+				<include refid="listColumn"/>
+				,ROWNUM AS RNUM
+			FROM (
+					SELECT
+						TQR.RESULT_NO
+						,TQR.QESTNAR_NO
+						,TQR.QESTN_NO
+						,TQR.QESITM_NO
+						,TQR.ETC_ANSWER
+						,TQR.DPLCT_CNFIRM_CODE
+						,TQR.CREAT_DTTM
+						,TQR.CRTR_UNIQUE_ID
+						,TQR.CRTR_NM
+						,TQR.IP
+						,TQQ.QESITM_TEXT
+					FROM TF_QESTNAR_QESITM TQQ 
+					INNER JOIN TF_QESTNAR_RESULT TQR ON TQQ.QESTNAR_NO=TQR.QESTNAR_NO AND TQQ.QESTN_NO=TQR.QESTN_NO AND TQQ.QESITM_NO=TQR.QESITM_NO
+					<include refid="searchQestnarResultList"/>
+					ORDER BY TQR.RESULT_NO DESC		
+			) WHERE ROWNUM &#60;= #{endNum}
+		) WHERE RNUM > #{startNum}
+		
+	</select>
+
+	<select id="selectPersonalResultList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.fnct.qestnarResult.selectPersonalResultList */
+		SELECT
+				CRTR_UNIQUE_ID,
+				NM,
+				EMAIL,
+				TELNO,
+				COUNTRY,
+				ADDRESS,
+				NATIONALITY,
+				CREAT_DTTM,
+				DECODE(COUNTRY, NULL, '', '', '', (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID LIKE 'medi_5' || '%' || COUNTRY)) AS COUNTRY_KO,
+				DECODE(NATIONALITY, NULL, '', '', '', (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID LIKE 'medi_5' || '%' || NATIONALITY)) AS NATIONALITY_KO
+		  FROM (
+				SELECT  ROWNUM AS RNUM ,
+						CRTR_UNIQUE_ID,
+						NM,
+						EMAIL,
+						TELNO,
+						COUNTRY,
+						ADDRESS,
+						NATIONALITY,
+						CREAT_DTTM
+				  FROM (
+						SELECT
+								DISTINCT(CRTR_UNIQUE_ID),
+								NM,
+								EMAIL,
+								TELNO,
+								COUNTRY,
+								ADDRESS,
+								NATIONALITY,
+								CREAT_DTTM
+						  FROM TF_QESTNAR_RESULT
+						 WHERE QESTNAR_NO = #{qestnarNo}
+						 <include refid="searchConditions" />
+					  ORDER BY CREAT_DTTM DESC
+				  )
+				  WHERE ROWNUM &lt;= #{endNum}
+			   ) TF_QESTNAR_RESULT
+	     WHERE RNUM &gt; #{startNum}
+	</select>
+
+
+	<select id="selectPersonalResultAllList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.fnct.qestnarResult.selectPersonalResultAllList */
+		SELECT
+				CRTR_UNIQUE_ID,
+				NM,
+				EMAIL,
+				TELNO,
+				COUNTRY,
+				ADDRESS,
+				NATIONALITY,
+				CREAT_DTTM,
+				DECODE(COUNTRY, NULL, '', '', '', (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID LIKE 'medi_5' || '%' || COUNTRY)) AS COUNTRY_KO,
+				DECODE(NATIONALITY, NULL, '', '', '', (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID LIKE 'medi_5' || '%' || NATIONALITY)) AS NATIONALITY_KO
+		  FROM (
+				SELECT  ROWNUM AS RNUM ,
+						CRTR_UNIQUE_ID,
+						NM,
+						EMAIL,
+						TELNO,
+						COUNTRY,
+						ADDRESS,
+						NATIONALITY,
+						CREAT_DTTM
+				  FROM (
+						SELECT
+								DISTINCT(CRTR_UNIQUE_ID),
+								NM,
+								EMAIL,
+								TELNO,
+								COUNTRY,
+								ADDRESS,
+								NATIONALITY,
+								CREAT_DTTM
+						  FROM TF_QESTNAR_RESULT
+						 WHERE QESTNAR_NO = #{qestnarNo}
+						 <include refid="searchConditions" />
+					  ORDER BY creat_dttm DESC
+				  )
+			   ) TF_QESTNAR_RESULT
+	</select>
+
+
+	<select id="selectPersonalResultListCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.fnct.qestnarResult.selectPersonalResultListCount */
+		SELECT	COUNT(DISTINCT(CRTR_UNIQUE_ID))
+		  FROM	TF_QESTNAR_RESULT
+		 WHERE QESTNAR_NO = #{qestnarNo}
+		<include refid="searchConditions"/>
+	</select>
+
+	<update id="deletePrivacy" parameterType="int">
+		/* Query ID : humanframe.fnct.qestnarResult.deletePrivacy */
+		UPDATE TF_QESTNAR_RESULT
+		SET   NM = '',
+			  EMAIL = '',
+			  TELNO = '',
+			  COUNTRY = '',
+			  NATIONALITY = '',
+			  ADDRESS = ''
+		WHERE QESTNAR_NO = #{qestnarNo}
+	</update>
+
+	<select id="selectPersonalQestnList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.fnct.qestnarResult.selectPersonalQestnList */
+		SELECT
+			NM,
+			EMAIL,
+			TELNO,
+			QESTN_NO,
+			QESTNAR_NO,
+			QESITM_NO,
+			QESTN_TY,
+			QESITM_TY,
+			QESTN_TEXT,
+			ETC_OPINION_AT,
+			ORDR,
+			ETC_ANSWER,
+			QESITM_TEXT,
+			QESITM_ORDR,
+			COUNTRY_KO,
+			COUNTRY,
+			NATIONALITY_KO,
+			NATIONALITY,
+			ADDRESS,
+			CREAT_DTTM
+		FROM (
+				SELECT
+					B.NM,
+					B.EMAIL,
+					B.TELNO,
+					A.QESTN_NO,
+					A.QESTNAR_NO,
+					C.QESITM_NO,
+					A.QESTN_TY,
+					C.QESITM_TY,
+					A.QESTN_TEXT,
+					A.ETC_OPINION_AT,
+					A.ORDR,
+					B.ETC_ANSWER,
+					C.QESITM_TEXT,
+					C.QESITM_ORDR,
+					DECODE(b.country, NULL, '', '', '', (
+						SELECT
+							CODE_NM
+						FROM
+							TC_CODE
+						WHERE
+							CODE_ID LIKE 'medi_5' || '%' || COUNTRY
+					)) AS COUNTRY_KO,
+					B.COUNTRY,
+					DECODE(B.NATIONALITY, NULL, '', '', '', (
+						SELECT
+							CODE_NM
+						FROM
+							TC_CODE
+						WHERE
+							CODE_ID LIKE 'medi_5' || '%' || NATIONALITY
+					)) AS NATIONALITY_KO,
+					B.NATIONALITY,
+					B.ADDRESS,
+					B.CREAT_DTTM
+				FROM TF_QESTNAR_QESTN A 
+				LEFT OUTER JOIN TF_QESTNAR_RESULT B ON A.QESTNAR_NO = B.QESTNAR_NO AND A.QESTN_NO = B.QESTN_NO
+				LEFT OUTER JOIN TF_QESTNAR_QESITM C ON A.QESTNAR_NO = C.QESTNAR_NO AND A.QESTN_NO = C.QESTN_NO AND B.QESITM_NO = C.QESITM_NO
+				WHERE A.QESTNAR_NO = #{qestnarNo}
+				AND B.CRTR_UNIQUE_ID = #{crtrUniqueId}
+		) V
+		ORDER BY  QESTN_NO ASC, QESITM_ORDR ASC
+	</select>
+	<select id="selectMaxUniqueId" parameterType="hashmap" resultType="String" flushCache="true" useCache="false">
+		/* Query ID : humanframe.fnct.qestnarResult.selectMaxUniqueId */
+		SELECT 'QESTMEM_' || TO_CHAR(SEQ_TF_QEST_MBER.NEXTVAL, '099999999999')
+	</select>
+
+	<select id="selectEmailYn" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.fnct.qestnarResult.selectEmailYn */
+		SELECT
+			COUNT(1)
+		FROM TF_QESTNAR_RESULT
+		WHERE QESTNAR_NO = #{qestnarNo}
+		AND EMAIL = #{email}
+	</select>
+
+</mapper>

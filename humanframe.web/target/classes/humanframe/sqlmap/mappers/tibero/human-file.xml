@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.file">
+
+	<resultMap type="fileVO" id="fileMap">
+		<result property="srvcId"			column="SRVC_ID" />
+		<result property="upperNo"			column="UPPER_NO" />
+		<result property="fileTy"			column="FILE_TY" />
+		<result property="fileNo"			column="FILE_NO" />
+		<result property="flpth"			column="FLPTH" />
+		<result property="orginlFileNm"		column="ORGINL_FILE_NM" />
+		<result property="streFileNm"		column="STRE_FILE_NM" />
+		<result property="fileExtsn"		column="FILE_EXTSN" />
+		<result property="fileSize"			column="FILE_SIZE" />
+		<result property="fileDc"			column="FILE_DC" />
+		<result property="dwldCo"			column="DWLD_CO" />
+		<result property="creatDttm"		column="CREAT_DTTM" />
+		<result property="useAt"			column="USE_AT" />
+	</resultMap>
+
+	<select id="selectFileList" parameterType="java.util.HashMap" resultMap="fileMap">
+		/* Query ID : humanframe.file.selectFileList */
+		SELECT 
+			SRVC_ID
+			, UPPER_NO
+			, FILE_TY
+			, FILE_NO
+			, FLPTH
+			, ORGINL_FILE_NM
+			, STRE_FILE_NM
+			, FILE_EXTSN
+			, FILE_SIZE
+			, FILE_DC
+			, DWLD_CO
+			, CREAT_DTTM
+		FROM TN_FILE
+	  	WHERE SRVC_ID = #{srvcId}
+	  	AND UPPER_NO = #{upperNo}
+	  	<if test="fileTy != null and fileTy != ''">
+	  	AND FILE_TY = #{fileTy}
+	  	</if>
+	  	AND USE_AT = 'Y'
+	</select>
+
+	<select id="selectFileByFilter" parameterType="java.util.HashMap" resultMap="fileMap">
+		/* Query ID : humanframe.file.selectFileByFilter */
+		SELECT 
+			SRVC_ID
+			, UPPER_NO
+			, FILE_TY
+			, FILE_NO
+			, FLPTH
+			, ORGINL_FILE_NM
+			, STRE_FILE_NM
+			, FILE_EXTSN
+			, FILE_SIZE
+			, FILE_DC
+			, DWLD_CO
+			, CREAT_DTTM
+		FROM TN_FILE
+	 	WHERE SRVC_ID = #{srvcId}
+	  	AND UPPER_NO = #{upperNo}
+	  	<if test="fileTy != null and fileTy != ''">
+	  	AND FILE_TY = #{fileTy}
+	  	</if>
+	  	AND FILE_NO = #{fileNo}
+	  	AND USE_AT = 'Y'
+	</select>
+
+	<insert id="insertFileInfo" parameterType="fileVO">
+		/* Query ID : humanframe.file.insertFileInfo */
+		INSERT INTO TN_FILE (
+			SRVC_ID
+			, UPPER_NO
+			, FILE_TY
+			, FILE_NO
+			, FLPTH
+			, ORGINL_FILE_NM
+			, STRE_FILE_NM
+			, FILE_EXTSN
+			, FILE_SIZE
+			, FILE_DC
+			, CREAT_DTTM
+			, DWLD_CO
+			, USE_AT
+		) VALUES (
+			#{srvcId}
+			, #{upperNo}
+			, #{fileTy}
+            <if test="fileNo = null or fileNo = ''">
+            , (SELECT NVL(MAX(FILE_NO), 0) + 1 FROM TN_FILE WHERE SRVC_ID = #{srvcId} AND UPPER_NO = #{upperNo} AND FILE_TY = #{fileTy})
+            </if>
+            <if test="fileNo != null and fileNo != ''">
+            , #{fileNo}
+            </if>
+			, #{flpth}
+			, #{orginlFileNm}
+			, #{streFileNm}
+			, #{fileExtsn}
+			, #{fileSize}
+			, #{fileDc, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{dwldCo}
+			, #{useAt}
+		)
+	</insert>
+
+	<update id="updateDwldCo" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.file.updateDwldCo */
+		UPDATE 
+			TN_FILE 
+		SET	DWLD_CO = DWLD_CO + 1
+		WHERE SRVC_ID = #{srvcId}
+		AND UPPER_NO = #{upperNo}
+		<if test="fileTy != null and fileTy != ''">
+		AND FILE_TY = #{fileTy}
+		</if>
+		AND FILE_NO = #{fileNo}
+	</update>
+
+	<update id="updateFileDc" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.file.updateFileDc */
+		UPDATE 
+			TN_FILE 
+		SET FILE_DC = #{fileDc}
+		WHERE SRVC_ID = #{srvcId}
+		AND UPPER_NO = #{upperNo}
+		<if test="fileTy != null and fileTy != ''">
+		AND FILE_TY = #{fileTy}
+		</if>
+		AND FILE_NO = #{fileNo}
+	</update>
+
+
+	<update id="deleteFileByNo" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.file.deleteFileByNo */
+		UPDATE 
+			TN_FILE 
+		SET	USE_AT = 'N'
+		WHERE SRVC_ID = #{srvcId}
+		AND UPPER_NO = #{upperNo}
+		<if test="fileTy != null and fileTy != ''">
+		AND FILE_TY = #{fileTy}
+		</if>
+		AND FILE_NO IN
+		<foreach collection="fileNo" item="no" open="(" separator="," close=")">
+			#{no}
+		</foreach>
+	</update>
+
+	<update id="deleteFileByUpperNo" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.file.deleteFileByUpperNo */
+		UPDATE 
+			TN_FILE 
+		SET	USE_AT = 'N'
+		WHERE SRVC_ID = #{srvcId}
+		AND UPPER_NO = #{upperNo}
+	</update>
+
+</mapper>

@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.fnct.qestnar">
+
+	<resultMap type="qestnarVO" id="qestnarMap">
+		<result column="SITE_NO"			property="siteNo"/>
+		<result column="MENU_NO"			property="menuNo"/>
+		<result column="QESTNAR_NO"			property="qestnarNo"/>
+		<result column="SJ"					property="sj"/>
+		<result column="CN"					property="cn"/>
+		<result column="QUSTNR_TRGET"		property="qustnrTrget"/>
+		<result column="BGN_DTTM"			property="bgnDttm"/>
+		<result column="END_DTTM"			property="endDttm"/>
+		<result column="OTHBC_AT"			property="othbcAt"/>
+		<result column="USE_AT"				property="useAt"/>
+		<result column="MLG"				property="mlg"/>
+		<result column="CREAT_DTTM"			property="creatDttm"/>
+		<result column="CRTR_UNIQUE_ID"		property="crtrUniqueId"/>
+		<result column="CRTR_ID"			property="crtrId"/>
+		<result column="CRTR_NM"			property="crtrNm"/>
+		<result column="UPDT_DTTM"			property="updtDttm"/>
+		<result column="UPDUSR_UNIQUE_ID"	property="updusrUniqueId"/>
+		<result column="UPDUSR_ID"			property="updusrId"/>
+		<result column="UPDUSR_NM"			property="updusrNm"/>
+		<result column="PROGRS_STTUS"		property="progrsSttus"/>
+		<result column="RESULT_CNT"			property="resultCnt"/>
+	</resultMap>
+
+	<sql id="searchQestnarList">
+		WHERE 1=1
+		<if test="siteNo !=0 and siteNo !=null"> AND SITE_NO = #{siteNo} </if>
+		<if test="srchOthbcAt !='' and srchOthbcAt !=null"> AND OTHBC_AT = #{srchOthbcAt} </if>
+		<if test="srchWord !='' and srchWord !=null">
+		AND SJ LIKE  '%' || #{srchWord} || '%'
+		</if>
+
+		<choose>
+			<when test="srchUseAt !='' and srchUseAt !=null">
+				 AND USE_AT = #{srchUseAt}
+			</when>
+			<otherwise>
+				 AND USE_AT = 'Y'
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="srchSttus != null and srchSttus =='ING' ">
+			AND SYSDATE >= BGN_DTTM AND SYSDATE &#60;= END_DTTM 
+			</when>
+			<when test="srchSttus != null and srchSttus =='END' ">
+			AND SYSDATE > END_DTTM 
+			</when>
+			<when test="srchSttus != null and srchSttus =='YET' ">
+			AND SYSDATE &#60; BGN_DTTM
+			</when>
+		</choose>
+	</sql>
+	
+	<sql id="listColumn">
+		  SITE_NO
+		, MENU_NO
+		, QESTNAR_NO
+		, SJ
+		, CN
+		, QUSTNR_TRGET
+		, BGN_DTTM
+		, END_DTTM
+		, OTHBC_AT
+		, USE_AT
+		, MLG
+		, CREAT_DTTM
+		, CRTR_UNIQUE_ID
+		, CRTR_ID
+		, CRTR_NM
+		, UPDT_DTTM
+		, UPDUSR_UNIQUE_ID
+		, UPDUSR_ID
+		, UPDUSR_NM
+		, PROGRS_STTUS
+	</sql>
+
+	<sql id="cmmnProgrsSttus">	
+		(CASE 
+			WHEN SYSDATE >= BGN_DTTM AND SYSDATE &#60;= END_DTTM THEN 'ING'
+			WHEN SYSDATE > END_DTTM THEN 'END'
+			WHEN SYSDATE &#60; BGN_DTTM THEN 'YET'
+			ELSE '-'
+		 END) AS PROGRS_STTUS
+	</sql>
+
+	<select id="selectCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.fnct.qestnar.selectCount */
+		SELECT
+			COUNT(1)
+		FROM TF_QESTNAR
+		<include refid="searchQestnarList"/>
+	</select>
+
+	<select id="selectListVO" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.fnct.qestnar.selectListVO */
+		SELECT
+			<include refid="listColumn"/>
+			,RESULT_CNT
+		FROM (
+			SELECT
+				  V.SITE_NO
+				, V.MENU_NO
+				, V.QESTNAR_NO
+				, V.SJ
+				, V.CN
+				, V.QUSTNR_TRGET
+				, V.BGN_DTTM
+				, V.END_DTTM
+				, V.OTHBC_AT
+				, V.USE_AT
+				, V.MLG
+				, V.CREAT_DTTM
+				, V.CRTR_UNIQUE_ID
+				, V.CRTR_ID
+				, V.CRTR_NM
+				, V.UPDT_DTTM
+				, V.UPDUSR_UNIQUE_ID
+				, V.UPDUSR_ID
+				, V.UPDUSR_NM
+				, V.PROGRS_STTUS
+				, NVL(V_RESULT.RESULT_CNT,0) AS RESULT_CNT
+			FROM (
+				SELECT
+					ROWNUM AS RNUM ,
+					<include refid="listColumn"/>
+				FROM (
+					SELECT
+						  SITE_NO
+						, MENU_NO
+						, QESTNAR_NO
+						, SJ
+						, CN
+						, QUSTNR_TRGET
+						, TO_CHAR(BGN_DTTM, 'YYYY-MM-DD HH24:MI') AS BGN_DTTM
+						, TO_CHAR(END_DTTM, 'YYYY-MM-DD HH24:MI') AS END_DTTM
+						, OTHBC_AT
+						, USE_AT
+						, MLG
+						, CREAT_DTTM
+						, CRTR_UNIQUE_ID
+						, CRTR_ID
+						, CRTR_NM
+						, UPDT_DTTM
+						, UPDUSR_UNIQUE_ID
+						, UPDUSR_ID
+						, UPDUSR_NM
+						, <include refid="cmmnProgrsSttus"/>
+					FROM TF_QESTNAR
+					<include refid="searchQestnarList"/>
+					ORDER BY QESTNAR_NO DESC
+	
+				) WHERE ROWNUM &#60;= #{endNum}
+			) v  LEFT OUTER JOIN (
+						SELECT QESTNAR_NO, COUNT(1) AS RESULT_CNT
+						FROM (
+						  	SELECT
+						  		  QESTNAR_NO
+						  		, DPLCT_CNFIRM_CODE
+						  	FROM TF_QESTNAR_RESULT
+						  	GROUP BY QESTNAR_NO, DPLCT_CNFIRM_CODE
+						) GROUP BY QESTNAR_NO
+		          ) V_RESULT ON V_RESULT.QESTNAR_NO = v.QESTNAR_NO
+			WHERE RNUM > #{startNum}
+		)
+	
+	</select>
+
+	<select id="selectQestnar" parameterType="hashmap" resultMap="qestnarMap">
+		/* Query ID : humanframe.fnct.qestnar.selectQestnar */
+		SELECT
+			  SITE_NO
+			, MENU_NO
+			, QESTNAR_NO
+			, SJ
+			, CN
+			, QUSTNR_TRGET
+			, TO_CHAR(BGN_DTTM, 'YYYY-MM-DD HH24:MI') AS BGN_DTTM
+			, TO_CHAR(END_DTTM, 'YYYY-MM-DD HH24:MI') AS END_DTTM
+			, OTHBC_AT
+			, USE_AT
+			, MLG
+			, CREAT_DTTM
+			, CRTR_UNIQUE_ID
+			, CRTR_ID
+			, CRTR_NM
+			, UPDT_DTTM
+			, UPDUSR_UNIQUE_ID
+			, UPDUSR_ID
+			, UPDUSR_NM
+			,(SELECT COUNT(1) FROM TF_QESTNAR_RESULT TQR WHERE TQR.QESTNAR_NO=QESTNAR_NO) AS RESULT_CNT
+			, <include refid="cmmnProgrsSttus"/>
+		FROM TF_QESTNAR
+		WHERE 1=1
+		AND QESTNAR_NO = #{qestnarNo}
+	</select>
+
+	<insert id="insertQestnar" parameterType="qestnarVO">
+		/* Query ID : humanframe.fnct.qestnar.insertQestnar */
+		<selectKey keyProperty="qestnarNo" resultType="int" order="BEFORE">
+		SELECT
+			NVL(MAX(QESTNAR_NO),0) + 1
+		FROM TF_QESTNAR
+		</selectKey>
+		INSERT INTO TF_QESTNAR (
+			SITE_NO
+			,MENU_NO
+			,QESTNAR_NO
+			,SJ
+			,CN
+			,QUSTNR_TRGET
+			,BGN_DTTM
+			,END_DTTM
+			,OTHBC_AT
+			,USE_AT
+			,MLG
+			,CREAT_DTTM
+			,CRTR_UNIQUE_ID
+			,CRTR_ID
+			,CRTR_NM
+			,UPDT_DTTM
+			,UPDUSR_UNIQUE_ID
+			,UPDUSR_ID
+			,UPDUSR_NM
+		) VALUES (
+			  #{siteNo}
+			, #{menuNo}
+			, #{qestnarNo}
+			, #{sj, jdbcType=VARCHAR}
+			, #{cn}
+			, #{qustnrTrget}
+			, TO_DATE(#{bgnDttm, jdbcType=VARCHAR},'YYYYMMDDHH24MI')
+			, TO_DATE(#{endDttm, jdbcType=VARCHAR},'YYYYMMDDHH24MI')
+			, #{othbcAt, jdbcType=CHAR}
+			, 'Y'
+			, #{mlg}
+			, SYSDATE
+			, #{crtrUniqueId}
+			, #{crtrId}
+			, #{crtrNm, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{updusrUniqueId}
+			, #{updusrId}
+			, #{updusrNm, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<update id="updateQestnar" parameterType="qestnarVO">
+		/* Query ID : humanframe.fnct.qestnar.updateQestnar */
+		UPDATE TF_QESTNAR 
+			SET SJ = #{sj, jdbcType=VARCHAR}
+				, CN = #{cn}
+				, QUSTNR_TRGET = #{qustnrTrget}
+				, BGN_DTTM = TO_DATE(#{bgnDttm, jdbcType=VARCHAR},'YYYYMMDDHH24MI')
+				, END_DTTM = TO_DATE(#{endDttm, jdbcType=VARCHAR},'YYYYMMDDHH24MI')
+				, OTHBC_AT = #{othbcAt, jdbcType=CHAR}
+				, MLG = #{mlg}
+				, SITE_NO = #{siteNo}
+				, MENU_NO = #{menuNo}
+				, UPDT_DTTM	= SYSDATE
+				, UPDUSR_UNIQUE_ID = #{updusrUniqueId}
+				, UPDUSR_ID	= #{updusrId}
+				, UPDUSR_NM	= #{updusrNm, jdbcType=VARCHAR}
+		WHERE QESTNAR_NO = #{qestnarNo}
+	</update>
+
+	<update id="updateQestnarNotUse" parameterType="hashmap">
+		/* Query ID : humanframe.fnct.qestnar.updateQestnarNotUse */
+		UPDATE TF_QESTNAR 
+			SET USE_AT = #{useAt}
+		WHERE QESTNAR_NO = #{qestnarNo}
+	</update>
+
+	<select id="selectQestnarPrevNext" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.fnct.qestnar.selectQestnarPrevNext */
+		SELECT 
+			'PREV' AS BIGO
+			,QESTNAR_NO
+			,SJ
+		FROM TF_QESTNAR
+		<include refid="searchQestnarList"/>
+		 AND QESTNAR_NO IN (
+						SELECT MAX(QESTNAR_NO)
+						FROM TF_QESTNAR
+						<include refid="searchQestnarList"/>		
+						  AND QESTNAR_NO &#60; #{qestnarNo}
+						)
+		UNION ALL
+		SELECT 
+			'NEXT' AS BIGO
+			,QESTNAR_NO
+			,SJ
+		FROM TF_QESTNAR	
+		<include refid="searchQestnarList"/>
+			AND QESTNAR_NO IN (
+						SELECT MAX(QESTNAR_NO)
+						FROM TF_QESTNAR
+						<include refid="searchQestnarList"/>	
+						  AND QESTNAR_NO > #{qestnarNo}
+						)
+	
+	</select>
+
+	<select id="selectCountryList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.fnct.qestnar.selectCountryList */
+		SELECT
+			SUBSTR(TC_CODE.CODE_ID, INSTR(TC_CODE.CODE_ID, '_', -1)+1)
+			COUNTRY_CODE,
+			<if test='langCode == null or langCode == "" or langCode == "ko"'>
+			TC_CODE.CODE_NM,
+			</if>
+			<if test='langCode != null and langCode != ""'>
+			TC_CODE_LANG.CODE_NM
+			</if>
+		FROM
+			TC_CODE, TC_CODE_LANG
+		WHERE
+			TC_CODE.CODE_GROUP_ID = 'BSMEDITOUR'
+			AND UPPER_CODE_ID LIKE 'medi_5_' ||'%'
+			AND TC_CODE.CODE_ID = TC_CODE_LANG.CODE_ID
+			<if test='langCode != null and langCode != ""'>
+			AND TC_CODE_LANG.LANG_CODE_ID=#{langCode}
+			</if>
+		<if test='langCode == null or langCode == "" or langCode == "ko"'>
+		GROUP BY TC_CODE.CODE_NM
+		</if>
+		ORDER BY
+		<if test='langCode == null or langCode == "" or langCode == "ko"'>
+			TRIM(UPPER(TC_CODE.CODE_NM))
+		</if>
+		<if test='langCode != null and langCode != ""'>
+			TRIM(UPPER(TC_CODE_LANG.CODE_NM))
+		</if>
+	</select>
+
+</mapper>

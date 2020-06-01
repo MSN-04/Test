@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.siteMainImage">
+
+	<resultMap type="siteMainImageVO" id="siteMainImageListMap">
+		<result column="SITE_NO" 		    property="siteNo"	/>
+		<result column="IMAGE_NO" 		    property="imageNo"	/>
+		<result column="IMAGE_TY" 		    property="imageTy"	/>
+		<result column="IMAGE_FILE_NM" 	    property="imageFileNm"	/>
+		<result column="IMAGE_SJ" 		    property="imageSj"	/>
+		<result column="IMAGE_ORDR" 	    property="imageOrdr"/>
+		<result column="BGN_DTTM" 		    property="bgnDttm"	/>
+		<result column="END_DTTM" 		    property="endDttm"	/>
+		<result column="LINK_URL" 		    property="linkUrl"	/>
+		<result column="LINK_TAGT" 		    property="linkTagt"	/>
+		<result column="USE_AT" 		    property="useAt"	/>
+		<result column="CREAT_DTTM" 	    property="creatDttm"/>
+		<result column="CRTR_SN" 		    property="crtrSn"	/>
+		<result column="CRTR_NM" 		    property="crtrNm"	/>
+		<result column="MOBILE_IMG_FILE_NM" property="mobileImgFileNm"	/>
+	</resultMap>
+
+	<resultMap type="siteMainImageVO" id="siteMainImageMap" extends="siteMainImageListMap">
+		<result column="SUMRY" 			property="sumry"	/>
+	</resultMap>
+	
+	<sql id="listColumn">
+		  SITE_NO
+		, IMAGE_NO
+		, IMAGE_TY
+		, IMAGE_FILE_NM
+		, IMAGE_SJ
+		, IMAGE_ORDR
+		, BGN_DTTM
+		, END_DTTM
+		, LINK_URL
+		, LINK_TAGT
+		, USE_AT
+		, SUMRY
+		, MOBILE_IMG_FILE_NM
+	</sql>
+
+	<select id="selectCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.siteMainImage.selectCount */
+		SELECT
+			COUNT(IMAGE_NO)
+		FROM TN_MAIN_IMAGE
+		WHERE SITE_NO = #{siteNo}
+		<if test="imageTy != '' and imageTy != null">
+		AND IMAGE_TY = #{imageTy}
+		</if>
+		<if test="srchWord !='' and srchWord !=null">
+		AND IMAGE_SJ LIKE  '%' || #{srchWord} || '%'
+		</if>
+	</select>
+
+	<select id="selectListVO" parameterType="hashmap" resultMap="siteMainImageListMap">
+		/* Query ID : humanframe.siteMainImage.selectListVO */
+		SELECT
+			<include refid="listColumn"/>
+		FROM (
+			SELECT
+				ROWNUM AS RNUM ,
+				<include refid="listColumn"/>
+			FROM (
+			SELECT
+				<include refid="listColumn"/>
+			FROM TN_MAIN_IMAGE
+			WHERE SITE_NO = #{siteNo}
+			<if test="imageTy != '' and imageTy != null">
+			AND IMAGE_TY = #{imageTy}
+			</if>
+			<if test="srchWord !='' and srchWord !=null">
+			AND IMAGE_SJ LIKE  '%' || #{srchWord} || '%'
+			</if>
+			ORDER BY IMAGE_ORDR ASC, IMAGE_NO DESC
+		
+			) WHERE ROWNUM &#60;= #{endNum}
+		) WHERE RNUM > #{startNum}
+	</select>
+
+	<select id="selectMainImageList" parameterType="hashmap" resultMap="siteMainImageMap">
+		/* Query ID : humanframe.siteMainImage.selectMainImageList */
+		SELECT
+			<include refid="listColumn"/>
+		FROM TN_MAIN_IMAGE
+		WHERE SITE_NO = #{siteNo}
+			AND IMAGE_TY = #{imageTy}
+			AND USE_AT = 'Y'
+			AND TO_CHAR(SYSDATE, 'yyyy.mm.dd') BETWEEN BGN_DTTM AND END_DTTM
+		ORDER BY IMAGE_NO ASC
+	</select>
+
+	<select id="selectSiteMainImage" parameterType="hashmap" resultMap="siteMainImageMap">
+		/* Query ID : humanframe.siteMainImage.selectSiteMainImage */
+		SELECT
+			  SITE_NO
+			, IMAGE_NO
+			, IMAGE_TY
+			, IMAGE_FILE_NM
+			, IMAGE_SJ
+			, SUMRY
+			, IMAGE_ORDR
+			, BGN_DTTM
+			, END_DTTM
+			, LINK_URL
+			, LINK_TAGT
+			, USE_AT
+			, CREAT_DTTM
+			, CRTR_SN
+			, CRTR_NM
+			, MOBILE_IMG_FILE_NM
+		FROM TN_MAIN_IMAGE
+		WHERE SITE_NO = #{siteNo}
+		AND IMAGE_NO = #{imageNo}
+	</select>
+
+	<insert id="insertSiteMainImage" parameterType="siteMainImageVO">
+		/* Query ID : humanframe.siteMainImage.insertSiteMainImage */
+		<selectKey keyProperty="imageNo" resultType="int" order="BEFORE">
+			SELECT
+				NVL(MAX(IMAGE_NO),0) + 1
+			FROM TN_MAIN_IMAGE
+			WHERE SITE_NO = #{siteNo}
+		</selectKey>
+		INSERT INTO TN_MAIN_IMAGE (
+			  SITE_NO
+			, IMAGE_NO
+			, IMAGE_TY
+			, IMAGE_FILE_NM
+			, IMAGE_SJ
+			, SUMRY
+			, IMAGE_ORDR
+			, BGN_DTTM
+			, END_DTTM
+			, LINK_URL
+			, LINK_TAGT
+			, USE_AT
+			, CREAT_DTTM
+			, CRTR_SN
+			, CRTR_NM
+			, UPDT_DTTM
+			, UPDUSR_SN
+			, UPDUSR_NM
+			, MOBILE_IMG_FILE_NM
+		) VALUES (
+	  		  #{siteNo}
+			, #{imageNo}
+			, #{imageTy}
+			, #{imageFileNm}
+			, #{imageSj}
+			, #{sumry, jdbcType=VARCHAR}
+			, #{imageOrdr}
+			, #{bgnDttm, jdbcType=VARCHAR}
+			, #{endDttm, jdbcType=VARCHAR}
+			, #{linkUrl, jdbcType=VARCHAR}
+			, #{linkTagt, jdbcType=VARCHAR}
+			, #{useAt, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{crtrSn}
+			, #{crtrNm, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{updusrSn}
+			, #{updusrNm, jdbcType=VARCHAR}
+			, #{mobileImgFileNm, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<update id="updateSiteMainImage" parameterType="siteMainImageVO">
+		/* Query ID : humanframe.siteMainImage.updateSiteMainImage */
+		UPDATE TN_MAIN_IMAGE 
+		  SET IMAGE_TY = #{imageTy}
+			, IMAGE_FILE_NM	= #{imageFileNm, jdbcType=VARCHAR}
+			, IMAGE_SJ	= #{imageSj}
+			, SUMRY	=  #{sumry, jdbcType=VARCHAR}
+			, IMAGE_ORDR =  #{imageOrdr}
+			, BGN_DTTM = #{bgnDttm, jdbcType=VARCHAR}
+			, END_DTTM = #{endDttm, jdbcType=VARCHAR}
+			, LINK_URL = #{linkUrl, jdbcType=VARCHAR}
+			, LINK_TAGT	= #{linkTagt, jdbcType=VARCHAR}
+			, USE_AT = #{useAt, jdbcType=VARCHAR}
+			, UPDT_DTTM	= SYSDATE
+			, UPDUSR_SN	= #{updusrSn}
+			, UPDUSR_NM	= #{updusrNm, jdbcType=VARCHAR}
+			, MOBILE_IMG_FILE_NM = #{mobileImgFileNm, jdbcType=VARCHAR}
+		WHERE SITE_NO =  #{siteNo}
+		AND IMAGE_NO = #{imageNo}
+	</update>
+
+</mapper>

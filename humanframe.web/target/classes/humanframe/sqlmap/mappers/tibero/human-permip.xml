@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.permip">
+	<sql id="searchConditions">
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+			AND USE_AT = #{useAt}
+		</if>
+		<if test="searchText != null and searchText !='' ">
+			AND ((IP LIKE '%'||#{searchText}||'%' ) OR (MEMO LIKE '%'||#{searchText}||'%'))
+		</if>
+	</sql>
+
+	<select id="selectPermipManageList" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.permip.selectPermipManageList */
+		SELECT 
+			*
+		FROM (
+		  SELECT 
+		  	ROWNUM AS RNUM,
+		    A.*
+		  FROM (
+		  	SELECT
+		      IP_NO
+		      , IP
+		      , MEMO
+		      , USE_AT
+		      , CREAT_DTTM
+		      , UPDT_DTTM
+		    FROM TN_MNG_IP
+		    WHERE 1=1
+		    <include refid="searchConditions" />
+		    ORDER BY CREAT_DTTM DESC
+		    ) A WHERE ROWNUM &lt;= #{endNum}
+		  ) WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectPermipManageListCnt" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+		/* Query ID : humanframe.permip.selectPermipManageListCnt */
+		SELECT COUNT(*) AS TOTAL_COUNT
+		  FROM TN_MNG_IP
+		 WHERE 1=1
+		 <include refid="searchConditions" />
+	</select>
+
+	<select id="selectPermipManageIp" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.permip.selectPermipManageIp */
+		SELECT IP_NO
+			  ,IP
+			  ,USE_AT
+			  ,CREAT_DTTM
+			  ,UPDT_DTTM
+		FROM TN_MNG_IP
+		WHERE IP = #{permIp}
+	</select>
+
+	<insert id="insertPermipManage" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.permip.insertPermipManage */
+		<selectKey keyProperty="ipNo" resultType="int" order="BEFORE">
+		SELECT
+			NVL(MAX(ip_no),0) + 1
+		FROM TN_MNG_IP
+		</selectKey>
+		INSERT INTO TN_MNG_IP (
+			IP_NO
+			, IP
+			, MEMO
+			, USE_AT
+			, CREAT_DTTM
+			, UPDT_DTTM
+		) VALUES (
+			#{ipNo}
+			, #{permIp}
+			, #{memo, jdbcType=VARCHAR}
+			, #{useAt}
+			, SYSDATE
+			, SYSDATE
+		)
+	</insert>
+
+	<update id="updatePermipManageIp" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.permip.updatePermipManageIp */
+		UPDATE TN_MNG_IP
+		   SET UPDT_DTTM = SYSDATE
+		   	<if test="permIp != null and permIp != ''">
+		   		, IP = #{permIp}
+		   	</if>
+		   		, memo = #{memo, jdbcType=VARCHAR}
+		 WHERE IP_NO = #{permIpNo}
+	</update>
+
+	<update id="updatePermipManageUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.permip.updatePermipManageUseAt */
+		UPDATE TN_MNG_IP
+		   SET USE_AT = #{useAt}
+		 WHERE IP_NO IN
+		<foreach collection="ipNos" item="ipNo" open="(" separator="," close=")">
+			#{ipNo}
+		</foreach>
+	</update>
+
+	<select id="selectIp" parameterType="java.util.HashMap"  resultType="java.lang.Integer">
+		/* Query ID : humanframe.permip.selectIp */
+		SELECT COUNT(*) AS IPCOUNT
+		 FROM TN_MNG_IP
+		 WHERE #{remoteIp} LIKE IP||'%'
+		 AND USE_AT = 'Y'
+	</select>
+
+
+</mapper>

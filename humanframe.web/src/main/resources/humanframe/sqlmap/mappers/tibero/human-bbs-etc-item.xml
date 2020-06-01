@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.bbsEtcItem">
+
+	<resultMap type="bbsEtcItemVO" id="bbsEtcItemMap">
+		<result property="bbsNo" 			column="BBS_NO" />
+		<result property="etcIemNo" 		column="ETC_IEM_NO" />
+		<result property="etcIemNm" 		column="ETC_IEM_NM" />
+		<result property="useAt" 			column="USE_AT" />
+		<result property="essntlInputAt"	column="ESSNTL_INPUT_AT" />
+		<result property="dataInputTy" 		column="DATA_INPUT_TY" />
+		<result property="userHideAt" 		column="USER_HIDE_AT" />
+		<result property="creatDttm" 		column="CREAT_DTTM" />
+		<result property="crtrId" 			column="CRTR_ID" />
+		<result property="crtrNm" 			column="CRTR_NM" />
+		<result property="nttNo" 			column="NTT_NO" />
+		<result property="etcInputIem" 		column="ETC_INPUT_IEM" />
+		<collection property="itemExList" 	column="{bbsNo=bbs_no, etcIemNo=etc_iem_no}" select="humanframe.bbsEtcItem.selectBbsEtcItemEx" />
+	</resultMap>
+
+	<resultMap type="bbsEtcItemExVO" id="bbsEtcItemExMap">
+		<result property="bbsNo" 			column="BBS_NO" />
+		<result property="etcIemNo" 		column="ETC_IEM_NO" />
+		<result property="etcIemExNo" 		column="ETC_IEM_EX_NO" />
+		<result property="etcIemExNm" 		column="ETC_IEM_EX_NM" />
+	</resultMap>
+
+	<select id="selectBbsEtcItem" parameterType="hashmap"  resultMap="bbsEtcItemMap">
+		/* Query ID : humanframe.bbsEtcItem.creatTrgtTableNm */		
+		SELECT 
+			 BBS_NO
+			,ETC_IEM_NO
+			,ETC_IEM_NM
+			,USE_AT
+			,ESSNTL_INPUT_AT
+			, DATA_INPUT_TY
+			,CREAT_DTTM
+			,CRTR_ID
+			,CRTR_NM
+			,USER_HIDE_AT
+		FROM TN_BBS_ETC_IEM
+		WHERE BBS_NO = #{bbsNo}
+	  	<if test="useAt != null and useAt != '' ">
+			AND USE_AT = #{useAt}
+		</if>
+		ORDER BY ETC_IEM_NO ASC
+	</select>
+
+	<select id="selectBbsEtcItemList" parameterType="hashmap"  resultType="java.lang.String">
+		/* Query ID : humanframe.bbsEtcItem.selectBbsEtcItemList */
+		SELECT 
+			ETC_IEM_NO
+		FROM TN_BBS_ETC_IEM
+		WHERE BBS_NO = #{bbsNo}
+	  	<if test="useAt != null and useAt != '' ">
+		   AND USE_AT = #{useAt}
+		</if>
+		ORDER BY ETC_IEM_NO ASC
+	</select>
+
+	<delete id="deleteBbsEtcItem" parameterType="int">
+		/* Query ID : humanframe.bbsEtcItem.deleteBbsEtcItem */
+		DELETE TN_BBS_ETC_IEM 
+		WHERE BBS_NO = #{bbsNo}
+	</delete>
+
+	<insert id="insertBbsEtcItem" parameterType="bbsEtcItemVO">
+		/* Query ID : humanframe.bbsEtcItem.insertBbsEtcItem */
+		INSERT INTO 
+			TN_BBS_ETC_IEM(
+				BBS_NO
+			   ,ETC_IEM_NO
+			   ,ETC_IEM_NM
+			   ,USE_AT
+			   ,ESSNTL_INPUT_AT
+			   ,DATA_INPUT_TY
+			   ,USER_HIDE_AT
+			   ,CREAT_DTTM
+			   ,CRTR_ID
+			   ,CRTR_NM
+			)VALUES(
+			    #{bbsNo}
+			   ,#{etcIemNo}
+			   ,#{etcIemNm}
+			   ,#{useAt}
+			   ,#{essntlInputAt}
+			   ,#{dataInputTy}
+			   ,#{userHideAt}
+			   ,SYSDATE
+			   ,#{crtrId}
+			   ,#{crtrNm}
+			)
+	</insert>
+
+	<select id="selectBbsEtcItemEx" parameterType="hashmap"  resultMap="bbsEtcItemExMap">
+		/* Query ID : humanframe.bbsEtcItem.selectBbsEtcItemEx */
+		SELECT 
+			 BBS_NO
+			,ETC_IEM_NO
+			,ETC_IEM_EX_NO
+			,ETC_IEM_EX_NM
+		FROM TN_BBS_ETC_IEM_EX
+		WHERE BBS_NO = #{bbsNo}
+		AND ETC_IEM_NO = #{etcIemNo}
+		ORDER BY ETC_IEM_EX_NO ASC
+	</select>
+
+	<insert id="insertBbsEtcItemEx" parameterType="bbsEtcItemExVO">
+		/* Query ID : humanframe.bbsEtcItem.insertBbsEtcItemEx */
+		INSERT INTO 
+			TN_BBS_ETC_IEM_EX(
+			  BBS_NO
+			 ,ETC_IEM_NO
+			 ,ETC_IEM_EX_NO
+			 ,ETC_IEM_EX_NM
+			)VALUES(
+			  #{bbsNo}
+			 ,#{etcIemNo}
+			 ,#{etcIemExNo}
+			 ,#{etcIemExNm}
+			)
+	</insert>
+
+	<delete id="deleteBbsEtcItemEx" parameterType="int">
+		/* Query ID : humanframe.bbsEtcItem.deleteBbsEtcItemEx */
+		DELETE TN_BBS_ETC_IEM_EX 
+		WHERE BBS_NO = #{bbsNo}
+	</delete>
+
+	<select id="selectBbsEtcInputData" parameterType="hashmap" resultMap="bbsEtcItemMap">
+		/* Query ID : humanframe.bbsEtcItem.selectBbsEtcInputData */
+		SELECT 
+			 IEM.BBS_NO
+			,INPUT_DATA.NTT_NO
+			,IEM.ETC_IEM_NO
+			,IEM.ETC_IEM_NM
+			,IEM.USE_AT
+			,IEM.ESSNTL_INPUT_AT
+			,IEM.DATA_INPUT_TY
+			,IEM.USER_HIDE_AT
+			,INPUT_DATA.ETC_INPUT_IEM
+		FROM TN_BBS_ETC_IEM IEM
+       	LEFT OUTER JOIN TN_BBS_ETC_IEM_INPUT_DATA INPUT_DATA 
+       		ON INPUT_DATA.BBS_NO = IEM.BBS_NO AND INPUT_DATA.ETC_IEM_NO = IEM.ETC_IEM_NO AND INPUT_DATA.NTT_NO = #{nttNo}
+		WHERE IEM.BBS_NO = #{bbsNo}
+		AND IEM.USE_AT = #{useAt}
+		ORDER BY IEM.ETC_IEM_NO ASC
+	</select>
+
+	<insert id="insertBbsEtcInputData" parameterType="hashmap">
+		/* Query ID : humanframe.bbsEtcItem.insertBbsEtcInputData */
+		MERGE INTO TN_BBS_ETC_IEM_INPUT_DATA
+	    	USING DUAL 
+	    			ON (BBS_NO = #{bbsNo} AND NTT_NO = #{nttNo} AND ETC_IEM_NO = #{etcIemNo})
+	      	WHEN MATCHED THEN
+					UPDATE SET ETC_INPUT_IEM = #{etcInputIem}
+	     	WHEN NOT MATCHED THEN
+					INSERT(BBS_NO ,NTT_NO ,ETC_IEM_NO,ETC_INPUT_IEM)
+					VALUES(#{bbsNo}, #{nttNo}, #{etcIemNo}, #{etcInputIem})
+	</insert>
+
+	<delete id="deleteBbsEtcInputData" parameterType="hashmap">
+		/* Query ID : humanframe.bbsEtcItem.deleteBbsEtcInputData */
+		DELETE TN_BBS_ETC_IEM_INPUT_DATA
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO = #{nttNo}
+	</delete>
+
+
+	<insert id="copyEtcInputIem" parameterType="hashmap">
+		/* Query ID : humanframe.bbsEtcItem.copyEtcInputIem */
+		INSERT INTO 
+			TN_BBS_ETC_IEM_INPUT_DATA(BBS_NO, NTT_NO, ETC_IEM_NO, ETC_INPUT_IEM)
+		SELECT
+		   #{tagtbbsNo} AS BBS_NO
+		  ,#{tagtNttNo} AS NTT_NO
+		  ,ETC_IEM_NO
+		  ,ETC_INPUT_IEM
+		FROM TN_BBS_ETC_IEM_INPUT_DATA
+		WHERE BBS_NO = #{orgbbsNo} 
+		AND NTT_NO = #{orgNttNo}			
+	</insert>
+</mapper>

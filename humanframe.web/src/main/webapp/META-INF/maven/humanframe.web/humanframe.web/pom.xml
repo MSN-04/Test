@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>humanframe</groupId>
+		<artifactId>humanframe</artifactId>
+		<version>2.1.0</version>
+	</parent>
+	<groupId>humanframe.web</groupId>
+	<artifactId>humanframe.web</artifactId>
+	<version>2.1.0</version>
+	<packaging>war</packaging>
+	<name>humanframe.web</name>
+	<description>홍익인간CMS 샘플 프로젝트</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<!-- humanframe -->
+	<dependencies>
+		<dependency>
+			<groupId>humanframe.core</groupId>
+			<artifactId>humanframe.core</artifactId>
+			<version>${com.yooncoms.humanframe.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>humanframe.backoffice</groupId>
+			<artifactId>humanframe.backoffice</artifactId>
+			<version>${com.yooncoms.humanframe.version}</version>
+		</dependency>
+	</dependencies>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

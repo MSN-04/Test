@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.pblcate">
+
+	<resultMap type="pblcateVO" id="pblcateMap">
+		<result column="PBLCATE_NO" 	property="pblcateNo" />
+		<result column="TRGET_SE_CODE" 	property="trgetSeCode" />
+		<result column="TRGET_SITE_NO"	property="trgetSiteNo" />
+		<result column="SITE_NM" 		property="siteNm" />
+		<result column="TRGET_MENU_NO"	property="trgetMenuNo" />
+		<result column="MENU_NM" 		property="menuNm" />
+		<result column="OPERT_SE" 		property="opertSe" />
+		<result column="COMPT_AT" 		property="comptAt" />
+		<result column="RQESTER_ID" 	property="rqesterId" />
+		<result column="RQESTER_NM" 	property="rqesterNm" />
+		<result column="REQUST_DTTM" 	property="requstDttm" />
+		<result column="CONFMER_ID" 	property="confmerId" />
+		<result column="CONFMER_NM" 	property="confmerNm" />
+		<result column="PROCESS_DTTM" 	property="processDttm" />
+	</resultMap>
+
+	<sql id="searchPblcateList">
+		<if test=' srchComptAt != null and srchComptAt!="" '>
+			AND PBLCATE.COMPT_AT = #{srchComptAt}
+		</if>
+	</sql>	
+
+	<sql id="listColumn">
+		  PBLCATE_NO
+		, TRGET_SE_CODE
+		, TRGET_SITE_NO
+		, SITE_NM
+		, TRGET_MENU_NO
+		, MENU_NM
+		, OPERT_SE
+		, COMPT_AT
+		, RQESTER_ID
+		, RQESTER_NM
+		, REQUST_DTTM
+		, CONFMER_ID
+		, CONFMER_NM
+		, PROCESS_DTTM
+	</sql>
+	
+	<select id="selectCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.pblcate.selectCount */
+		SELECT
+			COUNT(*)
+		FROM TN_PBLCATE PBLCATE
+		WHERE 1=1
+	<include refid="searchPblcateList" />
+	</select>
+
+	<select id="selectListVO" parameterType="hashmap" resultMap="pblcateMap">
+		/* Query ID : humanframe.pblcate.selectListVO */
+		SELECT
+			<include refid="listColumn"/>
+		FROM (
+			SELECT
+				ROWNUM AS RNUM ,
+				<include refid="listColumn"/>
+			FROM (
+				SELECT
+					  PBLCATE_NO
+					, TRGET_SE_CODE
+					, TRGET_SITE_NO
+					, SITE_NM
+					, TRGET_MENU_NO
+					, MENU_NM
+					, OPERT_SE
+					, COMPT_AT
+					, RQESTER_ID
+					, RQESTER_NM
+					, REQUST_DTTM
+					, CONFMER_ID
+					, CONFMER_NM
+					, PROCESS_DTTM
+				FROM TN_PBLCATE PBLCATE
+				INNER JOIN TN_SITE SITE ON PBLCATE.TRGET_SITE_NO = SITE.SITE_NO
+				LEFT OUTER JOIN TN_SITE_MENU MENU ON PBLCATE.TRGET_SITE_NO =  MENU.SITE_NO AND PBLCATE.TRGET_MENU_NO = MENU.MENU_NO			
+				WHERE 1=1
+				<include refid="searchPblcateList" />
+				ORDER BY PBLCATE_NO DESC
+			) WHERE ROWNUM &lt;= #{endNum}
+		) WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectTargetPblList" resultMap="pblcateMap">
+		/* Query ID : humanframe.pblcate.selectTargetPblList */
+		SELECT
+			  TRGET_SE_CODE
+			, TRGET_SITE_NO
+			, TRGET_MENU_NO
+			, OPERT_SE
+		FROM TN_PBLCATE
+		WHERE PBLCATE_NO IN
+		 <foreach item="item" index="index" collection="array"
+	             open="(" separator="," close=")">
+	        ${item}
+	    </foreach>
+	</select>
+
+	<update id="updatePrev" parameterType="pblcateVO">
+		/* Query ID : humanframe.pblcate.updatePrev */
+		UPDATE TN_PBLCATE 
+			SET COMPT_AT = 'T'
+				, CONFMER_ID = #{rqesterId}
+				, CONFMER_NM = #{rqesterNm}
+		WHERE TRGET_SE_CODE = #{trgetSeCode}
+		AND TRGET_SITE_NO = #{trgetSiteNo}
+		AND TRGET_MENU_NO = #{trgetMenuNo}
+	</update>
+
+	<update id="updateComptAt">
+		/* Query ID : humanframe.pblcate.updateComptAt */
+		UPDATE TN_PBLCATE 
+			SET COMPT_AT = 'Y'
+			  , PROCESS_DTTM = SYSDATE
+		WHERE PBLCATE_NO IN
+		 <foreach item="item" index="index" collection="array"
+	             open="(" separator="," close=")">
+	        #{item}
+	    </foreach>
+	</update>
+
+	<insert id="insert" parameterType="pblcateVO">
+		/* Query ID : humanframe.pblcate.insert */
+		<selectKey order="BEFORE" keyProperty="pblcateNo" resultType="int">
+		SELECT
+			NVL(MAX(PBLCATE_NO),0) + 1
+		FROM TN_PBLCATE
+		</selectKey>
+		INSERT INTO TN_PBLCATE (
+			  PBLCATE_NO
+			, TRGET_SE_CODE
+			, TRGET_SITE_NO
+			, TRGET_MENU_NO
+			, OPERT_SE
+			, COMPT_AT
+			, RQESTER_ID
+			, RQESTER_NM
+			, REQUST_DTTM
+		) VALUES (
+			  #{pblcateNo}
+			, #{trgetSeCode}
+			, #{trgetSiteNo}
+			, #{trgetMenuNo}
+			, #{opertSe, jdbcType=VARCHAR}
+			, #{comptAt, jdbcType=VARCHAR}
+			, #{rqesterId}
+			, #{rqesterNm, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+</mapper>

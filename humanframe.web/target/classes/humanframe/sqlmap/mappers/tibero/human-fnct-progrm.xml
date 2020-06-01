@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.fnct.progrm">
+
+	<!-- Define FnctProgrm Result Map  -->
+	<resultMap type="fnctProgrmVO" id="fnctProgrmMap">
+		<result column="fnct_no"		property="fnctNo"    />
+		<result column="fnct_nm"		property="fnctNm"    />
+		<result column="svc_url"		property="svcUrl"   />
+		<result column="use_at"			property="useAt"    />
+		<result column="creat_dttm"		property="creatDttm"  />
+		<result column="crtr_id"		property="crtrId"   />
+		<result column="crtr_nm"		property="crtrNm"   />
+		<result column="updt_dttm"		property="updtDttm"   />
+		<result column="updusr_id"		property="updusrId" />
+		<result column="updusr_nm"		property="updusrNm" />
+	</resultMap>
+
+	<!-- Define fnctProgrmVO Column List -->
+	<sql id="listColumn">
+		  FNCT_NO
+		, FNCT_NM
+		, SVC_URL
+		, USE_AT
+		, CREAT_DTTM
+		, CRTR_ID
+		, CRTR_NM
+		, UPDT_DTTM
+		, UPDUSR_ID
+		, UPDUSR_NM
+	</sql>
+
+	<!-- Define Search Condition -->
+	<sql id="searchConditions">
+		<if test="srchText != null and srchText != '' ">
+			AND FNCT_NM LIKE '%'|| #{srchText} ||'%'
+		</if>
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+			AND USE_AT = #{useAt}
+		</if>
+		<if test="siteNos !=null and siteNos !='' ">
+			AND FNCT_NO IN
+			(SELECT TFP.FNCT_NO FROM TN_FNCT_PROGRM TFP, TN_SITE_MENU TSM
+			  WHERE TFP.FNCT_NO = TSM.FNCT_NO AND TSM.SITE_NO IN
+				<foreach collection="siteNos" item="siteNo" open="(" separator="," close=")">
+				#{siteNo}
+				</foreach>
+				GROUP BY TFP.FNCT_NO)
+		</if>
+
+	</sql>
+
+	<!-- Define tn_fnct_progrm List Query -->
+	<select id="selectFnctProgrmListVO" parameterType="java.util.HashMap" resultMap="fnctProgrmMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.selectFnctProgrmListVO */
+		SELECT
+				<include refid="listColumn"/>
+		  FROM (
+				SELECT ROWNUM AS RNUM ,
+						<include refid="listColumn"/>
+				  FROM (
+						SELECT
+							<include refid="listColumn"/>
+						FROM TN_FNCT_PROGRM
+						WHERE 1=1
+							<include refid="searchConditions" />
+					  ORDER BY FNCT_NO DESC
+				  )
+				  WHERE ROWNUM &lt;= #{endNum}
+			   ) TN_FNCT_PROGRM
+	     WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<!-- Define tn_fnct_progrm Count Query -->
+	<select id="selectFnctProgrmCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.fnct.fnctProgrm.selectFnctProgrmCount */
+		SELECT 
+			COUNT(FNCT_NO)
+		FROM TN_FNCT_PROGRM
+		WHERE 1=1
+		<include refid="searchConditions"/>
+	</select>
+
+	<select id="selectFnctProgrm" parameterType="int" resultMap="fnctProgrmMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.selectFnctProgrm */
+		SELECT
+		<include refid="listColumn"/>
+		FROM TN_FNCT_PROGRM
+	 	WHERE FNCT_NO = #{fnctNo}
+	</select>
+
+	<update id="updateFnctProgrmUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.updateFnctProgrmUseAt */
+		UPDATE	TN_FNCT_PROGRM
+		   SET  USE_AT = #{useAt}
+		 WHERE	FNCT_NO = #{fnctNo}
+	</update>
+
+	<!-- Define tn_fnct_progrm Insert Query -->
+	<insert id="insertFnctProgrm" parameterType="fnctProgrmVO">
+		/* Query ID : humanframe.fnct.fnctProgrm.insertFnctProgrm */
+		<selectKey keyProperty="fnctNo" resultType="int" order="BEFORE">
+			SELECT
+				NVL(MAX(FNCT_NO),0) + 1
+			FROM TN_FNCT_PROGRM
+		</selectKey>
+		INSERT INTO TN_FNCT_PROGRM (
+			  FNCT_NO
+			, FNCT_NM
+			, SVC_URL
+			, USE_AT
+			, CREAT_DTTM
+			, CRTR_ID
+			, CRTR_NM
+		) VALUES (
+	    	  #{fnctNo}
+	    	, #{fnctNm}
+	    	, #{svcUrl, jdbcType=VARCHAR}
+	    	, #{useAt}
+			, SYSDATE
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{crtrNm, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<!-- Define tn_fnct_progrm Update Query -->
+	<update id="updateFnctProgrm" parameterType="fnctProgrmVO">
+		/* Query ID : humanframe.fnct.fnctProgrm.updateFnctProgrm */
+		UPDATE	TN_FNCT_PROGRM
+		   SET    FNCT_NM = #{fnctNm}
+		    	, SVC_URL = #{svcUrl, jdbcType=VARCHAR}
+		    	, USE_AT = #{useAt}
+				, UPDT_DTTM = SYSDATE
+				, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+				, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+		 WHERE	FNCT_NO = #{fnctNo}
+	</update>
+
+	<!-- Define tn_fnct_progrm Delete Query -->
+	<delete id="deleteFnctProgrm" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.deleteFnctProgrm */
+		DELETE	TN_FNCT_PROGRM
+		 WHERE	FNCT_NO = #{fnctNo}
+	</delete>
+
+</mapper>

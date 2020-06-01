@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.media.lang">
+
+	<resultMap type="mediaLangVO" id="mediaLangMap">
+		<result property="mediaNo" 		column="media_no" />
+		<result property="langCodeId" 	column="lang_code_id" />
+		<result property="langCodeNm" 	column="lang_code_nm" />
+		<result property="mediaNm" 		column="media_nm" />
+		<result property="sumry" 			column="sumry" />
+	</resultMap>
+
+	<select id="selectMediaLangList" parameterType="java.util.HashMap" resultMap="mediaLangMap">
+		/* Query ID : humanframe.media.lang.selectMediaLangList */
+		SELECT
+			  MEDIA_NO
+			, LANG_CODE_ID
+			, (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID = TML.LANG_CODE_ID AND UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+			, MEDIA_NM
+			, SUMRY
+		FROM TN_MEDIA_LANG TML
+		WHERE  MEDIA_NO = #{mediaNo}
+	</select>
+
+	<insert id="insertMediaLang" parameterType="mediaLangVO">
+		/* Query ID : humanframe.media.lang.insertMediaLang */
+		INSERT INTO TN_MEDIA_LANG (
+			  MEDIA_NO
+			, LANG_CODE_ID
+			, MEDIA_NM
+			, SUMRY
+		) VALUES (
+			  #{mediaNo}
+			, #{langCodeId}
+			, #{mediaNm}
+			, #{sumry}
+		)
+	</insert>
+
+	<update id="updateMediaLang" parameterType="mediaLangVO">
+		/* Query ID : humanframe.media.lang.updateMediaLang */
+		UPDATE TN_MEDIA_LANG 
+		SET  MEDIA_NM = #{mediaNm}
+			, SUMRY = #{sumry}
+		WHERE  MEDIA_NO =  #{mediaNo}
+		AND LANG_CODE_ID = #{langCodeId}
+	</update>
+
+	<delete id="deleteMediaLang" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.media.lang.deleteMediaLang */
+		DELETE TN_MEDIA_LANG
+		WHERE MEDIA_NO = #{mediaNo}
+		AND LANG_CODE_ID IN
+		<foreach collection="delLangCodeId" item="langCodeId" open="(" separator="," close=")">
+			#{langCodeId}
+		</foreach>
+	</delete>
+
+</mapper>

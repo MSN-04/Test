@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.mng.menu">
+
+	<resultMap type="mngMenuVO" id="mngMenuMap">
+		<result property="menuNo"			column="MENU_NO" />
+		<result property="upperMenuNo"		column="UPPER_MENU_NO" />
+		<result property="upperMenuNm"		column="UPPER_MENU_NM" />
+		<result property="menuNm"			column="MENU_NM" />
+		<result property="menuUrl"			column="MENU_URL" />
+		<result property="icon"				column="ICON" />
+		<result property="menuTy"			column="MENU_TY" />
+		<result property="levelNo"			column="LEVEL_NO" />
+		<result property="sortNo"			column="SORT_NO" />
+		<result property="useAt"			column="USE_AT" />
+		<result property="inqireAt"			column="INQIRE_AT" />
+		<result property="writngAt"			column="WRITNG_AT" />
+	</resultMap>
+
+	<!-- oracle 에서는 connect by사용하여 level_no 구함 -->
+	<select id="selectMngMenuList" parameterType="java.util.HashMap" resultMap="mngMenuMap">
+		/* Query ID : humanframe.mng.menu.selectMngMenuList */
+		SELECT MENU_NO
+				, UPPER_MENU_NO
+				, MENU_NM
+				, MENU_URL
+				, ICON
+				, MENU_TY
+				, LEVEL AS LEVEL_NO
+				/*, LEVEL_NO*/
+				, SORT_NO
+				, USE_AT
+		FROM TN_MNG_MENU
+		START WITH UPPER_MENU_NO = 0
+		CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+		ORDER SIBLINGS BY SORT_NO, MENU_NO
+	</select>
+
+	<select id="selectMngMenuAuthList" parameterType="java.util.HashMap" resultMap="mngMenuMap">
+		/* Query ID : humanframe.mng.menu.selectMngMenuAuthList */
+		SELECT A.MENU_NO
+		  		, A.UPPER_MENU_NO
+				, A.MENU_NM
+				, A.MENU_URL
+				, A.ICON
+				, A.MENU_TY
+				, LEVEL AS LEVEL_NO
+				/*, LEVEL_NO*/
+				, A.SORT_NO
+				, A.USE_AT
+				, A.INQIRE_AT
+				, A.WRITNG_AT
+		FROM
+		  (
+			SELECT TMM.*,
+			    NVL(TMAM.INQIRE_AT, 'N') AS INQIRE_AT,
+			    NVL(TMAM.WRITNG_AT, 'N') AS WRITNG_AT
+			  FROM TN_MNG_MENU TMM 
+			  LEFT OUTER JOIN TN_MNG_AUTHOR_MENU TMAM ON TMM.MENU_NO  = TMAM.MENU_NO
+			  AND TMAM.AUTHOR_NO = #{authorNo}
+		  ) A
+		  WHERE USE_AT = 'Y'
+		  <if test="inqireAt != null and inqireAt != ''">
+		      AND INQIRE_AT = #{inqireAt}
+		  </if>
+		  START WITH A.UPPER_MENU_NO = 0
+		  CONNECT BY PRIOR A.MENU_NO = A.UPPER_MENU_NO
+		ORDER SIBLINGS BY A.SORT_NO, A.MENU_NO
+	</select>
+
+
+	<select id="selectMngMenu" parameterType="java.util.HashMap" resultMap="mngMenuMap">
+		/* Query ID : humanframe.mng.menu.selectMngMenu */
+		SELECT MENU_NO
+				, UPPER_MENU_NO
+				, ( SELECT MENU_NM
+					FROM TN_MNG_MENU B
+					WHERE A.UPPER_MENU_NO = B.MENU_NO  ) AS UPPER_MENU_NM
+				, MENU_NM
+				, MENU_URL
+				, ICON
+				, MENU_TY
+				, LEVEL_NO
+				, SORT_NO
+				, USE_AT
+		FROM TN_MNG_MENU A
+		WHERE MENU_NO = #{menuNo}
+	</select>
+
+	<insert id="insertMngMenu" parameterType="mngMenuVO">
+		/* Query ID : humanframe.mng.menu.insertMngMenu */
+		<selectKey keyProperty="menuNo" resultType="int" order="BEFORE">
+			SELECT NVL(MAX(MENU_NO), 0) + 1 FROM TN_MNG_MENU
+		</selectKey>
+		INSERT INTO TN_MNG_MENU (
+			 MENU_NO
+			, UPPER_MENU_NO
+			, MENU_NM
+			, MENU_URL
+			, ICON
+			<if test="menuTy != null and menuTy != ''">
+			, MENU_TY
+			</if>
+			, LEVEL_NO
+			, SORT_NO
+			, USE_AT
+		) VALUES (
+			 #{menuNo}
+			, #{upperMenuNo}
+			, #{menuNm}
+			, #{menuUrl}
+			, #{icon}
+			<if test="menuTy != null and menuTy != ''">
+			, #{menuTy}
+			</if>
+			, #{levelNo}
+			, #{sortNo}
+			, #{useAt}
+		)
+	</insert>
+
+	<update id="updateMngMenu" parameterType="mngMenuVO">
+		/* Query ID : humanframe.mng.menu.updateMngMenu */
+		UPDATE TN_MNG_MENU 
+			SET UPPER_MENU_NO = #{upperMenuNo}
+				, MENU_NM = #{menuNm}
+				, MENU_URL = #{menuUrl, jdbcType=VARCHAR}
+				, ICON = #{icon}
+				, LEVEL_NO = #{levelNo}
+				, SORT_NO = #{sortNo}
+				, USE_AT = #{useAt}
+		WHERE MENU_NO = #{menuNo}
+	</update>
+
+	<delete id="deleteMngMenu" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mng.menu.deleteMngMenu */
+		DELETE FROM TN_MNG_MENU 
+		WHERE MENU_NO = #{menuNo} 
+		AND MENU_TY = '2'
+	</delete>
+
+	<select id="selectMngMenuExceptList" parameterType="java.util.HashMap" resultMap="mngMenuMap">
+		/* Query ID : humanframe.mng.menu.selectMngMenuExceptList */
+		SELECT
+			  MENU_NO
+			  , UPPER_MENU_NO
+			  ,	MENU_NM
+			  , MENU_TY
+		FROM TN_MNG_MENU
+		WHERE MENU_NO NOT IN
+		  (
+			  SELECT MENU_NO
+			  	FROM TN_MNG_MENU
+			CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+			    START WITH MENU_NO = #{menuNo}
+		    )
+		ORDER BY SORT_NO, MENU_NO
+	</select>
+
+	<select id="selectLowerMenuCheck" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.mng.menu.selectLowerMenuCheck */
+		SELECT COUNT(*)
+		  FROM TN_MNG_MENU
+		WHERE MENU_NO IN
+		(
+		   SELECT MENU_NO
+		   	 FROM TN_MNG_MENU
+	    CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+		   	START WITH UPPER_MENU_NO = #{menuNo}
+		)
+	</select>
+
+	<update id="updateLowerMenuUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mng.menu.updateLowerMenuUseAt */
+		UPDATE TN_MNG_MENU
+		SET USE_AT = #{useAt}
+		WHERE MENU_NO IN
+		(
+		  SELECT MENU_NO
+		  FROM TN_MNG_MENU
+		    CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+		    START WITH UPPER_MENU_NO = #{menuNo}
+		)
+	</update>
+
+	<select id="selectMenuNmFromUrl" parameterType="java.lang.String" resultType="egovMap">
+		/* Query ID : humanframe.mng.menu.selectMenuNmFromUrl */
+		SELECT DIVS, UPPER_MENU_NM, MENU_NM, MENU_URL
+		FROM (
+			SELECT
+				'1' AS DIVS
+				,(SELECT T.MENU_NM FROM TN_MNG_MENU T WHERE T.MENU_NO=TMM.UPPER_MENU_NO) AS UPPER_MENU_NM
+				,TMM.MENU_NM
+				,TMM.MENU_URL
+			FROM TN_MNG_MENU TMM
+			WHERE SUBSTR(TMM.MENU_URL,1, INSTR(TMM.MENU_URL,'/',-1)) = #{srchMenuUrl}
+			UNION ALL
+			SELECT
+				'2' AS DIVS
+				,(SELECT T.MENU_NM FROM TN_MNG_MENU T WHERE T.MENU_NO=TMM.UPPER_MENU_NO) AS UPPER_MENU_NM
+				,TMM.MENU_NM
+				,TMM.MENU_URL
+			FROM TN_MNG_MENU TMM
+			WHERE SUBSTR(TMM.MENU_URL,1, INSTR(TMM.MENU_URL,'/',-1)) LIKE #{srchMenuUrl} ||'%'
+			UNION ALL
+			SELECT
+				'3' AS DIVS
+				,(SELECT T.MENU_NM FROM TN_MNG_MENU T WHERE T.MENU_NO=TMM.UPPER_MENU_NO) AS UPPER_MENU_NM
+				,TMM.MENU_NM
+				,TMM.MENU_URL
+			FROM TN_MNG_MENU TMM
+			WHERE SUBSTR(TMM.MENU_URL,1, INSTR(TMM.MENU_URL, '/', (INSTR(TMM.MENU_URL, '/', (INSTR(TMM.MENU_URL, '/')+1))+1))) LIKE
+				  SUBSTR(#{srchMenuUrl},1, INSTR(#{srchMenuUrl}, '/', (INSTR(#{srchMenuUrl}, '/', (INSTR(#{srchMenuUrl}, '/')+1))+1))) ||'%'
+			ORDER BY DIVS ASC, MENU_URL ASC
+		) V
+		WHERE ROWNUM=1
+	</select>
+	<select id="selectMenuInfoFromUrl" parameterType="java.lang.String" resultMap="mngMenuMap">
+		/* Query ID : humanframe.mng.menu.selectMenuInfoFromUrl */
+        SELECT   (SELECT T.MENU_NM
+		            FROM TN_MNG_MENU T
+		           WHERE T.MENU_NO = TMM.UPPER_MENU_NO) AS UPPER_MENU_NM,
+		         TMM.MENU_NM,
+		         TMM.MENU_URL,
+		         TMM.MENU_NO
+	    FROM TN_MNG_MENU TMM
+	   WHERE SUBSTR (TMM.MENU_URL, 1, INSTR (TMM.MENU_URL, '/', -1)) LIKE SUBSTR (#{srchMenuUrl},1,INSTR (#{srchMenuUrl}, '/', -1))
+	</select>
+</mapper>

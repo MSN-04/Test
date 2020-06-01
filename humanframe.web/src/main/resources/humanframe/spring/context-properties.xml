@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+	<!-- -Dspring.profiles.active=local -->
+		<bean name="propertiesService" class="egovframework.rte.fdl.property.impl.EgovPropertyServiceImpl" destroy-method="destroy">
+			<property name="properties">
+				<map>
+					<!-- global set -->
+					<entry key="GLOBAL_SITE_DOMAIN"		value="http://localhost" />	<!-- 메인사이트 도메인 -->
+
+					<entry key="GLOBAL_ADMIN_PATH" 		value="backoffice" />
+					<entry key="GLOBAL_ADMIN_ASSETS" 		value="/humanframe/admin/assets" />
+
+					<entry key="SERVER_GUBUN"		value="LOCAL" />
+					<entry key="DOMAIN_SSL"			value="false" />	<!-- SSL적용여부 >> 사이트 정보에 추가 해야함-->
+
+		        	<entry key="WEB_DIR"		value="D:/eGovFrameDev-3.7.0-64bit/workspace/humanframe/humanframe.web/src/main/webapp" />
+		        	<entry key="FILE_UPLOAD_DIR"	value="/data" />
+
+					<entry key="THEME_PATH" 	 value="D:/eGovFrameDev-3.7.0-64bit/workspace/humanframe/humanframe.web/src/main/webapp/WEB-INF/jsp/theme" />
+
+					<entry key="LDAP_PATH"		value="D://ldapTest"/>
+
+					<entry key="SESSION_ADMIN"  	value="HUMAN_ADMIN" />
+					<entry key="SESSION_MEMBER" 	value="HUMAN_MEMBER" />
+					<entry key="SESSION_SNS"  		value="HUMAN_SNS" />
+					<entry key="SESSION_AUTH"  		value="HUMAN_AUTH" />
+					<entry key="COOKIE_MEMBER" 		value="SCSSO" />
+
+					<!-- API -->
+
+					<!-- 다음 api -->
+		        	<entry key="DAUM_API_KEY"		value="f61b69fe5ffdc7d50354d76c53927da3" />
+                    <!-- 네이버 api:맵사용(sun계정,테스트용) -->
+                    <entry key="NAVER_API_KEY"      value="F75VGqoKelqHzWvOPGlS"/>
+                    <!-- 구글 api :맵사용(sun계정,테스트용) -->
+                    <entry key="GOOGLE_API_KEY"      value="AIzaSyBX5s-8a28w8tmJsJZ9DwzWip_64C07KM8"/>
+
+					<!-- GOOGLE reCAPTCHA -->
+		        	<entry key="RECAPTCHA_SITE_KEY"				value="6LeFmyUTAAAAAIWsrWiREg9wH2F8VtoINJqqZf4M" />
+		        	<entry key="RECAPTCHA_SECRET_KEY"			value="6LeFmyUTAAAAAKW7FPsARy7HPG6U1fZW6gT3DVRQ" />
+		        	<entry key="RECAPTCHA_CERTIFICATION_URL"	value="https://www.google.com/recaptcha/api/siteverify" />
+
+					<!-- GOOGLE/GOOGLE+ -->
+					<entry key="GOOGLE_PROJECT" 					value="humanframe" />
+		        	<entry key="GOOGLE_CONSUMER_ID" 				value="21235244738-ps72ifis59shkm3stss6u37nr7di10js.apps.googleusercontent.com" />
+		        	<entry key="GOOGLE_CONSUMER_SECRET" 			value="W9rrp_r9OyhV15NOjkt0lSWt" />
+		        	<!-- <entry key="GOOGLE_GOOGLEPLUS_CALLBACK" 	value="/comm/sns/googleCallback" /> -->
+		        	<entry key="GOOGLE_ANALYTICS_CALLBACK" 			value="http://developers.yooncoms.com/admin/oauth/googleCallback" />
+
+					<entry key="GOOGLE_SCOPE_GOOGLEPLUS"			value="https://www.googleapis.com/auth/plus.login" />
+		        	<entry key="GOOGLE_SCOPE_ANALYTICS"				value="https://www.googleapis.com/auth/analytics.readonly" />
+
+
+				</map>
+			</property>
+		</bean>
+</beans>

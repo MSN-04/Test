@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.metadata">
+
+	<resultMap type="metadataVO" id="metadataListMap">
+		<result column="METADATA_NO" 			property="metadataNo" />
+		<result column="CTGRY_CODE"				property="ctgryCode" />
+		<result column="CNTNTS_NO"				property="cntntsNo" />
+		<result column="MEDIA_NO"				property="mediaNo" />
+		<result column="DATASET_NO"				property="datasetNo" />
+		<result column="VISUAL_NO"				property="visualNo" />
+		<result column="DC_TYPE"				property="dcType" />
+		<result column="DC_TITLE" 				property="dcTitle" />
+		<result column="DC_DATE_CREATED"		property="dcDateCreated" />
+		<result column="DC_DATE_MODIFIED"		property="dcDateModified" />
+		<result column="METADATA_TY_CODE"		property="metadataTyCode" />
+	</resultMap>
+
+	<resultMap type="metadataVO" id="metadataMap" extends="metadataListMap">
+		<result column="DC_SUBJECT"				property="dcSubject" />
+		<result column="DC_FORMAT"				property="dcFormat" />
+		<result column="DC_FORMAT_EXTENT"		property="dcFormatExtent" />
+		<result column="DC_DESCRIPTION"			property="dcDescription" />
+		<result column="DC_CREATOR"				property="dcCreator" />
+		<result column="DC_DATE"				property="dcDate" />
+		<result column="DC_DATE_AVAILABLE"		property="dcDateAvailable" />
+		<result column="DC_DATE_ISSUED"			property="dcDateIssued" />
+		<result column="DC_LANGUAGE"			property="dcLanguage" />
+		<result column="DC_PUBLISHER"			property="dcPublisher" />
+		<result column="DC_RELATION"			property="dcRelation" />
+		<result column="DC_SOURCE"				property="dcSource" />
+		<result column="DC_CONTRIBUTOR"			property="dcContributor" />
+		<result column="DC_IDENTIFIER"			property="dcIdentifier" />
+		<result column="DC_COVERAGE_SPATIAL"	property="dcCoverageSpatial" />
+		<result column="DC_COVERAGE_TEMPORAL"	property="dcCoverageTemporal" />
+		<result column="DC_RIGHT_ACCESSRIGHT"	property="dcRightAccessright" />
+		<result column="DC_RIGHT_LICENSE"		property="dcRightLicense" />
+	</resultMap>
+
+	<resultMap type="metadataVO" id="metadataAPIListMap">
+		<result column="METADATA_NO" 			property="metadataNo" />
+		<result column="METADATA_TY_CODE"		property="metadataTyCode" />
+		<result column="CTGRY_CODE"				property="ctgryCode" />
+		<result column="CNTNTS_NO"				property="cntntsNo" />
+		<result column="MEDIA_NO"				property="mediaNo" />
+		<result column="DATASET_NO"				property="datasetNo" />
+		<result column="VISUAL_NO"				property="visualNo" />
+		<result column="DC_TITLE" 				property="dcTitle" />
+		<result column="DC_DATE_CREATED"		property="dcDateCreated" />
+		<result column="DC_DATE_MODIFIED"		property="dcDateModified" />
+		<result column="DC_DESCRIPTION"			property="dcDescription" />
+		<result column="DC_DATE_ISSUED"			property="dcDateIssued" />
+		<result column="URI_WRD"				property="uriWrd" />
+	</resultMap>
+	
+	<sql id="listColumn">
+		  METADATA_NO
+		, METADATA_TY_CODE
+		, CTGRY_CODE
+		, CNTNTS_NO
+		, MEDIA_NO
+		, DATASET_NO
+		, VISUAL_NO
+		, DC_TITLE
+		, DC_TYPE
+		, DC_DATE_CREATED
+		, DC_DATE_MODIFIED
+	</sql>	
+	
+	<sql id="searchMetadataAPI">
+		<if test="metadataTyCode != '' and metadataTyCode != null">
+		AND METADATA_TY_CODE = #{metadataTyCode}
+		</if>
+	</sql>
+	
+	<sql id="listColumnAPI">
+		  METADATA_NO
+		, METADATA_TY_CODE
+		, CTGRY_CODE
+		, CNTNTS_NO
+		, MEDIA_NO
+		, DATASET_NO
+		, VISUAL_NO
+		, DC_TITLE
+		, DC_DATE_CREATED
+		, DC_DATE_MODIFIED
+		, DC_DESCRIPTION
+		, DC_DATE_ISSUED
+		, URI_WRD
+	</sql>	
+
+	<select id="selectMetadataCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.metadata.selectMetadataCount */
+		SELECT
+			COUNT(*)
+		FROM TN_METADATA
+		WHERE 1 = 1
+		<if test="metadataTyCode != '' and metadataTyCode != null">
+		AND METADATA_TY_CODE = #{metadataTyCode}
+		</if>
+	</select>
+	
+
+	<select id="selectMetadataListVO" parameterType="hashmap" resultMap="metadataListMap">
+		/* Query ID : humanframe.metadata.selectMetadataListVO */
+		SELECT
+			<include refid="listColumn"/>
+		FROM (
+			SELECT
+				ROWNUM AS RNUM ,
+				<include refid="listColumn"/>
+			FROM (
+				SELECT
+					<include refid="listColumn"/>
+				FROM  TN_METADATA META
+				WHERE 1 = 1
+					<if test="metadataTyCode != '' and metadataTyCode != null">
+					AND METADATA_TY_CODE = #{metadataTyCode}
+					</if>
+				ORDER BY METADATA_NO DESC
+		
+			) WHERE ROWNUM &#60;= #{endNum}
+		) WHERE RNUM > #{startNum}		
+	</select>
+
+	<select id="selectMetadata" parameterType="hashmap" resultMap="metadataMap">
+		/* Query ID : humanframe.metadata.selectMetadata */
+		SELECT
+			  METADATA_NO
+			, METADATA_TY_CODE
+			, CTGRY_CODE
+			, CNTNTS_NO
+			, MEDIA_NO
+			, DATASET_NO
+			, VISUAL_NO
+			, DC_TITLE
+			, DC_SUBJECT
+			, DC_TYPE
+			, DC_FORMAT
+			, DC_FORMAT_EXTENT
+			, DC_DESCRIPTION
+			, DC_CREATOR
+			, DC_DATE
+			, DC_DATE_AVAILABLE
+			, DC_DATE_CREATED
+			, DC_DATE_MODIFIED
+			, DC_DATE_ISSUED
+			, DC_LANGUAGE
+			, DC_PUBLISHER
+			, DC_RELATION
+			, DC_SOURCE
+			, DC_CONTRIBUTOR
+			, DC_IDENTIFIER
+			, DC_COVERAGE_SPATIAL
+			, DC_COVERAGE_TEMPORAL
+			, DC_RIGHT_ACCESSRIGHT
+			, DC_RIGHT_LICENSE
+		FROM TN_METADATA
+		WHERE 1 = 1
+		<choose>
+			<when test="metadataNo > 0">
+			AND METADATA_NO = #{metadataNo}
+			</when>
+			<otherwise>
+				<if test="cntntsNo > 0">
+				AND CNTNTS_NO = #{cntntsNo}
+				</if>
+				<if test="mediaNo > 0">
+				AND MEDIA_NO = #{mediaNo}
+				</if>
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insertMetadata" parameterType="metadata">
+		/* Query ID : humanframe.metadata.insertMetadata */
+		<selectKey keyProperty="metadataNo" resultType="int" order="BEFORE">
+		SELECT
+			NVL(MAX(METADATA_NO), 0) + 1
+		FROM TN_METADATA
+		</selectKey>
+		INSERT INTO TN_METADATA (
+		      METADATA_NO
+			, CTGRY_CODE
+			, CNTNTS_NO
+			, MEDIA_NO
+			, DATASET_NO
+			, VISUAL_NO
+			, DC_TITLE
+			, DC_SUBJECT
+			, DC_TYPE
+			, DC_FORMAT
+			, DC_FORMAT_EXTENT
+			, DC_DESCRIPTION
+			, DC_CREATOR
+			, DC_DATE
+			, DC_DATE_AVAILABLE
+			, DC_DATE_CREATED
+			, DC_DATE_MODIFIED
+			, DC_DATE_ISSUED
+			, DC_LANGUAGE
+			, DC_PUBLISHER
+			, DC_RELATION
+			, DC_SOURCE
+			, DC_CONTRIBUTOR
+			, DC_IDENTIFIER
+			, DC_COVERAGE_SPATIAL
+			, DC_COVERAGE_TEMPORAL
+			, DC_RIGHT_ACCESSRIGHT
+			, DC_RIGHT_LICENSE
+		) VALUES (
+		 	  #{metadataNo}
+			, #{ctgryCode, jdbcType=VARCHAR}
+			, #{cntntsNo, jdbcType=VARCHAR}
+			, #{mediaNo, jdbcType=VARCHAR}
+			, #{datasetNo, jdbcType=VARCHAR}
+			, #{visualNo, jdbcType=VARCHAR}
+			, #{dcTitle, jdbcType=VARCHAR}
+			, #{dcSubject, jdbcType=VARCHAR}
+			, #{dcType, jdbcType=VARCHAR}
+			, #{dcFormat, jdbcType=VARCHAR}
+			, #{dcFormatExtent, jdbcType=VARCHAR}
+			, #{dcDescription, jdbcType=VARCHAR}
+			, #{dcCreator, jdbcType=VARCHAR}
+			, #{dcDate, jdbcType=VARCHAR}
+			, #{dcDateAvailable, jdbcType=VARCHAR}
+			, #{dcDateCreated, jdbcType=VARCHAR}
+			, TO_CHAR(SYSDATE,'YYYY-MM-DD')
+			, #{dcDateIssued, jdbcType=VARCHAR}
+			, #{dcLanguage, jdbcType=VARCHAR}
+			, #{dcPublisher, jdbcType=VARCHAR}
+			, #{dcRelation, jdbcType=VARCHAR}
+			, #{dcSource, jdbcType=VARCHAR}
+			, #{dcContributor, jdbcType=VARCHAR}
+			, #{dcIdentifier, jdbcType=VARCHAR}
+			, #{dcCoverageSpatial, jdbcType=VARCHAR}
+			, #{dcCoverageTemporal, jdbcType=VARCHAR}
+			, #{dcRightAccessright, jdbcType=VARCHAR}
+			, #{dcRightLicense, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<update id="updateMetadata" parameterType="metadata">
+		/* Query ID : humanframe.metadata.updateMetadata */
+		UPDATE TN_METADATA SET
+			  CTGRY_CODE = #{ctgryCode, jdbcType=VARCHAR}
+			, CNTNTS_NO = #{cntntsNo}
+			, MEDIA_NO = #{mediaNo}
+			, DATASET_NO = #{datasetNo}
+			, VISUAL_NO = #{visualNo}
+			, DC_TITLE = #{dcTitle, jdbcType=VARCHAR}
+			, DC_SUBJECT = #{dcSubject, jdbcType=VARCHAR}
+			, DC_TYPE = #{dcType, jdbcType=VARCHAR}
+			, DC_FORMAT = #{dcFormat, jdbcType=VARCHAR}
+			, DC_FORMAT_EXTENT = #{dcFormatExtent, jdbcType=VARCHAR}
+			, DC_DESCRIPTION = #{dcDescription, jdbcType=VARCHAR}
+			, DC_CREATOR = #{dcCreator, jdbcType=VARCHAR}
+			, DC_DATE = #{dcDate, jdbcType=VARCHAR}
+			, DC_DATE_AVAILABLE = #{dcDateAvailable, jdbcType=VARCHAR}
+			, DC_DATE_CREATED = #{dcDateCreated, jdbcType=VARCHAR}
+			, DC_DATE_MODIFIED = TO_CHAR(SYSDATE,'YYYY-MM-DD')
+			, DC_DATE_ISSUED = #{dcDateIssued, jdbcType=VARCHAR}
+			, DC_LANGUAGE = #{dcLanguage, jdbcType=VARCHAR}
+			, DC_PUBLISHER = #{dcPublisher, jdbcType=VARCHAR}
+			, DC_RELATION = #{dcRelation, jdbcType=VARCHAR}
+			, DC_SOURCE = #{dcSource, jdbcType=VARCHAR}
+			, DC_CONTRIBUTOR = #{dcContributor, jdbcType=VARCHAR}
+			, DC_IDENTIFIER = #{dcIdentifier, jdbcType=VARCHAR}
+			, DC_COVERAGE_SPATIAL = #{dcCoverageSpatial, jdbcType=VARCHAR}
+			, DC_COVERAGE_TEMPORAL = #{dcCoverageTemporal, jdbcType=VARCHAR}
+			, DC_RIGHT_ACCESSRIGHT = #{dcRightAccessright, jdbcType=VARCHAR}
+			, DC_RIGHT_LICENSE = #{dcRightLicense, jdbcType=VARCHAR}
+		WHERE METADATA_NO = #{metadataNo}
+
+	</update>
+
+	<select id="selectMetadataAPICount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.metadata.selectMetadataAPICount */
+		SELECT
+			COUNT(1)
+		 FROM tn_pblcate_site tps, tn_pblcate_menu tpm, tn_cntnts_mapng tcm, tn_cntnts tc, tn_metadata tm
+			WHERE tps.site_no = tpm.site_no
+		    and tpm.site_no = tcm.site_no
+		    and tpm.menu_no = tcm.menu_no
+		    and tcm.cntnts_no = tc.cntnts_no
+		    and tm.cntnts_no = tc.cntnts_no
+		    and tc.sttus_code = 'P'
+		<include refid="searchMetadataAPI" />
+	</select>
+
+
+
+	<select id="selectMetadataAPIListVO" parameterType="hashmap" resultMap="metadataAPIListMap">
+		/* Query ID : humanframe.metadata.selectMetadataAPIListVO */
+		SELECT
+			<include refid="listColumnAPI"/>
+		FROM (
+			SELECT
+				ROWNUM AS RNUM ,
+				<include refid="listColumnAPI"/>
+			FROM (
+				SELECT
+					TM.METADATA_NO
+					, TM.METADATA_TY_CODE
+					, TM.CTGRY_CODE
+					, TM.CNTNTS_NO
+					, TM.MEDIA_NO
+					, TM.DATASET_NO
+					, TM.VISUAL_NO
+					, TM.DC_TITLE
+					, TM.DC_DATE_CREATED
+					, TM.DC_DATE_MODIFIED
+					, TM.DC_DESCRIPTION
+					, TM.DC_DATE_ISSUED
+				    ,'http://'||TPS.SITE_URL||'/'||(CASE
+												    WHEN TPS.FIRST_URI_DIV_YN = 'Y' THEN TPS.FIRST_URI||'/'||TPM.URI_WRD
+												    ELSE TPM.URI_WRD 
+												    END) AS URI_WRD
+				 FROM TN_PBLCATE_SITE TPS, TN_PBLCATE_MENU TPM, TN_CNTNTS_MAPNG TCM, TN_CNTNTS TC, TN_METADATA TM
+					WHERE TPS.SITE_NO = TPM.SITE_NO
+				    AND TPM.SITE_NO = TCM.SITE_NO
+				    AND TPM.MENU_NO = TCM.MENU_NO
+				    AND TCM.CNTNTS_NO = TC.CNTNTS_NO
+				    AND TM.CNTNTS_NO = TC.CNTNTS_NO
+				    AND TC.STTUS_CODE = 'P'
+				<include refid="searchMetadataAPI" />
+				ORDER BY TM.METADATA_NO DESC	
+			) WHERE ROWNUM &#60;= #{endNum}
+		) WHERE RNUM > #{startNum}	
+	</select>
+
+	<delete id="deleteMetadata" parameterType="hashmap">
+		/* Query ID : humanframe.metadata.deleteMetadata */
+		DELETE FROM TN_METADATA
+		WHERE
+		<if test=" metadataNo > 0 ">
+			METADATA_NO = #{metadataNo}
+		</if>
+		<if test=" cntntsNo > 0 ">
+			CNTNTS_NO = #{cntntsNo}
+		</if>
+		<if test=" mediaNo > 0 ">
+			MEDIA_NO = #{mediaNo}
+		</if>
+	</delete>
+
+</mapper>

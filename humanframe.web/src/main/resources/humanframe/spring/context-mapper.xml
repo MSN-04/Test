@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+	<!-- cms resource -->
+	<util:properties id="humanResource" location="classpath:humanframe/spring/human-resource.xml"/>
+
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="cmsDataSource" />
+		<property name="configLocation" value="classpath:/humanframe/sqlmap/sql-map-config.xml" />
+		<property name="mapperLocations" value="classpath:/humanframe/sqlmap/mappers/#{humanResource['humanframe.dbType']}/*.xml" />
+	</bean> 
+
+	<!-- add resource -->
+<!-- 	<bean id="addSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="addDataSource" />
+		<property name="configLocation" value="classpath:/humanframe/sqlmap/add-sql-map-config.xml" />
+		<property name="mapperLocations" value="classpath:/humanframe/sqlmap/addMappers/*.xml" />
+	</bean> -->
+
+<!-- 	<bean id="batchSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	 	<property name="dataSource" ref="cmsDataSource" />
+		<property name="configLocation" value="classpath:/humanframe/sqlmap/sql-map-config.xml" />
+		<property name="mapperLocations" value="classpath:/humanframe/sqlmap/mappers/#{humanResource['humanframe.dbType']}/*.xml" />
+	</bean>
+	<bean id="batchSqlSessionTemplate" name="batchSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		 <constructor-arg index="0" ref="batchSqlSessionFactory" />
+		 <constructor-arg index="1" value="BATCH" />
+	</bean>
+ -->
+</beans>

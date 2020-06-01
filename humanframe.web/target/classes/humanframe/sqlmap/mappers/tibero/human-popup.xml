@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.popup">
+
+	<resultMap type="popupVO" id="popupMap">
+		<result column="SITE_NO"			property="siteNo"/>
+		<result column="SITE_NM"			property="siteNm" />
+		<result column="POPUP_NO"			property="popupNo"/>
+		<result column="POPUP_SJ"			property="popupSj"/>
+		<result column="POPUP_TOP"			property="popupTop"/>
+		<result column="POPUP_LEFT"			property="popupLeft"/>
+		<result column="POPUP_WIDTH"		property="popupWidth"/>
+		<result column="POPUP_HEIGHT"		property="popupHeight"/>
+		<result column="IMAGE_FILE_NM"		property="imageFileNm"/>
+		<result column="BGN_DTTM"			property="bgnDttm"/>
+		<result column="END_DTTM"			property="endDttm"/>
+		<result column="POPUP_TY"			property="popupTy"/>
+		<result column="LINK_URL"			property="linkUrl"/>
+		<result column="LINK_TRGT"			property="linkTrgt"/>
+		<result column="STOP_VIEW_AT"		property="stopViewAt"/>
+		<result column="USE_AT"				property="useAt"/>
+		<result column="CREAT_DTTM"			property="creatDttm"/>
+		<result column="CRTR_ID"			property="crtrId"/>
+		<result column="CRTR_NM"			property="crtrNm"/>
+		<result column="UPDT_DTTM"			property="updtDttm"/>
+		<result column="UPDUSR_ID"			property="updusrId"/>
+		<result column="UPDUSR_NM"			property="updusrNm"/>
+		<collection property="fileList" column="{srvcId=srvc_id, upperNo=popup_no}" select="humanframe.file.selectFileList" />
+	</resultMap>
+
+	<sql id="listColumn">
+		  SITE_NO
+		, POPUP_NO
+		, POPUP_SJ
+		, POPUP_TOP
+		, POPUP_LEFT
+		, POPUP_WIDTH
+		, POPUP_HEIGHT
+		, IMAGE_FILE_NM
+		, BGN_DTTM
+		, END_DTTM
+		, POPUP_TY
+		, LINK_URL
+		, LINK_TRGT
+		, STOP_VIEW_AT
+		, USE_AT
+		, CREAT_DTTM
+		, CRTR_ID
+		, CRTR_NM
+		, UPDT_DTTM
+		, UPDUSR_ID
+		, UPDUSR_NM
+		, 'POPUP' AS SRVC_ID
+	</sql>
+
+	<sql id="searchConditions">
+		<if test="searchText != null and searchText != '' ">
+			<choose>
+				<when test='searchKey != null and searchKey == "sj" '>AND popup_sj like '%'|| #{searchText} ||'%'</when>
+			</choose>
+		</if>
+		<if test="siteNo != null and siteNo != '' ">
+			AND SITE_NO = #{siteNo}
+		</if>
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt != null and useAt != '' ">
+			AND USE_AT = #{useAt}
+		</if>
+		<if test="siteNos !=null and siteNos !='' ">
+			AND SITE_NO IN
+			<foreach collection="siteNos" item="siteNo" open="(" separator="," close=")">
+				#{siteNo}
+			</foreach>
+		</if>
+		<if test="popupTy != null and popupTy != ''">
+			AND POPUP_TY = #{popupTy}
+		</if>
+	</sql>
+
+	<select id="selectPopupListVO" parameterType="hashmap" resultMap="popupMap">
+		/* Query ID : humanframek.popup.selectPopupListVO */
+		SELECT
+				<include refid="listColumn"/>
+				, (SELECT SITE_NM FROM TN_SITE TS WHERE TS.SITE_NO = TN_POPUP.SITE_NO) AS SITE_NM
+		FROM (
+				SELECT ROWNUM AS RNUM ,
+						<include refid="listColumn"/>
+				  FROM (
+						SELECT
+							<include refid="listColumn"/>
+						  FROM TN_POPUP
+						 WHERE 1=1
+							<include refid="searchConditions" />
+					  ORDER BY POPUP_NO DESC
+				  )
+				  WHERE ROWNUM &lt;= #{endNum}
+			   ) TN_POPUP
+	   	WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectPopupCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframek.popup.selectPopupCount */
+		SELECT
+			COUNT(POPUP_NO)
+		FROM TN_POPUP
+		WHERE 1=1
+		<include refid="searchConditions"/>
+	</select>
+
+
+	<select id="selectPopup" parameterType="hashmap" resultMap="popupMap">
+		/* Query ID : humanframek.popup.selectPopup */
+		SELECT
+			<include refid="listColumn"/>
+			, (SELECT SITE_NM FROM TN_SITE TS WHERE TS.SITE_NO = TN_POPUP.SITE_NO) AS SITE_NM
+		FROM TN_POPUP
+		WHERE  POPUP_NO = #{popupNo}
+			<if test="siteNo != null and siteNo != ''">
+			AND SITE_NO = #{siteNo}
+			</if>
+			<if test=' srchMain == "Y" '>
+			AND USG_AT = 'Y'
+			AND SYSDATE BETWEEN BGN_DTTM AND END_DTTM
+			</if>
+	</select>
+
+	<insert id="insertPopup" parameterType="popupVO">
+		/* Query ID : humanframek.popup.insertPopup */
+		<selectKey keyProperty="popupNo" resultType="int" order="BEFORE">
+			<if test="popupNo = null or popupNo = ''">
+				(SELECT NVL(MAX(POPUP_NO), 0) + 1 FROM TN_POPUP)
+	        </if>
+	        <if test="popupNo != null and popupNo != ''">
+				#{popupNo}
+	        </if>
+		</selectKey>
+		INSERT INTO TN_POPUP (
+			SITE_NO
+			,POPUP_NO
+			,POPUP_SJ
+			,POPUP_TOP
+			,POPUP_LEFT
+			,POPUP_WIDTH
+			,POPUP_HEIGHT
+			,IMAGE_FILE_NM
+			,BGN_DTTM
+			,END_DTTM
+			,POPUP_TY
+			,LINK_URL
+			,LINK_TRGT
+			,STOP_VIEW_AT
+			,USE_AT
+			,CREAT_DTTM
+			,CRTR_ID
+			,CRTR_NM
+			,UPDT_DTTM
+			,UPDUSR_ID
+			,UPDUSR_NM
+		) VALUES (
+			  #{siteNo}
+			, #{popupNo}
+			, #{popupSj, jdbcType=VARCHAR}
+			, #{popupTop}
+			, #{popupLeft}
+			, #{popupWidth}
+			, #{popupHeight}
+			, #{imageFileNm, jdbcType=VARCHAR}
+			, TO_DATE(#{bgnDttm, jdbcType=VARCHAR},'yyyy-MM-dd')
+			, TO_DATE(#{endDttm, jdbcType=VARCHAR},'yyyy-MM-dd')
+			, #{popupTy, jdbcType=VARCHAR}
+			, #{linkUrl, jdbcType=VARCHAR}
+			, #{linkTrgt, jdbcType=VARCHAR}
+			, #{stopViewAt, jdbcType=VARCHAR}
+			, #{useAt, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{crtrId}
+			, #{crtrNm, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{updusrId}
+			, #{updusrNm, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<update id="updatePopup" parameterType="popupVO">
+		/* Query ID : humanframek.popup.updatePopup */
+		UPDATE TN_POPUP 
+		 SET  POPUP_SJ = #{popupSj, jdbcType=VARCHAR}
+			, POPUP_TOP = #{popupTop}
+			, POPUP_LEFT = #{popupLeft}
+			, POPUP_WIDTH = #{popupWidth}
+			, POPUP_HEIGHT = #{popupHeight}
+			, IMAGE_FILE_NM = #{imageFileNm, jdbcType=VARCHAR}
+			, BGN_DTTM = TO_DATE(#{bgnDttm, jdbcType=VARCHAR},'yyyy-MM-dd')
+			, END_DTTM = TO_DATE(#{endDttm, jdbcType=VARCHAR},'yyyy-MM-dd')
+			, POPUP_TY = #{popupTy, jdbcType=VARCHAR}
+			, LINK_URL = #{linkUrl, jdbcType=VARCHAR}
+			, LINK_TRGT	= #{linkTrgt, jdbcType=VARCHAR}
+			, STOP_VIEW_AT = #{stopViewAt, jdbcType=VARCHAR}
+			, USE_AT = #{useAt, jdbcType=VARCHAR}
+			, UPDT_DTTM	= SYSDATE
+			, UPDUSR_ID	= #{updusrId, jdbcType=VARCHAR}
+			, UPDUSR_NM	= #{updusrNm, jdbcType=VARCHAR}
+		WHERE SITE_NO =  #{siteNo}
+		AND POPUP_NO = #{popupNo}
+	</update>
+
+	<!-- Define tn_popup Update Use Y/N Query -->
+	<update id="updatePopupUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.popup.updatePopupUseAt */
+		UPDATE	TN_POPUP
+		   SET  USE_AT = #{useAt}
+		 WHERE	POPUP_NO = #{popupNo}
+	</update>
+
+	<!-- Define tn_popup Update Use Y/N for List Query -->
+	<update id="updatePopupListUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.popup.updatePopupListUseAt */
+		UPDATE	TN_POPUP
+		   SET  USE_AT = #{useAt}
+			, UPDT_DT = SYSDATE
+			, UPDUSR_NM = #{updusrNm}
+		WHERE POPUP_NO IN
+			<foreach collection="arrPopup" item="popupNo" open="(" separator="," close=")">
+				#{popupNo}
+			</foreach>
+	</update>
+
+	<!-- Define tn_popup Delete Query -->
+	<delete id="deletePopup" parameterType="java.util.HashMap">
+		/* Query ID : humanframek.popup.deletePopup */
+		DELETE	FROM TN_POPUP
+		 WHERE	POPUP_NO = #{popupNo}
+	</delete>
+
+	<select id="selectPopupListAll" resultMap="popupMap">
+		/* Query ID : humanframek.popup.selectPopupListAll */
+		SELECT
+			<include refid="listColumn"/>
+		  FROM TN_POPUP
+		WHERE SYSDATE BETWEEN BGN_DTTM AND END_DTTM
+			<if test="siteNo != null and siteNo != ''">
+			AND SITE_NO = #{siteNo}
+			</if>
+			<if test="useAt != null and useAt != ''">
+			AND USE_AT = #{useAt}
+			</if>
+			ORDER BY POPUP_NO DESC
+	</select>
+</mapper>

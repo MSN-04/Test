@@ -1,0 +1,761 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.site.menu">
+
+	<resultMap type="siteMenuVO" id="menuMap">
+		<result property="siteNo"				column="SITE_NO" />
+		<result property="menuNo"				column="MENU_NO" />
+		<result property="upperMenuNo"			column="UPPER_MENU_NO" />
+		<result property="upperMenuNm"			column="UPPER_MENU_NM" />
+		<result property="menuNm"				column="MENU_NM" />
+		<result property="menuUri"				column="MENU_URI" />
+		<result property="menuTy"				column="MENU_TY" />
+		<result property="asideOpt"				column="ASIDE_OPT"		typeHandler="stringToArrayHandler" />
+		<result property="postListTy"			column="POST_LIST_TY" />
+		<result property="tagCloudAt"			column="TAG_CLOUD_AT" />
+		<result property="subMainUseAt"			column="SUB_MAIN_USE_AT" />
+		<result property="subMainNo"			column="SUB_MAIN_NO" />
+		<result property="bbsNo"				column="BBS_NO" />
+		<result property="fnctNo"				column="FNCT_NO" />
+		<result property="linkUrl"				column="LINK_URL" />
+		<result property="linkTrgt"				column="LINK_TRGT" />
+		<result property="mnmnuDspyAt"			column="MNMNU_DSPY_AT" />
+		<result property="sbmnuDspyAt"			column="SBMNU_DSPY_AT" />
+		<result property="levelNo"				column="LEVEL_NO" />
+		<result property="sortNo"				column="SORT_NO" />
+		<result property="useAt"				column="USE_AT" />
+		<result property="menuPath"				column="MENU_PATH" />
+		<result property="menuNmPath"			column="MENU_NM_PATH" />
+		<result property="metaSj"				column="META_SJ" />
+		<result property="metaDc"				column="META_DC" />
+		<result property="metaKwrd"				column="META_KWRD" />
+		<result property="asideOptStr"			column="ASIDE_OPT"	/>
+		<result property="cntntsCount"			column="CNTNTS_COUNT" />
+		<result property="siteNm"				column="SITE_NM" />
+		<result property="mnuChargerNm"			column="MNU_CHARGER_NM" />
+		<result property="mnuChargerOrgnztNm"	column="MNU_CHARGER_ORGNZT_NM" />
+		<result property="mnuChargerTelno"		column="MNU_CHARGER_TELNO" />
+		<result property="mnuChargerUpdtDt"		column="MNU_CHARGER_UPDT_DT" />		
+		<result property="cmUseAt"				column="CM_USE_AT" />
+		<result property="stsfdgUseAt"			column="STSFDG_USE_AT" />
+		<result property="mnuChargerUseAt"		column="MNU_CHARGER_USE_AT" />		
+		<result property="siteMapDspyAt"		column="SITE_MAP_DSPY_AT" />
+	</resultMap>
+	
+	<sql id="listColumn">
+		SITE_NO
+		, MENU_NO
+		, UPPER_MENU_NO
+		, MENU_NM
+		, MENU_URI
+		, MENU_TY
+		, ASIDE_OPT
+		, POST_LIST_TY
+		, TAG_CLOUD_AT
+		, SUB_MAIN_USE_AT
+		, SUB_MAIN_NO
+		, BBS_NO
+		, FNCT_NO
+		, LINK_URL
+		, LINK_TRGT
+		, MNMNU_DSPY_AT
+		, SBMNU_DSPY_AT
+		, SORT_NO
+		, USE_AT
+		, CM_USE_AT
+		, STSFDG_USE_AT
+		, MNU_CHARGER_USE_AT
+		, META_SJ
+		, META_DC
+		, META_KWRD
+		, MNU_CHARGER_NM
+		, MNU_CHARGER_ORGNZT_NM
+		, MNU_CHARGER_TELNO
+		, MNU_CHARGER_UPDT_DT
+		, SITE_MAP_DSPY_AT
+	</sql>
+
+	<sql id="searchConditions">
+		AND MENU_NM != 'Home'
+		<if test="srchSiteNo != null and srchSiteNo != '' ">
+		AND SITE_NO = #{srchSiteNo}
+		</if>
+		<if test="srchMenuNm != null and srchMenuNm != '' ">
+		AND MENU_NM LIKE '%'|| #{srchMenuNm} ||'%'
+		</if>
+		<if test="srchMenuTy != null and srchMenuTy != '' ">
+		AND MENU_TY = #{srchMenuTy}
+		</if>
+		<if test="siteNos !=null and siteNos !='' ">
+		AND SITE_NO IN
+			<foreach collection="siteNos" item="siteNo" open="(" separator="," close=")">
+				#{siteNo}
+			</foreach>
+		</if>
+	</sql>
+
+	<!-- oracle 에서는 connect by사용하여 level_no 구함 -->
+	<select id="selectSiteMenuList" parameterType="java.util.HashMap" resultMap="menuMap">
+		/* Query ID : humanframework.site.menu.selectSiteMenuList */
+		SELECT SITE_NO
+				, MENU_NO
+				, UPPER_MENU_NO
+				, MENU_NM
+				, MENU_URI
+				, MENU_TY
+				, ASIDE_OPT
+				, POST_LIST_TY
+				, TAG_CLOUD_AT
+				, SUB_MAIN_USE_AT
+				, SUB_MAIN_NO
+				, BBS_NO
+				, FNCT_NO
+				, LINK_URL
+				, LINK_TRGT
+				, MNMNU_DSPY_AT
+				, SBMNU_DSPY_AT
+				, LEVEL AS LEVEL_NO
+				/*, LEVEL_NO*/
+				, SORT_NO
+				, USE_AT
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+				, SYS_CONNECT_BY_PATH(MENU_NO, '/') AS MENU_PATH
+				, SYS_CONNECT_BY_PATH(MENU_NM, '>') AS MENU_NM_PATH
+				, META_SJ
+				, META_DC
+				, META_KWRD
+				, MNU_CHARGER_NM
+				, MNU_CHARGER_ORGNZT_NM
+				, MNU_CHARGER_TELNO
+				, MNU_CHARGER_UPDT_DT
+				, SITE_MAP_DSPY_AT
+				, (SELECT COUNT(*) FROM TN_CNTNTS_MAPNG TCM WHERE TCM.MENU_NO = TSM.MENU_NO) AS CNTNTS_COUNT
+				, (SELECT SITE_NM FROM TN_SITE TS WHERE TS.SITE_NO = TSM.SITE_NO) AS SITE_NM    
+		FROM TN_SITE_MENU TSM
+		WHERE 1 = 1
+		<if test="siteNo != null and siteNo != ''">
+			AND SITE_NO = #{siteNo}
+		</if>
+		<if test="subMainNo != null and subMainNo != ''">
+			AND SUB_MAIN_NO = #{subMainNo}
+		</if>
+		<if test="bbsNo != null and bbsNo != ''">
+			AND BBS_NO = #{bbsNo}
+		</if>
+		<if test="fnctNo != null and fnctNo != ''">
+			AND FNCT_NO = #{fnctNo}
+		</if>
+		<if test="menuTy != null and menuTy != ''">
+			AND MENU_TY = #{menuTy}
+		</if>
+		<if test="arrMenuNo != null and arrMenuNo != ''">
+			AND MENU_NO IN
+			 <foreach item="item" index="index" collection="arrMenuNo"
+		             open="(" separator="," close=")">
+		        #{item}
+		    </foreach>
+		</if>
+		<if test="upperMenuNo != null and upperMenuNo != '' ">
+			AND UPPER_MENU_NO = #{upperMenuNo}
+		</if>
+		<if test="exclMenuNo != null and exclMenuNo != '' ">
+			AND MENU_NO != #{exclMenuNo}
+		</if>
+		START WITH UPPER_MENU_NO = 0
+		CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+		           AND PRIOR SITE_NO = SITE_NO
+		ORDER SIBLINGS BY SORT_NO, MENU_NO
+	</select>
+
+	<select id="selectSiteMenu" parameterType="java.util.HashMap" resultMap="menuMap">
+		/* Query ID : humanframework.site.menu.selectSiteMenu */
+		SELECT SITE_NO
+				, MENU_NO
+				, UPPER_MENU_NO
+				, ( SELECT MENU_NM
+					FROM TN_SITE_MENU B
+					WHERE A.UPPER_MENU_NO = B.MENU_NO  ) AS UPPER_MENU_NM
+				, MENU_NM
+				, MENU_URI
+				, MENU_TY
+				, ASIDE_OPT
+				, POST_LIST_TY
+				, TAG_CLOUD_AT
+				, SUB_MAIN_USE_AT
+				, SUB_MAIN_NO
+				, BBS_NO
+				, FNCT_NO
+				, LINK_URL
+				, LINK_TRGT
+				, MNMNU_DSPY_AT
+				, SBMNU_DSPY_AT
+				, LEVEL_NO
+				, SORT_NO
+				, USE_AT
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+				, META_SJ
+				, META_DC
+				, META_KWRD
+				, MNU_CHARGER_NM
+				, MNU_CHARGER_ORGNZT_NM
+				, MNU_CHARGER_TELNO
+				, MNU_CHARGER_UPDT_DT
+				, SITE_MAP_DSPY_AT
+		FROM TN_SITE_MENU A
+		<where>
+			<if test="menuNo != null and menuNo != ''">
+				AND MENU_NO = #{menuNo}
+			</if>
+			<if test="menuUri != null and menuUri != ''">
+				AND MENU_URI = #{menuUri}
+			</if>
+			<if test="siteNo != null and siteNo != ''">
+				AND SITE_NO = #{siteNo}
+			</if>
+		</where>
+	</select>
+
+	<insert id="insertSiteMenu" parameterType="siteMenuVO">
+		/* Query ID : humanframework.site.menu.insertSiteMenu */
+		<selectKey keyProperty="menuNo" resultType="int" order="BEFORE">
+			SELECT NVL(MAX(MENU_NO), 0) + 1 FROM TN_SITE_MENU
+		</selectKey>
+		INSERT INTO TN_SITE_MENU (
+				SITE_NO
+				, MENU_NO
+				, UPPER_MENU_NO
+				, MENU_NM
+				, MENU_URI
+				, MENU_TY
+				, ASIDE_OPT
+				, POST_LIST_TY
+				, TAG_CLOUD_AT
+				, SUB_MAIN_USE_AT
+				, SUB_MAIN_NO
+				, BBS_NO
+				, FNCT_NO
+				, LINK_URL
+				, LINK_TRGT
+				, MNMNU_DSPY_AT
+				, SBMNU_DSPY_AT
+				, LEVEL_NO
+				, SORT_NO
+				, USE_AT
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+				, MNU_CHARGER_NM
+				, MNU_CHARGER_ORGNZT_NM
+				, MNU_CHARGER_TELNO
+				, MNU_CHARGER_UPDT_DT
+				, SITE_MAP_DSPY_AT
+		) VALUES (
+				#{siteNo}
+				, #{menuNo}
+				, #{upperMenuNo}
+				, #{menuNm}
+				, #{menuUri}
+				, #{menuTy}
+				, #{asideOptStr, jdbcType=VARCHAR}
+				, #{postListTy}
+				, #{tagCloudAt}
+				, #{subMainUseAt}
+				, #{subMainNo}
+				, #{bbsNo}
+				, #{fnctNo}
+				, #{linkUrl, jdbcType=VARCHAR}
+				, #{linkTrgt}
+				, #{mnmnuDspyAt}
+				, #{sbmnuDspyAt}
+				, #{levelNo}
+				, #{sortNo}
+				, #{useAt}
+				, #{cmUseAt}
+				, #{stsfdgUseAt}
+				, #{mnuChargerUseAt}
+				, #{mnuChargerNm, jdbcType=VARCHAR}
+				, #{mnuChargerOrgnztNm, jdbcType=VARCHAR}
+				, #{mnuChargerTelno, jdbcType=VARCHAR}
+				, #{mnuChargerUpdtDt, jdbcType=VARCHAR}
+				, #{siteMapDspyAt}
+		)
+	</insert>
+
+	<update id="updateSiteMenu" parameterType="siteMenuVO">
+		/* Query ID : humanframework.site.menu.updateSiteMenu */
+		UPDATE TN_SITE_MENU 
+			SET  UPPER_MENU_NO = #{upperMenuNo}
+				, MENU_NM = #{menuNm}
+				, MENU_URI = #{menuUri}
+				, MENU_TY = #{menuTy}
+				, ASIDE_OPT = #{asideOptStr, jdbcType=VARCHAR}
+				, POST_LIST_TY = #{postListTy}
+				, TAG_CLOUD_AT = #{tagCloudAt}
+				, SUB_MAIN_USE_AT = #{subMainUseAt}
+				, BBS_NO = #{bbsNo}
+				, FNCT_NO = #{fnctNo}
+				, LINK_URL = #{linkUrl, jdbcType=VARCHAR}
+				, LINK_TRGT = #{linkTrgt}
+				, MNMNU_DSPY_AT = #{mnmnuDspyAt}
+				, SBMNU_DSPY_AT = #{sbmnuDspyAt}
+				, LEVEL_NO = #{levelNo}
+				, SORT_NO = #{sortNo}
+				, USE_AT = #{useAt}
+				, CM_USE_AT = #{cmUseAt}
+				, STSFDG_USE_AT = #{stsfdgUseAt}
+				, MNU_CHARGER_USE_AT = #{mnuChargerUseAt}
+				, MNU_CHARGER_NM = #{mnuChargerNm, jdbcType=VARCHAR}
+				, MNU_CHARGER_ORGNZT_NM = #{mnuChargerOrgnztNm, jdbcType=VARCHAR}
+				, MNU_CHARGER_TELNO = #{mnuChargerTelno, jdbcType=VARCHAR}
+				, MNU_CHARGER_UPDT_DT = #{mnuChargerUpdtDt, jdbcType=VARCHAR}
+				, SITE_MAP_DSPY_AT = #{siteMapDspyAt}
+		WHERE MENU_NO = #{menuNo}
+	</update>
+
+	<delete id="deleteSiteMenu" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.site.menu.deleteSiteMenu */
+		DELETE FROM TN_SITE_MENU WHERE MENU_NO = #{menuNo}
+	</delete>
+
+	<select id="selectSiteMenuExceptList" parameterType="java.util.HashMap" resultMap="menuMap">
+		/* Query ID : humanframework.site.menu.selectSiteMenuExceptList */
+		SELECT
+			 MENU_NO
+			,UPPER_MENU_NO
+			,MENU_NM
+			,MENU_TY
+			,USE_AT
+		FROM TN_SITE_MENU
+		WHERE SITE_NO = #{siteNo} 
+		AND MENU_NO NOT IN (SELECT 
+								MENU_NO
+							FROM TN_SITE_MENU
+							WHERE SITE_NO = #{siteNo}
+							CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+							START WITH MENU_NO = #{menuNo}
+						    )
+		ORDER BY SORT_NO, MENU_NO
+	</select>
+
+	<select id="selectLowerMenuCheck" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframework.site.menu.selectLowerMenuCheck */
+		SELECT 
+			COUNT(*)
+		FROM TN_SITE_MENU
+		WHERE MENU_NO IN (SELECT 
+							MENU_NO
+						  FROM TN_SITE_MENU
+					      CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+						  START WITH UPPER_MENU_NO = #{menuNo}
+						  )
+	</select>
+
+	<select id="selectDuplicateUriCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframework.site.menu.selectDuplicateUriCount */
+		SELECT 
+			COUNT(*) 
+		FROM TN_SITE_MENU
+		WHERE SITE_NO = #{siteNo} 
+		AND MENU_URI = #{menuUri}
+	</select>
+
+	<update id="updateSiteMenuTypeReset" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.site.menu.updateSiteMenuTypeReset */
+		UPDATE TN_SITE_MENU SET
+		<if test="menuTy == 'BBS' ">
+			BBS_NO = 0
+		</if>
+		<if test="menuTy == 'FNCT' ">
+			FNCT_NO = 0
+		</if>
+		<if test="menuTy == 'SUBMAIN' ">
+			SUB_MAIN_NO = 0
+		</if>
+		WHERE
+		<if test="menuTy == 'BBS' ">
+			BBS_NO = #{svcNo}
+		</if>
+		<if test="menuTy == 'FNCT' ">
+			FNCT_NO = #{svcNo}
+		</if>
+		<if test="menuTy == 'SUBMAIN' ">
+			SUB_MAIN_NO = #{svcNo}
+		</if>
+	</update>
+
+	<update id="updateSiteMenuByType" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.site.menu.updateSiteMenuByType */
+		UPDATE TN_SITE_MENU SET
+		<if test="menuTy == 'BBS' ">
+			BBS_NO = #{svcNo}
+		</if>
+		<if test="menuTy == 'FNCT' ">
+			FNCT_NO = #{svcNo}
+		</if>
+		<if test="menuTy == 'SUBMAIN' ">
+			SUB_MAIN_NO = #{svcNo}
+		</if>
+		WHERE MENU_NO IN
+			<foreach collection="arrMenuNo" item="menuNo" open="(" separator="," close=")">
+				#{menuNo}
+			</foreach>
+	</update>
+
+	<select id="selectMenuListByRootMenuNo" parameterType="java.util.HashMap" resultMap="menuMap">
+		/* Query ID : humanframework.site.menu.selectMenuListByRootMenuNo */
+		SELECT 
+			A.*
+			, LEVEL AS LEVEL_NO
+		FROM (
+			SELECT
+				SITE_NO
+				, MENU_NO
+				, UPPER_MENU_NO
+				, MENU_NM
+				, MENU_URI
+				, MENU_TY
+				, ASIDE_OPT
+				, POST_LIST_TY
+				, TAG_CLOUD_AT
+				, SUB_MAIN_USE_AT
+				, SUB_MAIN_NO
+				, BBS_NO
+				, FNCT_NO
+				, LINK_URL
+				, LINK_TRGT
+				, MNMNU_DSPY_AT
+				, SBMNU_DSPY_AT
+				, SORT_NO
+				, USE_AT
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+				, META_SJ
+				, META_DC
+				, META_KWRD
+				, MNU_CHARGER_NM
+				, MNU_CHARGER_ORGNZT_NM
+				, MNU_CHARGER_TELNO
+				, MNU_CHARGER_UPDT_DT
+				, SITE_MAP_DSPY_AT
+			FROM TN_SITE_MENU MENU
+			WHERE MENU.SITE_NO = #{siteNo}
+			AND MENU.USE_AT = 'Y'
+			AND MENU.SBMNU_DSPY_AT = 'Y'
+		) A
+		CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+		START WITH MENU_NO = #{menuNo}
+		ORDER SIBLINGS BY SORT_NO, MENU_NO
+	</select>
+
+	<!-- pblcate -->
+	<insert id="insertPblcateSiteMenu" parameterType="siteMenuVO">
+		/* Query ID : humanframework.site.menu.insertPblcateSiteMenu */
+		INSERT INTO TN_PBLCATE_SITE_MENU (
+				SITE_NO
+				, MENU_NO
+				, UPPER_MENU_NO
+				, MENU_NM
+				, MENU_URI
+				, MENU_TY
+				, ASIDE_OPT
+				, POST_LIST_TY
+				, TAG_CLOUD_AT
+				, SUB_MAIN_USE_AT
+				, SUB_MAIN_NO
+				, BBS_NO
+				, FNCT_NO
+				, LINK_URL
+				, LINK_TRGT
+				, MNMNU_DSPY_AT
+				, SBMNU_DSPY_AT
+				, LEVEL_NO
+				, SORT_NO
+				, USE_AT
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+				, MNU_CHARGER_NM
+				, MNU_CHARGER_ORGNZT_NM
+				, MNU_CHARGER_TELNO
+				, MNU_CHARGER_UPDT_DT
+				, SITE_MAP_DSPY_AT
+		) VALUES (
+				#{siteNo}
+				, #{menuNo}
+				, #{upperMenuNo}
+				, #{menuNm, jdbcType=VARCHAR}
+				, #{menuUri, jdbcType=VARCHAR}
+				, #{menuTy}
+				, #{asideOptStr, jdbcType=VARCHAR}
+				, #{postListTy}
+				, #{tagCloudAt}
+				, #{subMainUseAt}
+				, #{subMainNo}
+				, #{bbsNo}
+				, #{fnctNo}
+				, #{linkUrl, jdbcType=VARCHAR}
+				, #{linkTrgt, jdbcType=VARCHAR}
+				, #{mnmnuDspyAt}
+				, #{sbmnuDspyAt}
+				, #{levelNo}
+				, #{sortNo}
+				, #{useAt}
+				, #{cmUseAt}
+				, #{stsfdgUseAt}
+				, #{mnuChargerUseAt}
+				, #{mnuChargerNm, jdbcType=VARCHAR}
+				, #{mnuChargerOrgnztNm, jdbcType=VARCHAR}
+				, #{mnuChargerTelno, jdbcType=VARCHAR}
+				, #{mnuChargerUpdtDt, jdbcType=VARCHAR}
+				, #{siteMapDspyAt}
+		)
+	</insert>
+
+	<update id="updatePblcateSiteMenuTypeReset" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.site.menu.updatePblcateSiteMenuTypeReset */
+		UPDATE TN_PBLCATE_SITE_MENU SET
+		<if test="menuTy == 'BBS' ">
+			BBS_NO = 0
+		</if>
+		<if test="menuTy == 'FNCT' ">
+			FNCT_NO = 0
+		</if>
+		<if test="menuTy == 'SUBMAIN' ">
+			SUB_MAIN_NO = 0
+		</if>
+		WHERE
+		<if test="menuTy == 'BBS' ">
+			BBS_NO = #{svcNo}
+		</if>
+		<if test="menuTy == 'FNCT' ">
+			FNCT_NO = #{svcNo}
+		</if>
+		<if test="menuTy == 'SUBMAIN' ">
+			SUB_MAIN_NO = #{svcNo}
+		</if>
+	</update>
+
+	<update id="updatePblcateSiteMenuByType" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.site.menu.updatePblcateSiteMenuByType */
+		UPDATE TN_PBLCATE_SITE_MENU SET
+		<if test="menuTy == 'BBS' ">
+			BBS_NO = #{svcNo}
+		</if>
+		<if test="menuTy == 'FNCT' ">
+			FNCT_NO = #{svcNo}
+		</if>
+		<if test="menuTy == 'SUBMAIN' ">
+			SUB_MAIN_NO = #{svcNo}
+		</if>
+		WHERE MENU_NO IN
+			<foreach collection="arrMenuNo" item="menuNo" open="(" separator="," close=")">
+				#{menuNo}
+			</foreach>
+	</update>
+
+	<update id="updatePblcateSiteMenu" parameterType="siteMenuVO">
+		/* Query ID : humanframework.site.menu.updatePblcateSiteMenu */
+		UPDATE TN_PBLCATE_SITE_MENU SET
+				UPPER_MENU_NO = #{upperMenuNo}
+				, MENU_NM = #{menuNm, jdbcType=VARCHAR}
+				, MENU_URI = #{menuUri, jdbcType=VARCHAR}
+				, MENU_TY = #{menuTy}
+				, ASIDE_OPT = #{asideOptStr, jdbcType=VARCHAR}
+				, POST_LIST_TY = #{postListTy}
+				, TAG_CLOUD_AT = #{tagCloudAt}
+				, SUB_MAIN_USE_AT = #{subMainUseAt}
+				, LINK_URL = #{linkUrl, jdbcType=VARCHAR}
+				, LINK_TRGT = #{linkTrgt, jdbcType=VARCHAR}
+				, MNMNU_DSPY_AT = #{mnmnuDspyAt}
+				, SBMNU_DSPY_AT = #{sbmnuDspyAt}
+				, LEVEL_NO = #{levelNo}
+				, SORT_NO = #{sortNo}
+				, USE_AT = #{useAt}
+				, CM_USE_AT = #{cmUseAt}
+				, STSFDG_USE_AT = #{stsfdgUseAt}
+				, MNU_CHARGER_USE_AT = #{mnuChargerUseAt}
+				, MNU_CHARGER_NM = #{mnuChargerNm, jdbcType=VARCHAR}
+				, MNU_CHARGER_ORGNZT_NM = #{mnuChargerOrgnztNm, jdbcType=VARCHAR}
+				, MNU_CHARGER_TELNO = #{mnuChargerTelno, jdbcType=VARCHAR}
+				, MNU_CHARGER_UPDT_DT = #{mnuChargerUpdtDt}
+				, SITE_MAP_DSPY_AT = #{siteMapDspyAt}
+		WHERE MENU_NO = #{menuNo}
+	</update>
+
+	<select id="selectPblcateSiteMenu" parameterType="java.util.HashMap" resultMap="menuMap">
+		/* Query ID : humanframework.site.menu.selectPblcateSiteMenu */
+		SELECT SITE_NO
+				, MENU_NO
+				, UPPER_MENU_NO
+				, ( SELECT MENU_NM
+					FROM TN_SITE_MENU B
+					WHERE A.UPPER_MENU_NO = B.MENU_NO  ) AS UPPER_MENU_NM
+				, MENU_NM
+				, MENU_URI
+				, MENU_TY
+				, ASIDE_OPT
+				, POST_LIST_TY
+				, TAG_CLOUD_AT
+				, SUB_MAIN_USE_AT
+				, SUB_MAIN_NO
+				, BBS_NO
+				, FNCT_NO
+				, LINK_URL
+				, LINK_TRGT
+				, MNMNU_DSPY_AT
+				, SBMNU_DSPY_AT
+				, LEVEL_NO
+				, SORT_NO
+				, USE_AT
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+				, META_SJ
+				, META_DC
+				, META_KWRD
+				, MNU_CHARGER_NM
+				, MNU_CHARGER_ORGNZT_NM
+				, MNU_CHARGER_TELNO
+				, MNU_CHARGER_UPDT_DT
+				, SITE_MAP_DSPY_AT
+		FROM TN_PBLCATE_SITE_MENU A
+		WHERE MENU_NO = #{menuNo}
+	</select>
+
+	<select id="selectPblcateSiteMenuList" parameterType="java.util.HashMap" resultMap="menuMap">
+		/* Query ID : humanframework.site.menu.selectPblcateSiteMenuList */
+		SELECT SITE_NO
+				, MENU_NO
+				, UPPER_MENU_NO
+				, MENU_NM
+				, MENU_URI
+				, MENU_TY
+				, ASIDE_OPT
+				, POST_LIST_TY
+				, TAG_CLOUD_AT
+				, SUB_MAIN_USE_AT
+				, SUB_MAIN_NO
+				, BBS_NO
+				, FNCT_NO
+				, LINK_URL
+				, LINK_TRGT
+				, MNMNU_DSPY_AT
+				, SBMNU_DSPY_AT
+				, LEVEL AS LEVEL_NO
+				/*, LEVEL_NO*/
+				, SORT_NO
+				, USE_AT
+				, CM_USE_AT
+				, STSFDG_USE_AT
+				, MNU_CHARGER_USE_AT
+				, SYS_CONNECT_BY_PATH(MENU_NO, '/') AS MENU_PATH
+				, SYS_CONNECT_BY_PATH(MENU_NM, '>') AS MENU_NM_PATH
+				, META_SJ
+				, META_DC
+				, META_KWRD
+				, MNU_CHARGER_NM
+				, MNU_CHARGER_ORGNZT_NM
+				, MNU_CHARGER_TELNO
+				, MNU_CHARGER_UPDT_DT
+				, SITE_MAP_DSPY_AT
+				, (SELECT COUNT(*) FROM TN_CNTNTS_MAPNG TCM WHERE TCM.MENU_NO = TSM.MENU_NO) AS CNTNTS_COUNT
+		FROM (SELECT * FROM TN_PBLCATE_SITE_MENU WHERE SITE_NO = #{siteNo}) TSM
+		WHERE 1 = 1
+		<if test="subMainNo != null and subMainNo != ''">
+			AND SUB_MAIN_NO = #{subMainNo}
+		</if>
+		<if test="bbsNo != null and bbsNo != ''">
+			AND BBS_NO = #{bbsNo}
+		</if>
+		<if test="fnctNo != null and fnctNo != ''">
+			AND FNCT_NO = #{fnctNo}
+		</if>
+		<if test="menuTy != null and menuTy != ''">
+			AND MENU_TY = #{menuTy}
+		</if>
+		<if test="searchTy != null and searchTy != ''">
+			<if test="searchTy == 'SITEMAIN' ">
+			AND MENU_NO NOT IN (
+								SELECT MENU_NO
+								  FROM TN_PBLCATE_SITE_MENU
+								WHERE SITE_NO = #{siteNo}
+								START WITH MENU_NO IN (SELECT MENU_NO FROM TN_PBLCATE_SITE_MENU WHERE SITE_NO = #{siteNo} AND MENU_TY IN(4, 5))
+								CONNECT BY NOCYCLE PRIOR MENU_NO = UPPER_MENU_NO
+							 	)
+				
+			</if>
+		</if>
+		START WITH UPPER_MENU_NO = 0
+		CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+		           AND PRIOR SITE_NO = SITE_NO
+		ORDER SIBLINGS BY SORT_NO, MENU_NO
+	</select>
+
+	<!-- Define tn_site_menu List Query -->
+	<select id="selectSiteMenuListVO" parameterType="java.util.HashMap" resultMap="menuMap">
+		/* Query ID : humanframework.site.menu.selectSiteMenuListVO */
+		SELECT
+				<include refid="listColumn"/>
+				, LEVEL_NO
+				, MENU_PATH
+				, MENU_NM_PATH
+				, CNTNTS_COUNT
+				, SITE_NM
+		  FROM (
+				SELECT ROWNUM AS RNUM ,
+						<include refid="listColumn"/>
+						, LEVEL_NO
+						, MENU_PATH
+						, MENU_NM_PATH
+						, CNTNTS_COUNT
+						, SITE_NM
+				  FROM (
+						SELECT
+							<include refid="listColumn"/>
+							, LEVEL AS LEVEL_NO
+							, SYS_CONNECT_BY_PATH(MENU_NO, '/') AS MENU_PATH
+							, SYS_CONNECT_BY_PATH(MENU_NM, '>') AS MENU_NM_PATH
+							, (SELECT COUNT(*) FROM TN_CNTNTS_MAPNG TCM WHERE TCM.MENU_NO = TSM.MENU_NO) AS CNTNTS_COUNT
+							, (SELECT SITE_NM FROM TN_SITE TS WHERE TS.SITE_NO = TSM.SITE_NO) AS SITE_NM
+						FROM TN_SITE_MENU TSM
+						WHERE 1 = 1
+						<include refid="searchConditions"/>
+						START WITH UPPER_MENU_NO = 0
+						CONNECT BY PRIOR MENU_NO = UPPER_MENU_NO
+						           AND PRIOR SITE_NO = SITE_NO
+						ORDER SIBLINGS BY SORT_NO, MENU_NO
+				  ) TSM
+				  WHERE ROWNUM &lt;= #{endNum}
+			   ) TSM
+	     WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<!-- Define tn_site_menu Count Query -->
+	<select id="selectSiteMenuCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframework.site.menu.selectSiteMenuCount */
+		SELECT	COUNT(*)
+		  FROM	TN_SITE_MENU
+		 WHERE 1=1
+		 <include refid="searchConditions"/>
+	</select>
+
+	<update id="updateSiteMenuPosition"  parameterType="siteMenuVO">
+		/* Query ID : humanframework.site.menu.updateSiteMenuPosition */
+		UPDATE TN_SITE_MENU
+		<trim prefix="SET" suffixOverrides=",">
+		<if test="sortNo != null and sortNo != ''">
+		       SORT_NO = #{sortNo},
+		</if>
+		<if test="upperMenuNo != null and upperMenuNo != ''">
+		       UPPER_MENU_NO = ${upperMenuNo},
+		</if>
+		</trim>
+		 WHERE MENU_NO = #{menuNo}
+	</update>
+
+</mapper>

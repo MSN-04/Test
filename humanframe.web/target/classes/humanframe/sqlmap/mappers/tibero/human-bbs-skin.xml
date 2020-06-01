@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.bbs.skin">
+	<resultMap type="bbsSkinVO" id="bbsSkinMap">
+		<result property="skinId"  			column="SKIN_ID" />
+		<result property="skinName"  		column="SKIN_NAME" />
+		<result property="siteUrl"  		column="SITE_URL" />
+		<result property="description"  	column="DESCRIPTION" />
+		<result property="imageDocbase"  	column="IMAGE_DOCBASE" />
+		<result property="cssDocbase"  		column="CSS_DOCBASE" />
+		<result property="skinStatus"  		column="SKIN_STATUS" />
+		<result property="updateUserId"  	column="UPDATE_USER_ID" />
+		<result property="updateDate"  		column="UPDATE_DATE" />
+		<result property="createUserId"  	column="CREATE_USER_ID" />
+		<result property="createDate"  		column="CREATE_DATE" />
+		<result property="skinBbsCnt"  		column="SKIN_BBS_CNT" />		<!-- 적용개수 -->
+	</resultMap>
+
+	<select id="selectCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.bbs.skin.selectCount */		
+		SELECT 
+			COUNT(SKIN_ID)
+		FROM TN_SKIN
+		<where>
+			<if test="srchText != null and srchText != '' ">
+				AND SKIN_NAME LIKE '%'||#{srchText}||'%'
+			</if>
+		</where>
+	</select>
+
+	<select id="selectBbsSkinList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.bbs.skin.selectBbsSkinList */		
+		<include refid="LimitMapper.header2"/>
+			SELECT   
+				 A.SKIN_ID
+				,A.SKIN_NAME
+				,A.SITE_URL
+				,A.DESCRIPTION
+				,A.IMAGE_DOCBASE
+				,A.CSS_DOCBASE
+				,A.SKIN_STATUS
+				,A.UPDATE_USER_ID
+				,TO_CHAR(A.UPDATE_DATE, 'YYYY.MM.DD HH24:MI' ) AS UPDATE_DATE
+				,A.CREATE_USER_ID
+				,TO_CHAR(A.CREATE_DATE, 'YYYY.MM.DD HH24:MI' ) AS CREATE_DATE
+			FROM TN_SKIN A
+			<where>
+				<if test="srchText != null and srchText != '' ">
+						AND A.SKIN_NAME LIKE '%'||#{srchText}||'%'
+				</if>
+			</where>				
+			ORDER BY A.UPDATE_DATE DESC
+		<include refid="LimitMapper.footer2"/>		
+	</select>
+
+	<insert id="insertBbsSkin" parameterType="bbsSkinVO">
+		/* Query ID : humanframe.bbs.skin.insertBbsSkin */		
+		<selectKey resultType="int" keyProperty="skinId" order="BEFORE">
+			SELECT
+				NVL(MAX(SKIN_ID),0) + 1
+			FROM TN_SKIN
+		</selectKey>
+		INSERT INTO 
+			TN_SKIN (
+			 SKIN_ID
+			,SKIN_NAME
+			,SITE_URL
+			,DESCRIPTION
+			,IMAGE_DOCBASE
+			,CSS_DOCBASE
+			,SKIN_STATUS
+			,UPDATE_USER_ID
+			,UPDATE_DATE
+			,CREATE_USER_ID
+			,CREATE_DATE
+		) VALUES (
+			  #{skinId, jdbcType=INTEGER}
+			, #{skinName, jdbcType=VARCHAR}
+			, #{siteUrl, jdbcType=VARCHAR}
+			, #{description, jdbcType=VARCHAR}
+			, #{imageDocbase, jdbcType=VARCHAR}
+			, #{cssDocbase, jdbcType=VARCHAR}
+			, #{skinStatus, jdbcType=VARCHAR}
+			, #{updateUserId, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{createUserId, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+
+	<delete id="deleteBbsSkin" parameterType="bbsSkinVO">
+		/* Query ID : humanframe.bbs.skin.deleteBbsSkin */		
+		DELETE TN_SKIN
+		WHERE SKIN_ID IN <foreach item="item" index="index" collection="skinIds" open="(" close=")" separator=",">#{item}</foreach>
+	</delete>
+
+	<select id="detailInfoBbsSkin" parameterType="hashmap" resultMap="bbsSkinMap">
+		/* Query ID : humanframe.bbs.skin.deleteBbsSkin */		
+		SELECT
+			 A.SKIN_ID
+			,A.SKIN_NAME
+			,A.SITE_URL
+			,A.DESCRIPTION
+			,A.IMAGE_DOCBASE
+			,A.CSS_DOCBASE
+			,A.SKIN_STATUS
+			,A.UPDATE_USER_ID
+			,TO_CHAR(A.UPDATE_DATE, 'YYYY.MM.DD HH24:MI') AS UPDATE_DATE
+			,A.CREATE_USER_ID
+			,TO_CHAR(A.CREATE_DATE, 'YYYY.MM.DD HH24:MI') AS CREATE_DATE
+			,'0' AS SKIN_BBS_CNT
+		FROM TN_SKIN A
+		WHERE A.SKIN_ID = #{skinId}
+	</select>
+
+	<update id="updateBbsSkin" parameterType="bbsSkinVO">
+		/* Query ID : humanframe.bbs.skin.updateBbsSkin */		
+		UPDATE 
+			TN_SKIN
+		SET  SKIN_NAME = #{skinName, jdbcType=VARCHAR}
+		    ,SITE_URL = #{siteUrl, jdbcType=VARCHAR}
+			,DESCRIPTION = #{description, jdbcType=VARCHAR}
+			,IMAGE_DOCBASE = #{imageDocbase, jdbcType=VARCHAR}
+			,CSS_DOCBASE = #{cssDocbase, jdbcType=VARCHAR}
+			,SKIN_STATUS = #{skinStatus, jdbcType=VARCHAR}
+			,UPDATE_USER_ID = #{updateUserId, jdbcType=VARCHAR}
+			,UPDATE_DATE = SYSDATE
+		WHERE SKIN_ID = #{skinId}
+	</update>
+</mapper>

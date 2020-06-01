@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.fnct.prjct.inqry">
+
+	<!-- Define Banner Result Map  -->
+	<resultMap type="prjctInqryVO" id="prjctInqryMap">
+		<result column="INQRY_NO" 	    property="inqryNo"/>
+		<result column="SITE_NO"	    property="siteNo"/>
+		<result column="SITE_NM"	    property="siteNm"/>
+		<result column="SJ" 		    property="sj"/>
+		<result column="CN" 		    property="cn"/>
+		<result column="CMPNY_NM" 	    property="cmpnyNm"/>
+		<result column="URL"		    property="url"/>
+		<result column="CHARGER_NM" 	property="chargerNm"/>
+		<result column="CHARGER_DEPT"   property="chargerDept"/>
+		<result column="EMAIL"          property="email"/>
+		<result column="TEL"            property="tel"/>
+		<result column="BUDGET"         property="budget"/>
+		<result column="ETC"            property="etc"/>
+		<result column="CREAT_DTTM"     property="creatDttm"/>
+		<result column="USE_AT"         property="useAt"/>
+		<result column="PROCESS_STTUS"  property="processSttus"/>
+		<result column="PROCESS_CN"     property="processCn"/>
+		<result column="PROCESS_DT"     property="processDt"/>
+		<result column="UPDUSR_ID"      property="updusrId"/>
+		<result column="UPDUSR_NM"      property="updusrNm"/>
+		<result column="UPDT_DTTM"      property="updtDttm"/>
+	</resultMap>
+
+	<resultMap type="prjctInqryVO" id="prjctInqryInnfoMap" extends="prjctInqryMap">
+		<collection property="fileList" column="{srvcId=srvc_id, fileTy=file_ty, upperNo=inqry_no}" select="humanframe.file.selectFileList" />
+	</resultMap>
+
+	<sql id="listColumn">
+		   INQRY_NO
+		 , SITE_NO
+		 , SITE_NM
+		 , SJ
+		 , CN
+		 , CMPNY_NM
+		 , URL
+		 , CHARGER_NM
+		 , CHARGER_DEPT
+		 , EMAIL
+		 , TEL
+		 , BUDGET
+		 , ETC
+		 , TO_CHAR(CREAT_DTTM, 'YYYY-MM-DD') CREAT_DTTM
+		 , USE_AT
+		 , PROCESS_STTUS
+		 , PROCESS_CN
+		 , TO_CHAR(PROCESS_DT, 'YYYY-MM-DD') PROCESS_DT
+		 , UPDUSR_ID
+         , UPDUSR_NM
+         , TO_CHAR(UPDT_DTTM, 'YYYY-MM-DD') UPDT_DTTM
+		 , 'PRJCTINQRY' AS SRVC_ID
+       	 , 'ATTACH' AS FILE_TY
+	</sql>
+
+	<sql id="searchConditions">
+		<if test="searchText != null and searchText != '' ">
+			<choose>
+				<when test='searchKey != null and searchKey == "sj" '>AND SJ LIKE '%'|| #{searchText} ||'%'</when>
+				<when test='searchKey != null and searchKey == "cn" '>AND CN LIKE '%'|| #{searchText} ||'%'</when>
+			</choose>
+		</if>
+		<if test="srchStatus != null and srchStatus != '' ">
+			AND PROCESS_STTUS = #{srchStatus}
+		</if>
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+			AND USE_AT = #{useAt}
+		</if>
+	</sql>
+
+
+	<select id="selectPrjctInqryListVO" parameterType="java.util.HashMap" resultMap="prjctInqryMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.selectPrjctInqryListVO */
+		SELECT <include refid="listColumn"/>
+		  FROM ( SELECT ROWNUM AS RNUM
+					  , <include refid="listColumn"/>
+				  FROM (
+						SELECT <include refid="listColumn"/>
+						  FROM TF_PRJCT_INQRY
+						 WHERE 1=1
+							<include refid="searchConditions" />
+					  ORDER BY INQRY_NO DESC
+				  )
+				  WHERE ROWNUM &lt;= #{endNum}
+			   ) TPI
+	     WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectPrjctInqryCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.fnct.fnctProgrm.selectPrjctInqryCount */
+		SELECT COUNT(INQRY_NO)
+		  FROM TF_PRJCT_INQRY
+		 WHERE 1=1
+		<include refid="searchConditions" />
+	</select>
+
+	<select id="selectPrjctInqry" parameterType="int" resultMap="prjctInqryInnfoMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.selectPrjctInqry */
+		SELECT <include refid="listColumn"/>
+		  FROM	TF_PRJCT_INQRY TPI
+	 	 WHERE  INQRY_NO = #{inqry_no}
+	</select>
+
+	<insert id="insertPrjctInqry" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.insertPrjctInqry */
+		<selectKey keyProperty="inqryNo" resultType="int" order="BEFORE">
+            (SELECT NVL(MAX(INQRY_NO), 0) + 1 FROM TF_PRJCT_INQRY)
+		</selectKey>
+		INSERT INTO TF_PRJCT_INQRY (
+			INQRY_NO
+			, SITE_NO
+			, SITE_NM
+			, SJ
+			, CN
+			, CMPNY_NM
+			, URL
+			, CHARGER_NM
+			, CHARGER_DEPT
+			, EMAIL
+			, TEL
+			, BUDGET
+			, ETC
+			, CREAT_DTTM
+			, USE_AT
+			, PROCESS_STTUS
+		 	, PROCESS_CN
+		 	, PROCESS_DT
+		 	, UPDUSR_ID
+         	, UPDUSR_NM
+         	, UPDT_DTTM
+		) VALUES (
+	    	#{inqryNo}
+	    	, #{siteNo}
+	    	, #{siteNm, jdbcType=VARCHAR}
+	    	, #{sj, jdbcType=VARCHAR}
+	    	, #{cn, jdbcType=VARCHAR}
+	    	, #{cmpnyNm, jdbcType=VARCHAR}
+	    	, #{url, jdbcType=VARCHAR}
+	    	, #{chargerNm, jdbcType=VARCHAR}
+	    	, #{chargerDept, jdbcType=VARCHAR}
+	    	, #{email, jdbcType=VARCHAR}
+	    	, #{tel, jdbcType=VARCHAR}
+	    	, #{budget, jdbcType=VARCHAR}
+	    	, #{etc, jdbcType=VARCHAR}
+			, SYSDATE
+			, 'Y'
+			, '1'
+	    	, #{processCn, jdbcType=VARCHAR}
+			, NULL
+			, #{updusrId, jdbcType=VARCHAR}
+	    	, #{updusrNm, jdbcType=VARCHAR}
+	    	, SYSDATE
+		)
+	</insert>
+
+	<update id="updatePrjctInqryUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.updatePrjctInqryUseAt */
+		UPDATE	TF_PRJCT_INQRY
+		   SET  USE_AT = #{useAt}
+		 WHERE	INQRY_NO = #{inqryNo}
+	</update>
+
+	<update id="updatePrjctInqry" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.updatePrjctInqry */
+	   UPDATE TF_PRJCT_INQRY
+		  SET INQRY_NO     =  #{inqryNo}
+			, PROCESS_STTUS = #{processSttus, jdbcType=VARCHAR}
+			, PROCESS_CN    = #{processCn, jdbcType=VARCHAR}
+			<choose>
+				<when test="processDt !=null and processDt != ''">
+					, PROCESS_DT    = TO_DATE(#{processDt, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+				</when>
+				<otherwise>
+					, PROCESS_DT    = NULL
+				</otherwise>
+			</choose>
+			, UPDUSR_ID     = #{updusrId, jdbcType=VARCHAR}
+         	, UPDUSR_NM     = #{updusrNm, jdbcType=VARCHAR}
+         	, UPDT_DTTM     = SYSDATE
+		WHERE INQRY_NO = #{inqryNo}
+	</update>
+
+	<delete id="deletePrjctInqry" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.fnctProgrm.deletePrjctInqry */
+		DELETE	TF_PRJCT_INQRY
+		 WHERE	INQRY_NO = #{inqryNo}
+	</delete>
+
+</mapper>

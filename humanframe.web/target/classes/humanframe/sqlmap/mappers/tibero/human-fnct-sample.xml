@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.fnct.sample">
+
+	<!-- Define Sample Result Map  -->
+	<resultMap type="sampleVO" id="sampleMap">
+		<result column="SITE_NO"		property="siteNo"    />
+		<result column="MENU_NO"		property="menuNo"    />
+		<result column="SAMPLE_NO"		property="sampleNo"   />
+		<result column="SJ"			    property="sj"    />
+		<result column="CN"			    property="cn"    />
+		<result column="USE_AT"			property="useAt"    />
+		<result column="CREAT_DTTM"		property="creatDttm"  />
+		<result column="CRTR_ID"		property="crtrId"   />
+		<result column="CRTR_NM"		property="crtrNm"   />
+		<result column="UPDT_DTTM"		property="updtDttm"   />
+		<result column="UPDUSR_ID"		property="updusrId" />
+		<result column="UPDUSR_NM"		property="updusrNm" />
+
+		<collection property="sampleFileList" 	column="{upperNo=sample_no, fileTy=file_ty, srvcId=srvc_id}" select="humanframe.file.selectFileList" />
+	</resultMap>
+
+	<!-- Define sampleVO Column List -->
+	<sql id="listColumn">
+		  SITE_NO
+		, MENU_NO
+		, SAMPLE_NO
+		, SJ
+		, CN
+		, USE_AT
+		, CREAT_DTTM
+		, CRTR_ID
+		, CRTR_NM
+		, UPDT_DTTM
+		, UPDUSR_ID
+		, UPDUSR_NM
+		, 'SAMPLE' AS SRVC_ID
+       	, 'ATTACH' AS FILE_TY
+	</sql>
+
+	<!-- Define Search Condition -->
+	<sql id="searchConditions">
+		<if test="srchText != null and srchText != '' ">
+			AND FNCT_NM LIKE '%'|| #{srchText} ||'%'
+		</if>
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+			AND USE_AT = #{useAt}
+		</if>
+	</sql>
+
+	<!-- Define tf_sample List Query -->
+	<select id="selectSampleListVO" parameterType="java.util.HashMap" resultMap="sampleMap">
+		/* Query ID : humanframe.fnct.sample.selectSampleListVO */
+		SELECT
+				<include refid="listColumn"/>
+		  FROM (
+				SELECT ROWNUM AS RNUM ,
+						<include refid="listColumn"/>
+				  FROM (
+						SELECT
+							<include refid="listColumn"/>
+						  FROM TF_SAMPLE
+						 WHERE 1=1
+							<include refid="searchConditions" />
+					  ORDER BY SAMPLE_NO DESC
+				  )
+				  WHERE ROWNUM &lt;= #{endNum}
+			   ) TF_SAMPLE
+	     WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<!-- Define tf_sample Count Query -->
+	<select id="selectSampleCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.fnct.sample.selectSampleCount */
+		SELECT	COUNT(SAMPLE_NO)
+		  FROM	TF_SAMPLE
+		 WHERE	1=1
+		<include refid="searchConditions"/>
+	</select>
+
+	<select id="selectSample" parameterType="int" resultMap="sampleMap">
+		/* Query ID : humanframe.fnct.sample.selectSample */
+		SELECT
+		<include refid="listColumn"/>
+		  FROM	TF_SAMPLE
+	 	 WHERE  sample_no = #{sampleNo}
+	</select>
+
+	<update id="updateSampleUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.sample.updateSampleUseAt */
+		UPDATE	TF_SAMPLE
+		   SET  USE_AT = #{useAt}
+		 WHERE	SAMPLE_NO = #{sampleNo}
+	</update>
+
+	<!-- Define tf_sample Insert Query -->
+	<insert id="insertSample" parameterType="sampleVO">
+		/* Query ID : humanframe.fnct.sample.insertSample */
+		<selectKey keyProperty="sampleNo" resultType="int" order="BEFORE">
+			SELECT
+				NVL(MAX(SAMPLE_NO),0) + 1
+			FROM TF_SAMPLE
+		</selectKey>
+		INSERT INTO TF_SAMPLE (
+			  SITE_NO
+			, MENU_NO
+			, SAMPLE_NO
+			, SJ
+			, CN
+			, USE_AT
+			, CREAT_DTTM
+			, CRTR_ID
+			, CRTR_NM
+		) VALUES (
+	    	  #{siteNo}
+	    	, #{menuNo}
+	    	, #{sampleNo}
+	    	, #{sj, jdbcType=VARCHAR}
+	    	, #{cn}
+	    	, #{useAt}
+			, SYSDATE
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{crtrNm, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<!-- Define tf_sample Update Query -->
+	<update id="updateSample" parameterType="sampleVO">
+		/* Query ID : humanframe.fnct.sample.updateSample */
+		UPDATE	TF_SAMPLE
+		   SET    SITE_NO = #{siteNo}
+		    	, MENU_NO = #{menuNo}
+		    	, SJ = #{sj, jdbcType=VARCHAR}
+		    	, CN = #{cn}
+		    	, USE_AT = #{useAt}
+				, UPDT_DTTM = SYSDATE
+				, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+				, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+		 WHERE	SAMPLE_NO = #{sampleNo}
+	</update>
+
+	<!-- Define tf_sample Delete Query -->
+	<delete id="deleteSample" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.sample.deleteSample */
+		DELETE	TF_SAMPLE
+		 WHERE	SAMPLE_NO = #{sampleNo}
+	</delete>
+
+</mapper>

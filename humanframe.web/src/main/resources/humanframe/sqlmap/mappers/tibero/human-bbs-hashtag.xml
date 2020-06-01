@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.boardHashTag">
+
+	<resultMap type="bbsHashTagVO" id="boardHashTagMap">
+		<result property="bbsNo" 		column="BBS_NO" />
+		<result property="nttNo" 		column="BBS_SCRTY_TY" />
+		<result property="hashTagValue" column="HASHTAG_VALUE" />
+	</resultMap>
+
+	<sql id="listWhere">
+		<where>
+			<if test="bbsNo != null and bbsNo != '' ">
+			AND BBS_NO = #{bbsNo}
+			</if>
+			<if test="nttNo != null and nttNo != '' ">
+			AND NTT_NO = #{nttNo}
+			</if>
+		</where>
+	</sql>
+
+	<select id="selectBoardHashTagCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.boardHashTag.selectBoardHashTagCount */		
+		SELECT COUNT(1)
+		FROM TN_BBS_HASHTAG
+		<include refid="listWhere"/>
+	</select>
+
+	<select id="selectBbsHashTagList" parameterType="hashmap"  resultMap="boardHashTagMap">
+		/* Query ID : humanframe.boardHashTag.selectBbsHashTagList */		
+		SELECT 
+			 BBS_NO
+			,NTT_NO
+			,HASHTAG_VALUE
+		FROM TN_BBS_HASHTAG
+			<include refid="listWhere"/>
+	    ORDER BY HASHTAG_VALUE ASC
+	</select>
+
+	<insert id="insertBbsHashTag" parameterType="bbsHashTagVO">
+		/* Query ID : humanframe.boardHashTag.insertBbsHashTag */		
+		INSERT INTO 
+			TN_BBS_HASHTAG(
+	           BBS_NO,
+	           NTT_NO,
+	           HASHTAG_VALUE
+	       ) VALUES (
+	           #{bbsNo}
+	          ,#{nttNo}
+	          ,#{hashTagValue, jdbcType=VARCHAR}
+	       )
+	</insert>
+
+	<delete id="deleteBbsHashTag" parameterType="bbsHashTagVO">
+		/* Query ID : humanframe.boardHashTag.deleteBbsHashTag */		
+		DELETE TN_BBS_HASHTAG
+		WHERE BBS_NO = #{bbsNo} 
+		AND NTT_NO = #{nttNo}
+	</delete>
+</mapper>

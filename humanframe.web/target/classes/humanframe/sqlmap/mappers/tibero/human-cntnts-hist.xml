@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.cnHist">
+
+	<resultMap id="cntntsHistMap" type="cntntsHistVO">
+		<result column="CNTNTS_HIST_NO" property="cntntsHistNo" />
+		<result column="CNTNTS_NO" 		property="cntntsNo" 	/>
+		<result column="CN" 			property="cn" 	/>
+		<result column="HIST_CM"		property="histCm"	/>
+		<result column="UPDT_DTTM"		property="updtDttm"	/>
+		<result column="UPDUSR_ID"		property="updusrId"	/>
+		<result column="UPDUSR_NM"		property="updusrNm"	/>
+	</resultMap>
+		
+	<sql id="listColumn">
+		  CNTNTS_NO
+		, CNTNTS_HIST_NO
+		, CN
+		, HIST_CM
+		, UPDT_DTTM
+		, UPDUSR_NM
+		, UPDUSR_ID
+	</sql>
+
+	<select id="selectCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.cnHist.selectCount */	
+		SELECT
+			COUNT(*)
+		FROM TN_CNTNTS_HIST
+		WHERE CNTNTS_NO = #{cntntsNo}
+	</select>
+
+	<select id="selectListVO" parameterType="java.util.HashMap" resultMap="cntntsHistMap">
+		/* Query ID : humanframe.cnHist.selectListVO */	
+		SELECT
+		<include refid="listColumn"/>
+		FROM (
+			SELECT
+				ROWNUM AS RNUM ,
+				<include refid="listColumn"/>
+			FROM (
+				SELECT
+		  	 		<include refid="listColumn" />
+				FROM TN_CNTNTS_HIST
+				WHERE CNTNTS_NO = #{cntntsNo}
+				ORDER BY CNTNTS_HIST_NO DESC
+			) WHERE ROWNUM &lt;= #{endNum}
+		) WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectCntetsHist" parameterType="java.util.HashMap" resultMap="cntntsHistMap">
+		/* Query ID : humanframe.cnHist.selectCntetsHist */	
+		SELECT
+			  <include refid="listColumn"/>
+		FROM TN_CNTNTS_HIST
+		WHERE CNTNTS_NO = #{cntntsNo}
+		 AND CNTNTS_HIST_NO = #{cntntsHistNo}
+	</select>
+
+	<insert id="insertCntntsHist" parameterType="cntntsHistVO">
+		/* Query ID : humanframe.cnHist.insertCntntsHist */	
+		<selectKey keyProperty="cntntsHistNo" order="BEFORE" resultType="int">
+			SELECT
+				NVL(MAX(CNTNTS_HIST_NO),0) + 1
+			FROM TN_CNTNTS_HIST
+		</selectKey>
+		INSERT INTO tn_cntnts_hist (
+			  CNTNTS_NO
+			, CNTNTS_HIST_NO
+			, CN
+			, HIST_CM
+			, UPDT_DTTM
+			, UPDUSR_ID
+			, UPDUSR_NM
+		) VALUES (
+			  #{cntntsNo}
+			, #{cntntsHistNo}
+			, #{cn, jdbcType=VARCHAR}
+			, #{histCm, jdbcType=VARCHAR}
+			, SYSDATE
+			, #{updusrId}
+			, #{updusrNm}
+		)
+	</insert>
+
+	<delete id="deleteCntntsHist" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.cnHist.deleteCntntsHist */	
+		DELETE TN_CNTNTS_HIST
+		 WHERE CNTNTS_NO = #{cntntsNo}
+	</delete>
+
+</mapper>

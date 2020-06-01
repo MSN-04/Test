@@ -1,0 +1,46 @@
+
+
+			<!-- Start Breadcrumb -->
+			<jsp:include page="/WEB-INF/jsp/admin/layout/breadcrumb.jsp">
+				<jsp:param name="pageName" value="CSR 게시판"/>
+			</jsp:include>
+			<!-- End Breadcrumb -->
+
+            <!-- start: page -->
+			<div class="row">
+				<div class="col-md-12">
+				<section class="panel panel-featured panel-featured-primary">
+					<header class="panel-heading">
+						<div class="panel-actions">
+
+						</div>
+						<h2 class="panel-title">CSR 등록/수정</h2>
+						<p class="panel-subtitle">
+							블라블라
+						</p>
+					</header>
+					<div class="panel-body">
+
+						<div class="table-responsive">
+
+
+					<!--테이블-->
+						</div>
+					</div>
+					<footer class="panel-footer">
+						<div class="row">
+							<div class="col-sm-12">
+
+							버튼/액션
+
+
+							</div>
+						</div>
+					</footer>
+				</section>
+				</div>
+
+			</div>
+
+
+

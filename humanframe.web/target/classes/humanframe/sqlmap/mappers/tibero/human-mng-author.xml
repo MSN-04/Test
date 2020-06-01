@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.mng.author">
+
+	<resultMap type="mngAuthorVO" id="authorMap">
+		<result property="authorNo"		column="author_no" />
+		<result property="authorNm"		column="author_nm" />
+		<result property="memo"			column="memo" />
+		<result property="creatDttm"	column="creat_dttm" />
+		<result property="updtDttm"		column="updt_dttm" />
+	</resultMap>
+
+	<sql id="srchAuthorList">
+		WHERE 1= 1
+		<if test="srchKey == 'authorNm' and srchText != ''">
+		AND AUTHOR_NM LIKE '%' || #{srchText} || '%'
+		</if>
+	</sql>
+
+	<select id="selectMngAuthorListCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.metadata.selectMngAuthorListCount */
+		SELECT COUNT(*)
+		FROM TN_MNG_AUTHOR
+		<include refid="srchAuthorList" />
+	</select>
+
+	<select id="selectMngAuthorList" parameterType="java.util.HashMap" resultMap="authorMap">
+		/* Query ID : humanframe.metadata.selectMngAuthorList */
+		SELECT *
+		FROM (
+			SELECT ROWNUM AS RNUM
+		    			, AUTHOR_NO
+		    			, AUTHOR_NM
+		    			, MEMO
+		    			, CREAT_DTTM
+			FROM (
+				SELECT AUTHOR_NO
+						, AUTHOR_NM
+		    			, MEMO
+		    			, CREAT_DTTM
+				FROM TN_MNG_AUTHOR
+				<include refid="srchAuthorList" />
+				ORDER BY AUTHOR_NO DESC
+			) WHERE ROWNUM &lt;= #{endNum}
+		)WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectMngAuthor" parameterType="java.util.HashMap" resultMap="authorMap">
+		/* Query ID : humanframe.metadata.selectMngAuthor */
+		SELECT AUTHOR_NO
+				, AUTHOR_NM
+    			, MEMO
+    			, CREAT_DTTM
+		FROM TN_MNG_AUTHOR
+		WHERE AUTHOR_NO = #{authorNo}
+	</select>
+
+	<insert id="insertMngAuthor" parameterType="mngAuthorVO">
+		/* Query ID : humanframe.metadata.insertMngAuthor */
+		<selectKey keyProperty="authorNo" resultType="int" order="BEFORE">
+			SELECT NVL(MAX(AUTHOR_NO), 0) + 1 FROM TN_MNG_AUTHOR
+		</selectKey>
+		INSERT INTO TN_MNG_AUTHOR (
+			AUTHOR_NO
+			, AUTHOR_NM
+   			, MEMO
+   			, CREAT_DTTM
+		) VALUES (
+			#{authorNo}
+			, #{authorNm}
+   			, #{memo, jdbcType=VARCHAR}
+   			, SYSDATE
+		)
+	</insert>
+
+	<update id="updateMngAuthor" parameterType="mngAuthorVO">
+		/* Query ID : humanframe.metadata.updateMngAuthor */
+		UPDATE TN_MNG_AUTHOR SET
+			AUTHOR_NM = #{authorNm}
+			, MEMO = #{memo, jdbcType=VARCHAR}
+			, UPDT_DTTM = SYSDATE
+		WHERE AUTHOR_NO = #{authorNo}
+	</update>
+
+	<delete id="deleteMngAuthor" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.metadata.deleteMngAuthor */
+		DELETE FROM TN_MNG_AUTHOR
+		WHERE AUTHOR_NO = #{authorNo}
+	</delete>
+
+	<insert id="insertMngAuthorMenu" parameterType="mngAuthorMenuVO">
+		/* Query ID : humanframe.metadata.insertMngAuthorMenu */
+		INSERT INTO TN_MNG_AUTHOR_MENU (
+			AUTHOR_NO
+			, MENU_NO
+			, INQIRE_AT
+			, WRITNG_AT
+		) VALUES (
+			#{authorNo}
+			, #{menuNo}
+			, #{inqireAt}
+			, #{writngAt}
+		)
+	</insert>
+
+	<delete id="deleteMngAuthorMenu" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.metadata.deleteMngAuthorMenu */
+		DELETE FROM TN_MNG_AUTHOR_MENU
+		 WHERE AUTHOR_NO = #{authorNo}
+	</delete>
+
+	<select id="selectMngAuthorListAll" parameterType="java.util.HashMap" resultMap="authorMap">
+		/* Query ID : humanframe.metadata.selectMngAuthorListAll */
+		SELECT AUTHOR_NO
+	    		, AUTHOR_NM
+	    		, MEMO
+	    		, CREAT_DTTM
+		  FROM TN_MNG_AUTHOR
+	</select>
+</mapper>

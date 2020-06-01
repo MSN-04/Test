@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.0.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+	<bean id="cmsDataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+		<constructor-arg ref="cmsDataSourceSpied" />
+		<property name="logFormatter">
+			<bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
+				<property name="loggingType" value="MULTI_LINE" />
+				<property name="sqlPrefix" value="### SQL : 		" />
+			</bean>
+		</property>
+	</bean>
+
+  	<jee:jndi-lookup id="cmsDataSourceSpied" jndi-name="java:comp/env/jdbc/tibero" expected-type="javax.sql.DataSource" resource-ref="true" />
+	
+	<!-- jeus jndi 설정
+	<jee:jndi-lookup id="cmsDataSourceSpied" jndi-name="cmsdb" expected-type="javax.sql.DataSource" resource-ref="true">
+		<jee:environment>
+			java.naming.factory.initial=jeus.jndi.JEUSContextFactory
+			java.naming.provider.url=127.0.0.1:9736
+		</jee:environment>
+	</jee:jndi-lookup> -->
+	
+	<!-- database > schema.sql에 정의된 스크립트 실행 > 프로젝트 수행시 최초 1회만 하면 될듯  true/false -->
+	<jdbc:initialize-database data-source="cmsDataSource" enabled="false">
+        <jdbc:script location="classpath:database/schema.sql" encoding="utf-8" />
+    </jdbc:initialize-database>
+
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+      <property name="dataSource" ref="cmsDataSource"/>
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+</beans>

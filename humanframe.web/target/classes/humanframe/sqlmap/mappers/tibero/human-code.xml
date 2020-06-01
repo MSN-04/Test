@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.code">
+
+	<resultMap type="codeVO" id="codeMap">
+		<result property="codeGroupId"	column="CODE_GROUP_ID" />
+		<result property="codeId"		column="CODE_ID" />
+		<result property="upperCodeId"	column="UPPER_CODE_ID" />
+		<result property="upperCodeNm"	column="UPPER_CODE_NM" />
+		<result property="codeNm"		column="CODE_NM" />
+		<result property="codeDc"		column="CODE_DC" />
+		<result property="codeEstn"		column="CODE_ESTN" />
+		<result property="levelNo"		column="LEVEL_NO" />
+		<result property="codeTy"		column="CODE_TY" />
+		<result property="sortNo"		column="SORT_NO" />
+		<result property="childCount" 	column="CHILD_COUNT" />
+		<result property="dspyCodeNm" 	column="DSPY_CODE_NM" />
+		<result property="useAt"		column="USE_AT" />
+
+	</resultMap>
+
+	<resultMap type="codeVO" id="codeMapDetail" extends="codeMap">
+		<collection property="codeLangList" column="{codeGroupId=code_group_id, codeId=code_id}" select="humanframe.code.lang.selectCodeLangList" />
+	</resultMap>
+
+	<sql id="selectCount">
+	 	(SELECT
+				COUNT(CODE_ID)
+		 FROM TC_CODE B
+	 	 WHERE A.CODE_GROUP_ID = B.CODE_GROUP_ID
+		 AND A.CODE_ID = B.UPPER_CODE_ID) AS CHILD_COUNT
+	</sql>
+	<sql id="selectDspyCodeNm">
+		<if test="filterLangCodeId != null and filterLangCodeId != '' ">
+			(SELECT 
+				C.CODE_NM 
+			 FROM TC_CODE_LANG C
+			 WHERE A.CODE_ID = C.CODE_ID
+			 AND A.CODE_GROUP_ID = C.CODE_GROUP_ID
+			 AND C.LANG_CODE_ID = #{filterLangCodeId}) AS DSPY_CODE_NM
+		</if>
+		<if test="filterLangCodeId == null or filterLangCodeId == '' ">
+			CODE_NM AS DSPY_CODE_NM
+		</if>
+	</sql>
+
+	<select id="selectCodeListCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.code.selectCodeListCount */
+		SELECT 
+			COUNT(*)
+		FROM TC_CODE
+	</select>
+
+	<select id="selectCodeList" parameterType="java.util.HashMap" resultMap="codeMap">
+		/* Query ID : humanframe.code.selectCodeList */
+		SELECT 
+			CODE_TY
+			,CODE_GROUP_ID
+			,CODE_ID
+			,UPPER_CODE_ID
+			,(SELECT 
+				CODE_NM
+			  FROM TC_CODE B
+			  WHERE A.UPPER_CODE_ID = B.CODE_ID 
+			  AND A.CODE_GROUP_ID = B.CODE_GROUP_ID) AS UPPER_CODE_NM
+			, CODE_NM
+			, CODE_DC
+			, CODE_ESTN
+			, LEVEL AS LEVEL_NO
+			/*, LEVEL_NO*/
+			, SORT_NO
+			, USE_AT
+			, <include refid="selectCount"/>
+		FROM TC_CODE A
+		START WITH UPPER_CODE_ID = '0'
+		CONNECT BY PRIOR CODE_ID = UPPER_CODE_ID
+		ORDER SIBLINGS BY SORT_NO ASC, CODE_NM ASC
+	</select>
+
+	<select id="selectCodeListByFilter" parameterType="java.util.HashMap" resultMap="codeMap">
+		/* Query ID : humanframe.code.selectCodeListByFilter */
+		SELECT 
+			CODE_TY
+			, CODE_GROUP_ID
+			, CODE_ID
+			, UPPER_CODE_ID
+			, (SELECT 
+				CODE_NM
+			   FROM TC_CODE B
+			   WHERE A.UPPER_CODE_ID = B.CODE_ID 
+			   AND A.CODE_GROUP_ID = B.CODE_GROUP_ID ) AS UPPER_CODE_NM
+			, CODE_NM
+			, CODE_DC
+			, CODE_ESTN
+			, LEVEL AS LEVEL_NO
+			/*, LEVEL_NO*/
+			, SORT_NO
+			, USE_AT
+			, <include refid="selectCount"/>
+			, <include refid="selectDspyCodeNm"/>
+		FROM TC_CODE a
+		WHERE 1 = 1
+		<if test="filterKey == 'codeGroupId' ">
+			AND CODE_GROUP_ID = #{filterVal}
+		</if>
+		<if test="@humanframe.core.util.HumanCommonUtil@isNotEmpty(codeTy)">
+			AND CODE_TY = #{codeTy}
+		</if>
+		<if test="@humanframe.core.util.HumanCommonUtil@isNotEmpty(upperCodeId)">
+			AND UPPER_CODE_ID = #{upperCodeId}
+		</if>
+		<if test="@humanframe.core.util.HumanCommonUtil@isNotEmpty(codeEstn)">
+			AND CODE_ESTN = #{codeEstn}
+			START WITH UPPER_CODE_ID = '0'
+			CONNECT BY PRIOR CODE_ID = UPPER_CODE_ID
+			ORDER SIBLINGS BY CODE_GROUP_ID ASC, SORT_NO ASC, CODE_ID ASC		
+		</if>
+		<if test="@humanframe.core.util.HumanCommonUtil@isEmpty(codeEstn)">			
+			AND level > 1
+			START WITH UPPER_CODE_ID = '0'
+			CONNECT BY PRIOR CODE_ID = UPPER_CODE_ID
+			ORDER SIBLINGS BY SORT_NO ASC, CODE_NM ASC			
+		</if>
+	</select>
+
+	<select id="selectCode" parameterType="java.util.HashMap" resultMap="codeMapDetail">
+		/* Query ID : humanframe.code.selectCode */
+		SELECT 
+			CODE_TY
+			, CODE_GROUP_ID
+			, CODE_ID
+			, UPPER_CODE_ID
+			, ( SELECT 
+					CODE_NM
+				FROM TC_CODE B
+				WHERE A.UPPER_CODE_ID = B.CODE_ID 
+				AND A.CODE_GROUP_ID = B.CODE_GROUP_ID ) AS UPPER_CODE_NM
+			, CODE_NM
+			, CODE_DC
+			, CODE_ESTN
+			, LEVEL_NO
+			, SORT_NO
+			, USE_AT
+			, <include refid="selectCount"/>
+		FROM TC_CODE A
+	  WHERE CODE_ID = #{codeId}
+	</select>
+
+	<insert id="insertCode" parameterType="codeVO">
+		/* Query ID : humanframe.code.insertCode */
+		INSERT INTO TC_CODE (
+				CODE_GROUP_ID
+				, CODE_ID
+				, CODE_TY
+				, UPPER_CODE_ID
+				, CODE_NM
+				, CODE_DC
+				, CODE_ESTN
+				, LEVEL_NO
+				, SORT_NO
+				, USE_AT
+				, LANG_CODE_ID
+		) VALUES (
+				#{codeGroupId}
+				, #{codeId}
+				, #{codeTy}
+				, #{upperCodeId}
+				, #{codeNm}
+				, #{codeDc, jdbcType=VARCHAR}
+				, #{codeEstn, jdbcType=VARCHAR}
+				, #{levelNo}
+				, #{sortNo}
+				, #{useAt}
+				, #{langCodeId}
+		)
+	</insert>
+
+	<update id="updateCode" parameterType="codeVO">
+		/* Query ID : humanframe.code.updateCode */
+		UPDATE TC_CODE SET
+				CODE_GROUP_ID = #{codeGroupId}
+				, CODE_ID = #{codeId}
+				, CODE_TY = #{codeTy}
+				, UPPER_CODE_ID = #{upperCodeId}
+				, CODE_NM = #{codeNm}
+				, CODE_DC = #{codeDc, jdbcType=VARCHAR}
+				, CODE_ESTN = #{codeEstn, jdbcType=VARCHAR}
+				, LEVEL_NO = #{levelNo}
+				, SORT_NO = #{sortNo}
+				, USE_AT = #{useAt}
+		WHERE CODE_GROUP_ID = #{codeGroupId}
+			AND UPPER_CODE_ID = #{upperCodeId}
+			AND CODE_ID = #{codeId}
+	</update>
+
+
+	<select id="selectLowerCodeCheck" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.code.selectLowerCodeCheck */
+		SELECT 
+			COUNT(*)
+		FROM TC_CODE
+		WHERE CODE_GROUP_ID = #{codeGroupId} 
+		AND CODE_ID IN (
+					    SELECT 
+					   		CODE_ID
+					    FROM TC_CODE
+				    	CONNECT BY PRIOR CODE_ID = UPPER_CODE_ID
+					   	START WITH UPPER_CODE_ID = #{codeId}
+						)
+	</select>
+
+	<select id="selectLowerCodeList" parameterType="java.util.HashMap" resultMap="codeMap">
+		/* Query ID : humanframe.code.selectLowerCodeList */
+		SELECT 
+			CODE_TY
+			, CODE_GROUP_ID
+			, CODE_ID
+			, UPPER_CODE_ID
+			, ( SELECT 
+					CODE_NM
+				FROM TC_CODE B
+				WHERE A.UPPER_CODE_ID = B.CODE_ID AND A.CODE_GROUP_ID = B.CODE_GROUP_ID ) AS UPPER_CODE_NM
+			, CODE_NM
+			, CODE_DC
+			, CODE_ESTN
+			, LEVEL_NO
+			, SORT_NO
+			, USE_AT
+			, <include refid="selectCount"/>
+		FROM TC_CODE A
+		WHERE CODE_GROUP_ID = #{codeGroupId} 
+		AND CODE_ID IN (
+					    SELECT 
+					   		CODE_ID
+					   	FROM TC_CODE
+				    	CONNECT BY PRIOR CODE_ID = UPPER_CODE_ID
+					   	START WITH UPPER_CODE_ID = #{codeId}
+						)
+	</select>
+
+	<delete id="deleteCode" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.code.deleteCode */
+		DELETE 
+			TC_CODE
+		WHERE CODE_GROUP_ID = #{codeGroupId}
+		AND UPPER_CODE_ID = #{upperCodeId}
+		AND CODE_ID = #{codeId}
+	</delete>
+
+</mapper>

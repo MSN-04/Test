@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.dept">
+
+	<resultMap type="deptVO" id="deptMap">
+		<result column="DEPT_CODE" 			property="deptCode"/>
+		<result column="UPPER_DEPT_CODE" 	property="upperDeptCode"/>
+		<result column="VIRTL_CODE" 		property="virtlCode"/>
+		<result column="DEPT_NM" 			property="deptNm"/>
+		<result column="ALL_DEPT_NM" 		property="allDeptNm"/>
+		<result column="DEPT_ENG_NM" 		property="deptEngNm"/>
+		<result column="TELNO" 				property="telno"/>
+		<result column="FXNUM" 				property="fxnum"/>
+		<result column="LEVEL_NO" 			property="levelNo"/>
+		<result column="SORT_NO" 			property="sortNo"/>
+		<result column="JOB_GUIDANCE" 		property="jobGuidance"/>
+		<result column="LDAP_AT" 			property="ldapAt"/>
+		<result column="DSPY_AT" 			property="dspyAt"/>
+		<result column="USE_AT" 			property="useAt"/>
+		<result column="CRTR_UNIQUE_ID" 	property="crtrUniqueId"/>
+		<result column="CRTR_ID" 			property="crtrId"/>
+		<result column="CRTR_NM" 			property="crtrNm"/>
+		<result column="CREAT_DTTM" 		property="creatDttm"/>
+		<result column="UPDUSR_UNIQUE_ID" 	property="updusrUniqueId"/>
+		<result column="UPDUSR_ID" 			property="updusrId"/>
+		<result column="UPDUSR_NM" 			property="updusrNm"/>
+		<result column="UPDT_DTTM" 			property="updtDttm"/>
+	</resultMap>
+
+
+	<!-- Define DeptVO Column List -->
+	<sql id="listColumn">
+	 	DEPT_CODE
+		, UPPER_DEPT_CODE
+		, VIRTL_CODE
+		, DEPT_NM
+		, ALL_DEPT_NM
+		, DEPT_ENG_NM
+		, TELNO
+		, FXNUM
+		, LEVEL_NO
+		, SORT_NO
+		, JOB_GUIDANCE
+		, LDAP_AT
+		, DSPY_AT
+		, USE_AT
+		, CRTR_UNIQUE_ID
+		, CRTR_ID
+		, CRTR_NM
+		, CREAT_DTTM
+		, UPDUSR_UNIQUE_ID
+		, UPDUSR_ID
+		, UPDUSR_NM
+		, UPDT_DTTM
+	</sql>
+
+	<sql id="srchConditions">
+		<if test="useAt != null and useAt != '' ">
+			AND USE_AT = #{useAt}
+		</if>
+		<if test="dspyAt != null and dspyAt != '' ">
+			AND DSPY_AT = #{dspyAt}
+		</if>
+		<if test="dc != null and dc != '' ">
+			AND (DEPT_CODE = #{dc} OR  UPPER_DEPT_CODE = #{dc})
+		</if>
+		<if test="udc != null and udc != '' ">
+			AND UPPER_DEPT_CODE = #{udc}
+		</if>
+		<if test="temp != null and temp != '' ">
+			AND TEMP = #{temp}
+		</if>
+	</sql>
+
+	<!-- 부서 리스트 -->
+	<select id="selectDeptList" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.dept.selectDeptList */
+		SELECT
+		 	<include refid="listColumn"/>
+		FROM TN_DEPT
+		WHERE 1=1 
+		AND (UPPER_DEPT_CODE != '0000000' OR UPPER_DEPT_CODE IS NULL)
+		<include refid="srchConditions" />
+		ORDER BY LEVEL_NO, SORT_NO, DEPT_CODE
+	</select>
+
+	<select id="selectDeptExceptList" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.dept.selectDeptExceptList */
+		SELECT
+			<include refid="listColumn"/>
+		FROM TN_DEPT
+		WHERE DEPT_CODE NOT IN (
+							    SELECT 
+							  		DEPT_CODE
+							    FROM TN_DEPT
+							    CONNECT BY PRIOR DEPT_CODE = UPPER_DEPT_CODE
+							    START WITH DEPT_CODE =  #{deptCode}
+							    )
+		ORDER BY LEVEL_NO, SORT_NO, DEPT_CODE
+	</select>
+
+	<!--  부서 조회 -->
+	<select id="selectDept" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.dept.selectDept */
+		SELECT
+		    <include refid="listColumn"/>
+			,( SELECT DEPT_NM FROM TN_DEPT B WHERE A.UPPER_DEPT_CODE = B.DEPT_CODE  ) AS UPPER_DEPT_NM
+		FROM TN_DEPT A
+		WHERE DEPT_CODE = #{deptCode}
+	</select>
+
+	<!-- 부서 삽입 -->
+	<insert id="insertDept" parameterType="deptVO">
+		/* Query ID : humanframe.dept.insertDept */
+		<selectKey keyProperty="deptCode" resultType="java.lang.String" order="BEFORE">
+		 SELECT SEQ_TN_DEPT.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO TN_DEPT (
+			DEPT_CODE
+			, UPPER_DEPT_CODE
+			, VIRTL_CODE
+			, DEPT_NM
+			, ALL_DEPT_NM
+			, DEPT_ENG_NM
+			, TELNO
+			, FXNUM
+			, LEVEL_NO
+			, SORT_NO
+			, JOB_GUIDANCE
+			, LDAP_AT
+			, DSPY_AT
+			, USE_AT
+			, CRTR_UNIQUE_ID
+			, CRTR_ID
+			, CRTR_NM
+			, CREAT_DTTM
+		) VALUES (
+			  #{deptCode}
+			, #{upperDeptCode}
+			<choose>
+				<when test='levelNo lt 3'>
+			, #{upperDeptCode, jdbcType=VARCHAR}
+				</when>
+				<otherwise>
+			, #{virtlCode, jdbcType=VARCHAR}
+				</otherwise>
+			</choose>
+			, #{deptNm, jdbcType=VARCHAR}
+			, #{allDeptNm, jdbcType=VARCHAR}
+			, #{deptEngNm, jdbcType=VARCHAR}
+			, #{telno, jdbcType=VARCHAR}
+			, #{fxnum, jdbcType=VARCHAR}
+			, #{levelNo}
+			, #{sortNo}
+			,, #{jobGuidance, jdbcType=VARCHAR}
+			, #{ldapAt, jdbcType=VARCHAR}
+			, #{dspyAt, jdbcType=VARCHAR}
+			, #{useAt, jdbcType=VARCHAR}
+			, #{crtrUniqueId, jdbcType=VARCHAR}
+			, #{crtrId, jdbcType=VARCHAR}
+			, #{crtrNm, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+
+	<!-- 부서 수정 -->
+	<update id="updateDept" parameterType="deptVO">
+		/* Query ID : humanframe.dept.updateDept */
+		UPDATE TN_DEPT 
+			SET DEPT_NM = #{deptNm, jdbcType=VARCHAR}
+				, DEPT_ENG_NM = #{deptEngNm, jdbcType=VARCHAR}
+				, ALL_DEPT_NM = #{allDeptNm, jdbcType=VARCHAR}
+				, TELNO = #{telno, jdbcType=VARCHAR}
+				, FXNUM = #{fxnum, jdbcType=VARCHAR}
+				, LEVEL_NO = #{levelNo}
+				, SORT_NO = #{sortNo}
+				, JOB_GUIDANCE = #{jobGuidance, jdbcType=VARCHAR}
+				, LDAP_AT = #{ldapAt, jdbcType=VARCHAR}
+				, DSPY_AT = #{dspyAt, jdbcType=VARCHAR}
+				, USE_AT = #{useAt, jdbcType=VARCHAR}
+				, UPDUSR_UNIQUE_ID = #{updusrUniqueId, jdbcType=VARCHAR}
+				, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+				, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+				, UPDT_DTTM = SYSDATE
+		WHERE DEPT_CODE = #{deptCode}
+	</update>
+
+	<!-- 부서 삭제//하위부서 포함 -->
+	<delete id="deleteDept" parameterType="deptVO">
+		/* Query ID : humanframe.dept.deleteDept */
+		DELETE TN_DEPT
+		WHERE DEPT_CODE IN (SELECT 
+						  		DEPT_CODE
+						    FROM TN_DEPT
+						    CONNECT BY PRIOR DEPT_CODE = UPPERDEPTCODE
+						    START WITH DEPT_CODE = #{deptCode}
+						  )
+	</delete>
+
+	<!-- Define Search Condition -->
+	<sql id="searchConditions">
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt != null and useAt != '' ">
+			AND USE_AT = #{useAt}
+		</if>
+		<if test="srchTelno != null and srchTelno != '' ">
+			AND TELNO LIKE '%'|| #{srchTelno} ||'%'
+		</if>
+		<if test="srchDeptNm != null and srchDeptNm != '' ">
+			AND DEPT_NM LIKE '%'|| #{srchDeptNm} ||'%'
+		</if>
+	</sql>
+
+	<!-- Define tn_dept List Query -->
+	<select id="selectDeptListVO" parameterType="java.util.HashMap" resultMap="deptMap">
+		/* Query ID : humanframework.dept.selectDeptListVO */
+		SELECT
+				<include refid="listColumn"/>
+		FROM (
+			SELECT 
+				ROWNUM AS RNUM 
+				,<include refid="listColumn"/>
+			FROM (
+				SELECT
+					<include refid="listColumn"/>
+			    FROM TN_DEPT
+				WHERE 1=1
+				<include refid="searchConditions" />
+				ORDER BY LEVEL_NO, SORT_NO
+			)
+			WHERE ROWNUM &lt;= #{endNum}
+		)
+	     WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<!-- Define tn_dept Count Query -->
+	<select id="selectDeptListCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframework.dept.selectDeptListCount */
+		SELECT	
+			COUNT(*)
+		FROM TN_DEPT
+		WHERE 1=1
+		<include refid="searchConditions"/>
+	</select>
+
+</mapper>

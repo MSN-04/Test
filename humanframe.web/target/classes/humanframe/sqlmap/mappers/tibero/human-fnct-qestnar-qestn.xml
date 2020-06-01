@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.fnct.qestnarQestn">
+
+	<resultMap type="qestnarQestnVO" id="qestnarQestnMap">
+		<result property="qestnNo" 			column="QESTN_NO"/>
+		<result property="qestnarNo" 		column="QESTNAR_NO"	/>
+		<result property="qestnText" 		column="QESTN_TEXT"	/>
+		<result	property="qestnTy"  		column="QESTN_TY"/>
+		<result property="etcOpinionAt" 	column="ETC_OPINION_AT"	/>
+		<result property="ordr" 			column="ORDR"/>
+		<result property="qestnTi" 			column="QESTN_TI"/>
+		<result property="fileNo"			column="FILE_NO" />
+		<result property="flpth"			column="FLPTH" />
+		<result property="orginlFileNm"	    column="ORGINL_FILE_NM" />
+		<result property="streFileNm"		column="STRE_FILE_NM" />
+		<result property="fileExtsn"		column="FILE_EXTSN" />
+		<result property="fileSize"			column="FILE_SIZE" />
+		<result property="fileDc"			column="FILE_DC" />
+		<result property="dwldCo"		    column="DWLD_CO" />
+		<result property="useAt"		    column="USE_AT" />
+		<result property="essentialTy"		column="ESSENTIAL_TY" />
+		<result property="nextQestnTy"		column="NEXT_QESTN_TY" />
+	</resultMap>
+
+	<select id="selectQestnList" parameterType="hashmap" resultType="egovMap">		
+		/* Query ID : humanframe.fnct.qestnarQesitm.selectQestnList */
+		SELECT
+			  QESTN_NO
+			, QESTNAR_NO
+			, QESTN_TEXT
+			, QESTN_TY
+			, ETC_OPINION_AT
+			, ORDR
+			, QESTN_TI
+			, NEXT_QESTN_TY
+		FROM TF_QESTNAR_QESTN
+		WHERE 1=1
+		<if test="qestnarNo !='' and qestnarNo !=null"> AND QESTNAR_NO = #{qestnarNo} </if>
+		ORDER BY ORDR ASC
+	</select>
+
+	<select id="selectQestnAllList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.fnct.qestnarQesitm.selectQestnAllList */
+		SELECT
+			QESTN_NO ,
+			QESTNAR_NO ,
+			QESTN_TY ,
+			QESTN_TEXT ,
+			ETC_OPINION_AT ,
+			ORDR ,
+			QESTN_TI,
+			ESSENTIAL_TY,
+			NEXT_QESTN_TY,
+			QESITM_NO ,
+			QESITM_TEXT ,
+			QESITM_TY ,
+			QESITM_ORDR ,
+			NEXT_QESTN_AT ,
+			NEXT_QESTN_NO ,
+			QESITM_CNT ,
+			RESULT_CNT,
+			ROUND( DECODE(RESULT_TOTALCNT,0,0,(CAST(RESULT_CNT AS DECIMAL(5,2)) / (RESULT_TOTALCNT * 1.00) )*100) ,2) AS QESITM_PERCENT,
+			B.FILE_NO, B.FLPTH, B.ORGINL_FILE_NM, B.STRE_FILE_NM, B.FILE_EXTSN, B.FILE_SIZE, B.FILE_DC, B.DWLD_CO, B.USE_AT
+		FROM (
+				SELECT
+					TQQ.QESTN_NO
+					,TQQ.QESTNAR_NO
+					,TQQ.QESTN_TY
+					,TQQ.QESTN_TEXT
+					,TQQ.ETC_OPINION_AT
+					,TQQ.ORDR
+					,TQQ.QESTN_TI
+					,TQQ.ESSENTIAL_TY
+					,TQQ.NEXT_QESTN_TY
+					,TQI.QESITM_NO
+					,TQI.QESITM_TEXT
+					,TQI.QESITM_TY
+					,TQI.QESITM_ORDR
+					,TQI.NEXT_QESTN_AT
+					,TQI.NEXT_QESTN_NO
+			    	,(SELECT COUNT(1) FROM TF_QESTNAR_QESITM ITM WHERE ITM.QESTNAR_NO=TQ.QESTNAR_NO AND ITM.QESTN_NO=TQQ.QESTN_NO) AS QESITM_CNT
+			    	,(SELECT COUNT(1) FROM TF_QESTNAR_RESULT TQR WHERE TQR.QESTNAR_NO=TQ.QESTNAR_NO AND TQR.QESTN_NO=TQQ.QESTN_NO AND TQR.QESITM_NO=TQI.QESITM_NO) AS RESULT_CNT
+					,(SELECT COUNT(1) FROM TF_QESTNAR_RESULT TQR WHERE TQR.QESTNAR_NO=TQ.QESTNAR_NO AND TQR.QESTN_NO=TQQ.QESTN_NO) AS RESULT_TOTALCNT
+				FROM TF_QESTNAR TQ INNER JOIN TF_QESTNAR_QESTN TQQ ON TQ.QESTNAR_NO=TQQ.QESTNAR_NO
+				INNER JOIN TF_QESTNAR_QESITM TQI ON TQQ.QESTN_NO=TQI.QESTN_NO
+				WHERE
+				 TQ.QESTNAR_NO=#{qestnarNo}
+				AND TQ.OTHBC_AT='Y'
+				AND TQ.USE_AT='Y'
+				<choose>
+				<when test="srchSttus != null and srchSttus == 'END'">AND SYSDATE > END_DTTM</when>
+				<otherwise>AND SYSDATE BETWEEN BGN_DTTM AND END_DTTM</otherwise>
+				</choose>
+		) V
+		LEFT JOIN TN_FILE B ON V.QESITM_NO = B.UPPER_NO AND B.SRVC_ID = 'QESTNARTM' AND USE_AT = 'Y'
+		ORDER BY ORDR ASC, QESTN_NO ASC, QESITM_ORDR ASC
+	</select>
+
+	<select id="selectQestn" parameterType="hashmap" resultMap="qestnarQestnMap">
+		/* Query ID : humanframe.fnct.qestnarQesitm.selectQestn */
+		SELECT
+			  QESTN_NO
+			, QESTNAR_NO
+			, QESTN_TEXT
+			, QESTN_TY
+			, ETC_OPINION_AT
+			, ORDR
+			, QESTN_TI
+			, ESSENTIAL_TY
+			, NEXT_QESTN_TY
+		FROM TF_QESTNAR_QESTN
+		WHERE 1=1
+		AND QESTN_NO = #{qestnNo}
+	</select>
+
+	<insert id="insertQestn" parameterType="qestnarQestnVO">
+		/* Query ID : humanframe.fnct.qestnarQesitm.insertQestn */
+		<selectKey keyProperty="qestnNo" resultType="int" order="BEFORE">
+		SELECT
+			NVL(MAX(QESTN_NO),0) + 1
+		FROM TF_QESTNAR_QESTN
+		</selectKey>
+		INSERT INTO TF_QESTNAR_QESTN (
+			 QESTN_NO
+			,QESTNAR_NO
+			,QESTN_TEXT
+			,QESTN_TY
+			,ETC_OPINION_AT
+			,ORDR
+			,QESTN_TI
+			,ESSENTIAL_TY
+			,NEXT_QESTN_TY
+		) VALUES (
+			  #{qestnNo}
+			, #{qestnarNo}
+			, #{qestnText, jdbcType=VARCHAR}
+			, #{qestnTy, jdbcType=VARCHAR}
+			, #{etcOpinionAt, jdbcType=CHAR}
+			<choose>
+				<when test="ordr !='' and ordr !=null">
+					, #{ordr}
+				</when>
+				<otherwise>
+					, (SELECT NVL(MAX(ORDR),0) + 1
+					    FROM TF_QESTNAR_QESTN
+					    WHERE QESTNAR_NO = #{qestnarNo})
+				</otherwise>
+			</choose>
+			, #{qestnTi, jdbcType=VARCHAR}
+			, #{essentialTy, jdbcType=VARCHAR}
+			, #{nextQestnTy, jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<update id="updateQestn" parameterType="qestnarQestnVO">
+		/* Query ID : humanframe.fnct.qestnarQesitm.updateQestn */
+		UPDATE TF_QESTNAR_QESTN SET
+			 QESTN_TEXT = #{qestnText, jdbcType=VARCHAR}
+			,QESTN_TY = #{qestnTy, jdbcType=VARCHAR}
+			,ETC_OPINION_AT = #{etcOpinionAt, jdbcType=VARCHAR}
+			,QESTN_TI = #{qestnTi, jdbcType=VARCHAR}
+			,ESSENTIAL_TY = #{essentialTy, jdbcType=VARCHAR}
+			,NEXT_QESTN_TY = #{nextQestnTy, jdbcType=VARCHAR}
+		WHERE QESTN_NO = #{qestnNo}
+	</update>
+
+	<delete id="deleteQestn" parameterType="hashmap">
+		/* Query ID : humanframe.fnct.qestnarQesitm.deleteQestn */
+		DELETE FROM TF_QESTNAR_QESTN
+		WHERE QESTN_NO = #{qestnNo}
+		<if test="qestnarNo !='' and qestnarNo !=null"> AND QESTNAR_NO = #{qestnarNo} </if>
+	</delete>
+
+	<update id="updateQestnSort" parameterType="hashmap">
+		/* Query ID : humanframe.fnct.qestnarQesitm.updateQestnSort */
+	<foreach collection="qestnNo" item="item" close=";" separator=";" index="index">	
+		UPDATE TF_QESTNAR_QESTN
+		SET	ORDR = 1 + #{index, jdbcType=NUMERIC}
+		WHERE QESTN_NO = #{item, jdbcType=NUMERIC}
+	</foreach>
+	</update>
+
+	<update id="updateQestnSortSingle" parameterType="hashmap">
+		/* Query ID : humanframe.fnct.qestnarQesitm.updateQestnSortSingle */
+		UPDATE TF_QESTNAR_QESTN
+		SET	ORDR = 1 + #{index, jdbcType=NUMERIC}
+		WHERE QESTN_NO = #{qestnNo, jdbcType=NUMERIC}
+	</update>
+</mapper>

@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.fnct.crs">
+
+	<!-- Define Crs Result Map  -->
+	<resultMap type="crsVO" id="crsMap">
+		<result column="CRS_NO"					property="crsNo"/>
+		<result column="SJ"			    		property="sj"/>
+		<result column="PART"	    			property="part"/>
+		<result column="LINK_URL"	    		property="linkUrl"/>
+		<result column="CN"			    		property="cn"/>
+		<result column="CHARGER_UNIQUE_ID"		property="chargerUniqueId"/>
+		<result column="CHARGER_NM"				property="chargerNm"/>
+		<result column="ADIT_CHARGER_UNIQUE_ID"	property="aditChargerUniqueId"/>
+		<result column="ADIT_CHARGER_NM"		property="aditChargerNm"/>
+		<result column="PROGRS_STTUS"			property="progrsSttus"/>
+		<result column="PROCESS_DT"				property="processDt"/>
+		<result column="PROCESS_CN"				property="processCn"/>
+		<result column="CRTR_UNIQUE_ID"			property="crtrUniqueId"/>
+		<result column="CREAT_DTTM"				property="creatDttm"/>
+		<result column="CRTR_ID"				property="crtrId"/>
+		<result column="CRTR_NM"				property="crtrNm"/>
+		<result column="UPDUSR_UNIQUE_ID"		property="updusrUniqueId"/>
+		<result column="UPDT_DTTM"				property="updtDttm"/>
+		<result column="UPDUSR_ID"				property="updusrId"/>
+		<result column="UPDUSR_NM"				property="updusrNm"/>
+		<result column="USE_AT"					property="useAt"/>
+		<result column="TELNO"					property="telno"/>
+		<result column="DEPT_NM"				property="deptNm"/>
+		<result column="ALL_DEPT_NM" 			property="allDeptNm"/>
+		<collection property="crsFileList" 		column="{upperNo=crs_no, fileTy=file_ty, srvcId=srvc_id}" select="humanframe.file.selectFileList" />
+		<collection property="crsFileList1" 	column="{upperNo=crs_no, fileTy=file_ty, srvcId=srvc_id1}" select="humanframe.file.selectFileList" />
+		
+	</resultMap>
+
+	<!-- Define crsVO Column List -->
+	<sql id="listColumn">
+		CRS_NO
+		, SJ
+		, LINK_URL
+		, PART
+		, CN
+		, CHARGER_UNIQUE_ID
+		, CHARGER_NM
+		, ADIT_CHARGER_UNIQUE_ID
+		, ADIT_CHARGER_NM
+		, PROGRS_STTUS
+		, PROCESS_DT
+		, PROCESS_CN
+		, CRTR_ID
+		, CRTR_NM
+		, CRTR_UNIQUE_ID
+		, CREAT_DTTM
+		, UPDUSR_ID
+		, UPDUSR_NM
+		, UPDUSR_UNIQUE_ID
+		, UPDT_DTTM
+		, USE_AT
+		, 'FNCTCRS' AS SRVC_ID
+		, 'FNCTCRS1' AS SRVC_ID1
+       	, 'ATTACH' AS FILE_TY
+	</sql>
+	
+	<sql id="listColumn2">
+		A.CRS_NO
+		, A.SJ
+		, A.LINK_URL
+		, A.PART
+		, A.CN
+		, A.CHARGER_UNIQUE_ID
+		, A.CHARGER_NM
+		, A.ADIT_CHARGER_UNIQUE_ID
+		, A.ADIT_CHARGER_NM
+		, A.PROGRS_STTUS
+		, A.PROCESS_DT
+		, A.PROCESS_CN
+		, A.CRTR_ID
+		, A.CRTR_NM
+		, A.CRTR_UNIQUE_ID
+		, A.CREAT_DTTM
+		, A.UPDUSR_ID
+		, A.UPDUSR_NM
+		, A.UPDUSR_UNIQUE_ID
+		, A.UPDT_DTTM
+		, A.USE_AT
+		, 'FNCTCRS' AS SRVC_ID
+		, 'FNCTCRS1' AS SRVC_ID1
+       	, 'ATTACH' AS FILE_TY
+       	, C.TELNO
+       	,D.DEPT_NM
+       	,D.ALL_DEPT_NM
+	</sql>
+
+	<!-- Define Search Condition -->
+	<sql id="searchConditions">
+		<if test="srchText != null and srchText != '' ">
+			<choose>
+				<when test="srchKey  == 'sj'">AND SJ LIKE '%' || #{srchText} || '%'</when>
+				<when test="srchKey  == 'cn'">AND CN LIKE '%' || #{srchText} || '%'</when>
+				<when test="srchKey  == 'ctrtNm'">AND CRTR_NM LIKE '%' || #{srchText} || '%'</when>
+				<when test="srchKey  == 'chargerNm'">AND CHARGER_NM LIKE '%' || #{srchText} || '%'</when>
+				<when test="srchKey  == 'chargerNm'">AND ADIT_CHARGER_NM LIKE '%' || #{srchText} || '%'</when>
+				<when test='srchKey == null or srchKey == "" '>AND ( (SJ LIKE '%'|| #{srchText} ||'%') OR (CN LIKE '%'|| #{srchText} ||'%') OR (CRTR_NM LIKE '%'|| #{srchText} ||'%')OR (CHARGER_NM LIKE '%'|| #{srchText} ||'%')OR (ADIT_CHARGER_NM LIKE '%'|| #{srchText} ||'%'))</when>
+			</choose>
+		</if>
+		<if test="srchStatus != null and srchStatus != '' ">
+			AND PROGRS_STTUS = #{srchStatus}
+		</if>
+		<if test="srchPart != null and srchPart != '' ">
+			AND PART = #{srchPart}
+		</if>
+		<if test="srchStartDt != null and srchStartDt != '' ">
+			AND #{srchStartDt} &#60;= TO_CHAR(CREAT_DTTM, 'yyyy-MM-dd')
+		</if>
+		<if test="srchEndDt != null and srchEndDt != '' ">
+			AND #{srchEndDt} >= TO_CHAR(CREAT_DTTM, 'yyyy-MM-dd')
+		</if>
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+			AND USE_AT = #{useAt}
+		</if>
+	</sql>
+	
+	<sql id="searchConditions2">
+		<if test="srchText != null and srchText != '' ">
+			<choose>
+				<when test="srchKey  == 'sj'">AND a.sj LIKE '%' || #{srchText} || '%'</when>
+				<when test="srchKey  == 'cn'">AND a.cn LIKE '%' || #{srchText} || '%'</when>
+				<when test="srchKey  == 'ctrtNm'">AND a.crtr_nm LIKE '%' || #{srchText} || '%'</when>
+				<when test="srchKey  == 'chargerNm'">AND a.charger_nm LIKE '%' || #{srchText} || '%'</when>
+				<when test="srchKey  == 'chargerNm'">AND a.adit_charger_nm LIKE '%' || #{srchText} || '%'</when>
+				<when test='srchKey == null or srchKey == "" '><![CDATA[  AND ( (a.sj like '%'|| #{srchText} ||'%') OR (a.cn like '%'|| #{srchText} ||'%') OR (a.crtr_nm like '%'|| #{srchText} ||'%')OR (a.charger_nm like '%'|| #{srchText} ||'%')OR (a.adit_charger_nm like '%'|| #{srchText} ||'%')) ]]></when>
+			</choose>
+		</if>
+		<if test="srchStatus != null and srchStatus != '' ">
+			AND A.PROGRS_STTUS = #{srchStatus}
+		</if>
+		<if test="srchPart != null and srchPart != '' ">
+			AND A.PART = #{srchPart}
+		</if>
+		<if test="srchStartDt != null and srchStartDt != '' ">
+			AND #{srchStartDt} &#60;= TO_CHAR(A.CREAT_DTTM, 'yyyy-MM-dd')
+		</if>
+		<if test="srchEndDt != null and srchEndDt != '' ">
+			AND #{srchEndDt} >= TO_CHAR(A.CREAT_DTTM, 'yyyy-MM-dd')
+		</if>
+		<if test="useAt == null or useAt == ''">
+			AND A.USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+			AND A.USE_AT = #{useAt}
+		</if>
+	</sql>
+
+	<!-- Define tf_crs List Query -->
+	<select id="selectCrsListVO" parameterType="java.util.HashMap" resultMap="crsMap">
+		/* Query ID : humanframe.fnct.crs.selectCrsListVO */
+		SELECT
+			<include refid="listColumn"/>
+			, TELNO
+			, DEPT_NM
+			, ALL_DEPT_NM
+		FROM (
+			SELECT 
+				ROWNUM AS RNUM 
+				, <include refid="listColumn"/>
+				, TELNO
+				, DEPT_NM
+				, ALL_DEPT_NM
+			FROM (
+				SELECT
+					<include refid="listColumn2"/>
+				FROM TF_CRS A
+				LEFT JOIN TN_MNGR B ON A.CRTR_UNIQUE_ID = B.UNIQUE_ID
+				LEFT JOIN TN_DEPT_EMP C ON B.EMP_CODE = C.EMP_CODE
+				LEFT JOIN TN_DEPT D ON C.DEPT_CODE = D.DEPT_CODE
+				WHERE 1=1
+				<include refid="searchConditions2" />
+				ORDER BY a.crs_no DESC
+			 )
+			 WHERE ROWNUM &lt;= #{endNum}
+		) TF_CRS
+	    WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<!-- Define tf_crs List All Query -->
+	<select id="selectCrsListAll" parameterType="java.util.HashMap" resultMap="crsMap">
+		/* Query ID : humanframe.fnct.crs.selectCrsListAll */
+		SELECT
+			<include refid="listColumn" />
+		FROM TF_CRS
+		WHERE 1=1
+			<include refid="searchConditions" />
+		ORDER BY CRS_NO DESC
+	</select>
+
+	<!-- Define tf_crs Count Query -->
+	<select id="selectCrsCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.fnct.crs.selectCrsCount */
+		SELECT	
+			COUNT(CRS_NO)
+		FROM TF_CRS
+		WHERE 1=1
+		<include refid="searchConditions"/>
+	</select>
+
+	<select id="selectCrs" parameterType="int" resultMap="crsMap">
+		/* Query ID : humanframe.fnct.crs.selectCrs */
+		SELECT
+		<include refid="listColumn2"/>
+		FROM TF_CRS A
+		LEFT JOIN TN_MNGR B ON A.CRTR_UNIQUE_ID = B.UNIQUE_ID
+		LEFT JOIN TN_DEPT_EMP C ON B.EMP_CODE = C.EMP_CODE
+		LEFT JOIN TN_DEPT D ON C.DEPT_CODE = D.DEPT_CODE
+	 	WHERE CRS_NO = #{crsNo}
+	</select>
+
+	<update id="updateCrsUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.crs.updateCrsUseAt */
+		UPDATE	TF_CRS
+		   SET  USE_AT = #{useAt}
+		 WHERE	CRS_NO = #{crsNo}
+	</update>
+
+	<!-- Define tf_crs Insert Query -->
+	<insert id="insertCrs" parameterType="crsVO">
+		/* Query ID : humanframe.fnct.crs.insertCrs */
+		<selectKey keyProperty="crsNo" resultType="int" order="BEFORE">
+			SELECT
+				NVL(MAX(crs_no),0) + 1
+			FROM TF_CRS
+		</selectKey>
+		INSERT INTO TF_CRS (
+			CRS_NO,
+			SJ,
+			LINK_URL,
+			PART,
+			CN,
+			CHARGER_UNIQUE_ID,
+			CHARGER_NM,
+			ADIT_CHARGER_UNIQUE_ID,
+			ADIT_CHARGER_NM,
+			PROGRS_STTUS,
+			PROCESS_DT,
+			PROCESS_CN,
+			CRTR_ID,
+			CRTR_NM,
+			CRTR_UNIQUE_ID,
+			CREAT_DTTM
+		) VALUES (
+	    	  #{crsNo}
+	    	, #{sj, jdbcType=VARCHAR}
+	    	, #{linkUrl}
+	    	, #{part}
+	    	, #{cn}
+	    	, #{chargerUniqueId}
+	    	, #{chargerNm, jdbcType=VARCHAR}
+	    	, #{aditChargerUniqueId}
+	    	, #{aditChargerNm, jdbcType=VARCHAR}
+	    	, #{progrsSttus}
+	    	, #{processDt}
+	    	, #{processCn}
+	    	, #{crtrId, jdbcType=VARCHAR}
+	    	, #{crtrNm, jdbcType=VARCHAR}
+			, #{crtrUniqueId, jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+
+	<!-- Define tf_crs Update Query -->
+	<update id="updateCrs" parameterType="crsVO">
+		/* Query ID : humanframe.fnct.crs.updateCrs */
+		UPDATE	TF_CRS
+		   SET    SJ = #{sj, jdbcType=VARCHAR}
+		    	, LINK_URL = #{linkUrl}
+		    	, PART = #{part}
+		    	, CN = #{cn}
+		    	, CHARGER_UNIQUE_ID = #{chargerUniqueId}
+		    	, CHARGER_NM = #{chargerNm, jdbcType=VARCHAR}
+		    	, ADIT_CHARGER_UNIQUE_ID = #{aditChargerUniqueId}
+		    	, ADIT_CHARGER_NM = #{aditChargerNm, jdbcType=VARCHAR}
+		    	, PROGRS_STTUS = #{progrsSttus}
+		    	, PROCESS_DT = #{processDt}
+		    	, PROCESS_CN = #{processCn}
+				, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+				, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+				, UPDUSR_UNIQUE_ID = #{updusrUniqueId, jdbcType=VARCHAR}
+				, UPDT_DTTM = SYSDATE
+		    	, USE_AT = #{useAt}
+		 WHERE	CRS_NO = #{crsNo}
+	</update>
+
+	<!-- Define tf_crs Delete Query -->
+	<delete id="deleteCrs" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.fnct.crs.deleteCrs */
+		DELETE	TF_CRS
+		 WHERE	CRS_NO = #{crsNo}
+	</delete>
+
+</mapper>

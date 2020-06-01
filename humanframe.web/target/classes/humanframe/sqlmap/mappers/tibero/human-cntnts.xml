@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.cntnts">
+
+	<!-- Define Cntnts Result Map  -->
+	<resultMap type="cntntsVO" id="cntntsMap">
+		<result column="CNTNTS_NO"			property="cntntsNo" />
+		<result column="CNTNTS_SJ"			property="cntntsSj" />
+		<result column="CN"					property="cn" />
+		<result column="CN_CSS"				property="cnCss" />
+		<result column="URI_WRD"			property="uriWrd" />
+		<result column="SUMRY"				property="sumry" />
+		<result column="LANG_CODE_ID"		property="langCodeId" />
+		<result column="FX_BGNDE"			property="fxBgnde" />
+		<result column="FX_ENDDE"			property="fxEndde" />
+		<result column="ZIP"				property="zip" />
+		<result column="ADRES"				property="adres" />
+		<result column="ADRES_LA"			property="adresLa" />
+		<result column="ADRES_LO"			property="adresLo" />
+		<result column="LIC"				property="lic" />
+		<result column="SEARCH_AT"			property="searchAt" />
+		<result column="PBLCATE_STTUS_TY"	property="pblcateSttusTy" />
+		<result column="CHARGER_NM"			property="chargerNm" />
+		<result column="CHARGER_DEPT_NM"	property="chargerDeptNm" />
+		<result column="CHARGER_TELNO"		property="chargerTelno" />
+		<result column="CHARGER_EMAIL"		property="chargerEmail" />
+		<result column="PBLCATE_DE"			property="pblcateDe" />
+		<result column="USE_AT"				property="useAt" />
+		<result column="RDCNT"				property="rdcnt" />
+		<result column="CREAT_DTTM"			property="creatDttm" />
+		<result column="CRTR_ID"			property="crtrId" />
+		<result column="CRTR_NM"			property="crtrNm" />
+		<result column="UPDT_DTTM"			property="updtDttm" />
+		<result column="UPDUSR_ID"			property="updusrId" />
+		<result column="UPDUSR_NM"			property="updusrNm" />
+		<result column="TAG"				property="tag" />
+		<result column="RELATE_IMAGE_AT"	property="relateImageAt" />
+		<result column="TYPE"				property="type" />
+		<result column="RELATION"			property="relation" />
+		<result column="PUBLISHER"			property="publisher" />
+		<result column="CONTRIBUTOR"		property="contributor" />
+
+		<collection property="fileList" column="{srvcId=srvc_id, upperNo=cntnts_no}" select="humanframe.file.selectFileList" />
+	</resultMap>
+	
+	<resultMap type="cntntsVO" id="cntntsInfoMap" extends="cntntsMap">
+		<result column="CM_USE_AT"		property="cmUseAt" />
+		<collection property="relateImageList" column="{cntntsNo=cntnts_no}" select="humanframe.cntntsRelateImage.selectCntntsRelateImageListAll" />
+	</resultMap>
+
+	<resultMap type="cntntsMapngVO" id="cntntsMapngMap">
+		<result column="menu_no"	property="menuNo" />
+		<result column="cntnts_no"	property="cntntsNo" />
+	</resultMap>
+
+	<!-- Define CntntsVO Column List -->
+	<sql id="listColumn">
+		 TC.CNTNTS_NO
+		 , TC.CNTNTS_SJ
+		 , TO_CHAR(TC.CN) AS CN
+		 , TC.CN_CSS
+		 , TC.URI_WRD
+		 , TC.SUMRY
+		 , TC.LANG_CODE_ID
+		 , TC.FX_BGNDE
+		 , TC.FX_ENDDE
+		 , TC.ZIP
+		 , TC.ADRES
+		 , TC.ADRES_LA
+		 , TC.ADRES_LO
+		 , TC.LIC
+		 , TC.SEARCH_AT
+		 , TC.PBLCATE_STTUS_TY
+		 , TC.CHARGER_NM
+		 , TC.CHARGER_DEPT_NM
+		 , TC.CHARGER_TELNO
+		 , TC.CHARGER_EMAIL
+		 , TC.PBLCATE_DE
+		 , TC.RDCNT
+		 , TC.USE_AT
+		 , TC.CREAT_DTTM
+		 , TC.CRTR_ID
+		 , TC.CRTR_NM
+		 , TC.UPDT_DTTM
+		 , TC.UPDUSR_ID
+		 , TC.UPDUSR_NM
+		 , TC.TAG
+		 , TC.RELATE_IMAGE_AT
+		 , 'CNTNTS' AS SRVC_ID
+	</sql>
+
+	<!-- Define Search Condition -->
+	<sql id="searchConditions">
+		<if test="srchWord != null and srchWord != '' ">
+			<choose>
+				<when test='srchKey != null and srchKey == "srchCntntsSj" '>AND TC.CNTNTS_SJ like '%'|| #{srchWord} ||'%'</when>
+				<when test='srchKey != null and srchKey == "srchCrtrNm" '>AND TC.CRTR_NM like '%'|| #{srchWord} ||'%'</when>
+				<when test='srchKey != null and srchKey == "srchChargerNm" '>AND TC.CHARGER_NM like '%'|| #{srchWord} ||'%'</when>
+				<otherwise>
+					AND (TC.CNTNTS_SJ LIKE '%'|| #{srchWord} ||'%' OR TC.CRTR_NM LIKE '%'|| #{srchWord} ||'%')
+				</otherwise>
+			</choose>
+		</if>
+		<if test="srchPblcateSttus !=null and srchPblcateSttus != ''">
+			AND TC.PBLCATE_STTUS_TY = #{srchPblcateSttus}
+		</if>
+		<if test="useAt == null or useAt == ''">
+			AND TC.USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+			AND TC.USE_AT = #{useAt}
+		</if>
+		<if test="srchBgnDt !=null and srchBgnDt != ''">
+			AND TC.PBLCATE_DE &gt;= #{srchBgnDt}
+		</if>
+		<if test="srchEndDt !=null and srchEndDt != ''">
+			AND TC.PBLCATE_DE &lt;= #{srchEndDt}
+		</if>
+		<if test="siteNos !=null and siteNos !='' ">
+			AND TSM.SITE_NO IN
+			<foreach collection="siteNos" item="siteNo" open="(" separator="," close=")">
+				#{siteNo}
+			</foreach>
+		</if>
+		<if test="menuNos !=null and menuNos !='' ">
+			AND TSM.MENU_NO IN
+			<foreach collection="menuNos" item="menuNo" open="(" separator="," close=")">
+				#{menuNo}
+			</foreach>
+		</if>
+		<if test="srchSiteNo != null and srchSiteNo != '' ">
+			AND CNTNTS_NO IN ( SELECT CNTNTS_NO
+							     FROM TN_CNTNTS_MAPNG
+						        WHERE MENU_NO IN ( SELECT MENU_NO
+								                     FROM TN_SITE_MENU
+								                    WHERE SITE_NO = #{srchSiteNo}
+								                    <if test="srchMenuNo != null and srchMenuNo != '' ">
+								                      AND MENU_NO = #{srchMenuNo}
+								                    </if>
+								                 )
+ 						     )
+		</if>
+	</sql>
+
+	<!-- Define tn_cntnts List Query -->
+	<select id="selectCntntsListVO" parameterType="java.util.HashMap" resultMap="cntntsMap">
+		/* Query ID : humanframe.cntnts.selectCntntsListVO */
+		SELECT
+				<include refid="listColumn"/>
+		  FROM (
+				SELECT ROWNUM AS RNUM ,
+						<include refid="listColumn"/>
+				  FROM (
+						SELECT
+							<include refid="listColumn"/>
+						  FROM TN_CNTNTS TC
+						  <if test="siteNos !=null and siteNos !='' ">
+						  	INNER JOIN TN_CNTNTS_MAPNG TCM ON TCM.CNTNTS_NO = TC.CNTNTS_NO
+							INNER JOIN TN_SITE_MENU TSM ON TSM.MENU_NO = TCM.MENU_NO
+						  </if>
+						 WHERE 1=1
+							<include refid="searchConditions" />
+					  ORDER BY TC.CNTNTS_NO DESC
+				  ) TC
+				  WHERE ROWNUM &lt;= #{endNum}
+			   ) TC
+	     WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<!-- Define tn_cntnts Front Page Count Query -->
+	<select id="selectFrontCntntsCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : Front Page - humanframe.cntnts.selectCntntsCount */
+		SELECT	COUNT(*)
+		  FROM	TN_CNTNTS TC
+		 WHERE	1=1
+				<include refid="searchConditions"/>
+				<if test="menuNo !=null and menuNo != ''">
+					AND TC.CNTNTS_NO IN(SELECT CNTNTS_NO FROM TN_CNTNTS_MAPNG WHERE MENU_NO=#{menuNo})
+				</if>
+	</select>
+
+	<!-- Define tn_cntnts Front Page List Query -->
+	<select id="selectFrontCntntsListVO" parameterType="java.util.HashMap" resultMap="cntntsMap">
+		/* Query ID : Front Page - humanframe.cntnts.selectCntntsListVO */
+		SELECT
+				<include refid="listColumn"/>
+		  FROM (
+				SELECT ROWNUM AS RNUM ,
+						<include refid="listColumn"/>
+				  FROM (
+						SELECT
+							<include refid="listColumn"/>
+						  FROM TN_CNTNTS TC, TN_CNTNTS_MAPNG TCM, TN_PBLCATE_SITE_MENU TPSM
+						 WHERE TC.CNTNTS_NO = TCM.CNTNTS_NO
+						    AND TCM.MENU_NO = TPSM.MENU_NO
+						    AND TCM.MENU_NO = #{menuNo}
+							<include refid="searchConditions" />
+					  ORDER BY TC.PBLCATE_DE DESC, TC.CNTNTS_NO DESC
+				  ) TC
+				  WHERE ROWNUM &lt;= #{endNum}
+			   ) TC
+	     WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<!-- Define tn_cntnts Front Page List All Query -->
+	<select id="selectFrontCntntsListAll" parameterType="java.util.HashMap" resultMap="cntntsMap">
+		/* Query ID : Front Page - humanframe.cntnts.selectCntntsListAll */
+			SELECT
+				<include refid="listColumn"/>
+			  FROM TN_CNTNTS TC, TN_CNTNTS_MAPNG TCM, TN_PBLCATE_SITE_MENU TPSM
+			 WHERE TC.CNTNTS_NO = TCM.CNTNTS_NO
+			    AND TCM.MENU_NO = TPSM.MENU_NO
+			    AND TCM.MENU_NO = #{menuNo}
+				<include refid="searchConditions" />
+		  ORDER BY TC.PBLCATE_DE DESC, TC.CNTNTS_NO DESC
+	</select>
+	
+	<!-- Define tn_cntnts Front Page List Query -->
+	<select id="selectFrontCntntsRecentList" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : Front Page - humanframe.cntnts.selectFrontCntntsRecentList */
+		<include refid="LimitMapper.header"/>
+		SELECT 
+			<include refid="listColumn"/>
+			 , TPSM.MENU_URI
+			 , TPSM.POST_LIST_TY
+		  FROM TN_CNTNTS TC, TN_CNTNTS_MAPNG TCM, TN_PBLCATE_SITE_MENU TPSM
+		 WHERE TC.CNTNTS_NO = TCM.CNTNTS_NO
+		   AND TCM.MENU_NO = TPSM.MENU_NO
+		   AND TPSM.SITE_NO = #{siteNo}
+		   AND TPSM.MENU_TY = '2'
+		   AND TPSM.USE_AT = 'Y'
+			<include refid="searchConditions" />
+		<!--  GROUP BY tc.cntnts_no -->
+		 ORDER BY TC.PBLCATE_DE DESC, TC.CNTNTS_NO DESC
+		 <include refid="LimitMapper.footer"/>		 
+	</select>
+
+	<!-- Define tn_cntnts Count Query -->
+	<select id="selectCntntsCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.cntnts.selectCntntsCount */
+		SELECT	COUNT(*)
+		  FROM	TN_CNTNTS TC
+		  <if test="siteNos !=null and siteNos !='' ">
+		  	INNER JOIN TN_CNTNTS_MAPNG TCM ON TCM.CNTNTS_NO = TC.CNTNTS_NO
+			INNER JOIN TN_SITE_MENU TSM ON TSM.MENU_NO = TCM.MENU_NO
+		  </if>
+		 WHERE	1=1
+		<include refid="searchConditions"/>
+	</select>
+
+	<!-- Define tn_cntnts Detail Query -->
+	<select id="selectCntnts" parameterType="java.util.HashMap" resultMap="cntntsInfoMap">
+		/* Query ID : humanframe.cntnts.selectCntnts */
+		SELECT
+				<include refid="listColumn"/>
+				, TM.DC_TYPE			AS TYPE
+				, TM.DC_SOURCE 			AS SOURCE
+				, TM.DC_RELATION		AS RELATION
+				, TM.DC_PUBLISHER		AS PUBLISHER
+				, TM.DC_CONTRIBUTOR 	AS CONTRIBUTOR
+		<choose>
+			<when test="cntntsNo > 0">FROM	TN_CNTNTS TC, TN_METADATA TM</when>
+			<otherwise>, TPSM.CM_USE_AT FROM TN_CNTNTS TC, TN_METADATA TM, TN_CNTNTS_MAPNG TCM, TN_PBLCATE_SITE_MENU TPSM</otherwise>
+		</choose>				
+	 	 WHERE ROWNUM = 1
+	 	 	AND TC.CNTNTS_NO = TM.CNTNTS_NO
+	 	 	<if test="cntntsNo > 0">
+	 	 	AND TC.CNTNTS_NO = #{cntntsNo}
+	 	 	</if>
+			<if test="(uriWrd != '' and uriWrd != null) and pageType.equalsIgnoreCase('S') ">
+			AND TC.CNTNTS_NO = TCM.CNTNTS_NO
+	 	 	AND TCM.MENU_NO = TPSM.MENU_NO AND TPSM.MENU_URI = #{uriWrd}
+		 	 	<if test="(preview == '' or preview == null)">
+		 	 	AND TC.PBLCATE_STTUS_TY = 'P'
+		 	 	</if>
+	 	 	</if>
+			<if test="(uriWrd != '' and uriWrd != null) and pageType.equalsIgnoreCase('M') ">
+			AND TC.CNTNTS_NO = TCM.CNTNTS_NO AND TC.URI_WRD = #{uriWrd}
+	 	 	AND TCM.MENU_NO = TPSM.MENU_NO
+		 	 	<if test="(preview == '' or preview == null)">
+		 	 	AND TC.PBLCATE_STTUS_TY = 'P'
+		 	 	</if>
+	 	 	</if>
+	 	 	<if test="siteNo > 0">
+	 	 	AND TPSM.SITE_NO = #{siteNo}
+	 	 	</if>
+	</select>
+
+	<!-- Define tn_cntnts Insert Query -->
+	<insert id="insertCntnts" parameterType="cntntsVO">
+		/* Query ID : humanframe.cntnts.insertCntnts */
+		<selectKey keyProperty="cntntsNo" resultType="int" order="BEFORE">
+			SELECT
+				NVL(MAX(CNTNTS_NO), 0) + 1
+			FROM TN_CNTNTS
+		</selectKey>
+		INSERT INTO TN_CNTNTS (
+				CNTNTS_NO
+				, CNTNTS_SJ
+				, CN
+				, CN_CSS
+				, URI_WRD
+				, SUMRY
+				, LANG_CODE_ID
+				, FX_BGNDE
+				, FX_ENDDE
+				, ZIP
+				, ADRES
+				, ADRES_LA
+				, ADRES_LO
+				, LIC
+				, SEARCH_AT
+				, PBLCATE_STTUS_TY
+				, CHARGER_NM
+				, CHARGER_DEPT_NM
+				, CHARGER_TELNO
+				, CHARGER_EMAIL
+				, PBLCATE_DE
+				, RDCNT
+				, USE_AT
+				, CREAT_DTTM
+				, CRTR_ID
+				, CRTR_NM
+				, TAG
+				, RELATE_IMAGE_AT
+			) VALUES (
+				#{cntntsNo}
+				, #{cntntsSj, jdbcType=VARCHAR}
+				, #{cn, jdbcType=VARCHAR}
+				, #{cnCss, jdbcType=VARCHAR}
+				<choose>
+					<when test="uriWrd != null and uriWrd != '' ">
+						, #{uriWrd}
+					</when>
+					<otherwise>
+						, #{cntntsNo}
+					</otherwise>
+				</choose>
+				, #{sumry, jdbcType=VARCHAR}
+				, #{langCodeId}
+				, #{fxBgnde, jdbcType=VARCHAR}
+				, #{fxEndde, jdbcType=VARCHAR}
+				, #{zip, jdbcType=VARCHAR}
+				, #{adres, jdbcType=VARCHAR}
+				, #{adresLa, jdbcType=VARCHAR}
+				, #{adresLo, jdbcType=VARCHAR}
+				, #{lic, jdbcType=VARCHAR}
+				, #{searchAt, jdbcType=VARCHAR}
+				, #{pblcateSttusTy, jdbcType=VARCHAR}
+				, #{chargerNm, jdbcType=VARCHAR}
+				, #{chargerDeptNm, jdbcType=VARCHAR}
+				, #{chargerTelno, jdbcType=VARCHAR}
+				, #{chargerEmail, jdbcType=VARCHAR}
+				, #{pblcateDe, jdbcType=VARCHAR}
+				, #{rdcnt}
+				, #{useAt}
+				, SYSDATE
+				, #{crtrId, jdbcType=VARCHAR}
+				, #{crtrNm, jdbcType=VARCHAR}
+				, #{tag, jdbcType=VARCHAR}
+				, #{relateImageAt, jdbcType=VARCHAR}
+			)
+	</insert>
+
+	<!-- Define tn_cntnts Update Query -->
+	<update id="updateCntnts" parameterType="cntntsVO">
+		/* Query ID : humanframe.cntnts.updateCntnts */
+		UPDATE TN_CNTNTS
+		   SET CNTNTS_SJ = #{cntntsSj, jdbcType=VARCHAR}
+			, CN = #{cn, jdbcType=VARCHAR}
+			, CN_CSS = #{cnCss, jdbcType=VARCHAR}
+			<choose>
+				<when test="uriWrd != null and uriWrd != '' ">
+					, URI_WRD = #{uriWrd}
+				</when>
+				<otherwise>
+					, URI_WRD = #{cntntsNo}
+				</otherwise>
+			</choose>
+			, SUMRY = #{sumry, jdbcType=VARCHAR}
+			, LANG_CODE_ID = #{langCodeId}
+			, FX_BGNDE = #{fxBgnde, jdbcType=VARCHAR}
+			, FX_ENDDE = #{fxEndde, jdbcType=VARCHAR}
+			, ZIP = #{zip, jdbcType=VARCHAR}
+			, ADRES = #{adres, jdbcType=VARCHAR}
+			, ADRES_LA = #{adresLa, jdbcType=VARCHAR}
+			, ADRES_LO = #{adresLo, jdbcType=VARCHAR}
+			, LIC = #{lic, jdbcType=VARCHAR}
+			, SEARCH_AT = #{searchAt, jdbcType=VARCHAR}
+			, PBLCATE_STTUS_TY = #{pblcateSttusTy, jdbcType=VARCHAR}
+			, CHARGER_NM = #{chargerNm, jdbcType=VARCHAR}
+			, CHARGER_DEPT_NM = #{chargerDeptNm, jdbcType=VARCHAR}
+			, CHARGER_TELNO = #{chargerTelno, jdbcType=VARCHAR}
+			, CHARGER_EMAIL = #{chargerEmail, jdbcType=VARCHAR}
+			, PBLCATE_DE = #{pblcateDe, jdbcType=VARCHAR}
+			, UPDT_DTTM = SYSDATE
+			, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+			, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+			, TAG = #{tag, jdbcType=VARCHAR}
+			, RELATE_IMAGE_AT = #{relateImageAt, jdbcType=VARCHAR}
+			WHERE CNTNTS_NO = #{cntntsNo}
+	</update>
+
+	<!-- Define tn_cntnts Update Use Y/N Query -->
+	<update id="updateCntntsUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.cntnts.updateCntntsUseAt */
+		UPDATE TN_CNTNTS
+		   SET USE_AT = #{useAt}
+		 WHERE CNTNTS_NO = #{cntntsNo}
+	</update>
+
+	<!-- Define tn_cntnts Delete Query -->
+	<delete id="deleteCntnts" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.cntnts.deleteCntnts */
+		DELETE TN_CNTNTS
+		 WHERE CNTNTS_NO = #{cntntsNo}
+	</delete>
+
+	<!-- CntntsMapng delete>insert -->
+
+	<select id="selectCntntsMapngListVO" parameterType="java.util.HashMap" resultMap="cntntsMapngMap">	
+		/* Query ID : humanframe.cntnts.selectCntntsMapngListVO */
+		SELECT MENU_NO
+			 , CNTNTS_NO
+		  FROM TN_CNTNTS_MAPNG
+		  <where>
+		  	<if test="menuNo !=null and menuNo !=''">MENU_NO = #{menuNo}</if>
+		  	<if test="cntntsNo !=null and cntntsNo !=''">CNTNTS_NO = #{cntntsNo}</if>
+		  </where>
+	</select>
+
+	<insert id="insertCntntsMapng" parameterType="cntntsMapngVO">
+		/* Query ID : humanframe.cntnts.insertCntntsMapng */
+		INSERT INTO TN_CNTNTS_MAPNG (
+			MENU_NO
+			, CNTNTS_NO
+		) VALUES (
+			#{menuNo}
+			, #{cntntsNo}
+		)
+	</insert>
+
+	<delete id="deleteCntntsMapng" parameterType="int">
+		/* Query ID : humanframe.cntnts.deleteCntntsMapng */
+		DELETE TN_CNTNTS_MAPNG
+		WHERE CNTNTS_NO = #{cntntsNo}
+	</delete>
+
+	<delete id="deleteCntntsMapngByMenuNo" parameterType="int">
+		/* Query ID : humanframe.cntnts.deleteCntntsMapngByMenuNo */
+		DELETE TN_CNTNTS_MAPNG
+		WHERE MENU_NO = #{menuNo}
+	</delete>
+
+	<!-- URI 중복확인 -->
+	<select id="selectDupCntnts" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.cntnts.selectDupCntnts */
+		SELECT COUNT(*) FROM TN_CNTNTS
+		 WHERE 1 = 1
+		 <if test="uriWrd != null and uriWrd != ''">
+		 	AND URI_WRD = #{uriWrd}
+		 </if>
+		 <if test="cntntsNo > 0">
+		 	AND CNTNTS_NO != #{cntntsNo}
+		 </if>
+	</select>
+
+	<!-- 조회수 증가 -->
+	<update id="updateVisitCo" parameterType="int">
+		/* Query ID : humanframe.cntnts.updateVisitCo */
+		UPDATE TN_CNTNTS SET RDCNT = RDCNT + 1
+		  WHERE CNTNTS_NO = #{cntntsNo}
+	</update>
+	
+	<select id="selectCntntUseMenuList" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.cntnts.selectCntntUseMenuList */
+		SELECT B.SITE_NM || '>' || A.MENU_NM AS MENU_NM
+		  FROM (	SELECT TSM.SITE_NO
+		  				 , SUBSTR(SYS_CONNECT_BY_PATH(TSM.MENU_NM, '>'), 7) AS MENU_NM
+					  FROM TN_SITE_MENU TSM
+					 WHERE TSM.MENU_TY = '2'
+					   AND TSM.MENU_NO IN ( SELECT MENU_NO 
+					                          FROM TN_CNTNTS_MAPNG 
+					                         WHERE CNTNTS_NO =  #{cntntsNo})
+					 START WITH TSM.UPPER_MENU_NO = 0
+				   CONNECT BY PRIOR TSM.MENU_NO = TSM.UPPER_MENU_NO
+				     ORDER BY TSM.SITE_NO ASC
+				)A INNER JOIN TN_SITE B ON A.SITE_NO = B.SITE_NO
+	</select>
+	
+
+</mapper>

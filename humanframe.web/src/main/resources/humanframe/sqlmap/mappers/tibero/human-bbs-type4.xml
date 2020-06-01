@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.bbs.type4">
+	<resultMap type="bbsType4VO" id="bbsType4Map">
+		<result property="bbsNo" 				column="BBS_NO" />
+		<result property="nttNo" 				column="NTT_NO"  />
+		<result property="ctgryNo"				column="CTGRY_NO"/>
+		<result property="ctgryNm"				column="CTGRY_NM" />
+		<result property="sj" 					column="SJ" />
+		<result property="mvpTy" 				column="MVP_TY" />
+		<result property="mvpHtml" 				column="MVP_HTML" />
+		<result property="sumry" 				column="SUMRY" />
+		<result property="wrter" 				column="WRTER" />
+		<result property="writngDe" 			column="WRITNG_DE" />
+		<result property="rdcnt" 				column="RDCNT" />
+		<result property="recomendCo"			column="RECOMEND_CO"/>
+		<result property="oppsCo"				column="OPPS_CO"/>
+		<result property="noticeAt" 			column="NOTICE_AT" />
+		<result property="secretAt"				column="SECRET_AT"/>
+		<result property="confmAt"				column="CONFM_AT"/>
+		<result property="resveAt"				column="RESVE_AT"/>
+		<result property="resveBeginDttm"		column="RESVE_BEGIN_DTTM"/>
+		<result property="resveEndDttm"			column="RESVE_END_DTTM"/>
+		<result property="crtrId"				column="CRTR_ID"/>
+		<result property="crtrUniqueId"			column="CRTR_UNIQUE_ID"/>
+		<result property="password"				column="PASSWORD"/>
+		<result property="mngrNm" 				column="MNGR_NM" />
+		<result property="deptNm" 				column="DEPT_NM" />
+		<result property="extrlInnerSe"			column="EXTRL_INNER_SE"/>
+		<result property="cclTy"				column="CCL_TY"/>
+		<result property="fileCo"				column="FILE_CO"/>
+		<result property="cn" 					column="CN" />
+		<result property="noticeAt" 			column="NOTICE_AT" />
+		<result property="crtrId" 				column="CRTR_ID" />
+		<result property="crtrNm" 				column="CRTR_NM" />
+		<result property="deleteAt" 			column="DELETE_AT" />
+		<result property="topNttAt" 			column="TOP_NTT_AT" />
+		<result property="siteNtceNo" 			column="SITE_NTCE_NO" />
+		<result property="siteNtceNm" 			column="SITE_NTCE_NM" />
+		<result property="nttDeptNm" 			column="NTT_DEPT_NM" />
+		<result property="telno" 				column="TELNO" />
+		<result property="emailAdres" 			column="EMAIL_ADRES" />
+		<result property="organCrdns" 			column="ORGAN_CRDNS" />
+		<result property="beginDttm" 			column="BEGIN_DTTM" />
+		<result property="endDttm" 				column="END_DTTM" />
+		<collection property="bbsFileList" 		column="{upperNo=ntt_no, fileTy=file_ty, srvcId=srvc_id}" select="humanframe.bbs.file.selectFileList" />
+		<collection property="thumbFile" 		column="{upperNo=ntt_no, fileTy=thumb_file_ty, srvcId=srvc_id, fileNo=thumb_file_no}" select="humanframe.bbs.file.selectFileByFilter" />
+	</resultMap>
+
+	<insert id="insertNtt" parameterType="bbsType4VO">
+		/* Query ID : humanframe.bbs.type4.insertNtt */	
+		<selectKey keyProperty="nttNo" resultType="int" order="BEFORE">
+			SELECT SEQ_TN_BBS_NTT.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO 
+			${trgtTable} (
+			  BBS_NO
+			, NTT_NO
+			, CTGRY_NO
+			, SJ
+			, SUMRY
+			, CN
+			, MVP_TY
+			, MVP_HTML
+			, WRTER
+			, WRITNG_DE
+			, NOTICE_AT
+			, IP
+			, RDCNT
+			, RECOMEND_CO
+			, OPPS_CO
+			, CCL_TY
+			, DELETE_AT
+			, CREAT_DTTM
+	  		, CRTR_ID
+	  		, CRTR_NM
+	  		, CRTR_UNIQUE_ID
+	  		, UPDT_DTTM
+	  		, UPDUSR_ID
+	  		, UPDUSR_NM
+	  		, UPDUSR_UNIQUE_ID
+	  		, SECRET_AT
+	  		, CONFM_AT
+	  		, RESVE_AT
+	  		<if test="resveBeginDttm != null and resveBeginDttm != ''">
+	  		, RESVE_BEGIN_DTTM
+	  		</if>
+	  		<if test="resveEndDttm != null and resveEndDttm != ''">
+			, RESVE_END_DTTM
+			</if>
+	  		<if test="password != null and password != '' ">
+	  		, PASSWORD
+	  		</if>
+	  		, EXTRL_INNER_SE
+	  		, TOP_NTT_AT
+	  		, SITE_NTCE_NO
+	  		, NTT_DEPT_NM
+			, TELNO
+			, EMAIL_ADRES
+			, ORGAN_CRDNS
+			<if test="beginDttm != null and beginDttm != ''">
+			, BEGIN_DTTM
+			</if>
+			<if test="endDttm != null and endDttm != ''">
+			, END_DTTM
+			</if>
+		) VALUES (
+			  #{bbsNo}
+			, #{nttNo}
+			, #{ctgryNo}
+			, #{sj, jdbcType=VARCHAR}
+			, #{sumry, jdbcType=VARCHAR}
+			, #{cn, jdbcType=CLOB}
+			, #{mvpTy, jdbcType=VARCHAR}
+			, #{mvpHtml, jdbcType=VARCHAR}
+			, #{wrter, jdbcType=VARCHAR}
+			,
+			<choose>
+				<when test="writngDe == null">TO_CHAR(SYSDATE, 'YYYY-MM-DD')</when>
+				<otherwise>#{writngDe, jdbcType=VARCHAR}</otherwise>
+			</choose>
+			, #{noticeAt, jdbcType=VARCHAR}
+			, #{ip, jdbcType=VARCHAR}
+			, #{rdcnt}
+			, #{recomendCo}
+			, #{oppsCo}
+			, #{cclTy, jdbcType=VARCHAR}
+			, 'N'
+			, SYSDATE
+	  		, #{crtrId, jdbcType=VARCHAR}
+	  		, #{crtrNm, jdbcType=VARCHAR}
+	  		, #{crtrUniqueId, jdbcType=VARCHAR}
+	  		, SYSDATE
+	  		, #{updusrId, jdbcType=VARCHAR}
+	  		, #{updusrNm, jdbcType=VARCHAR}
+	  		, #{updusrUniqueId, jdbcType=VARCHAR}
+	  		, #{secretAt, jdbcType=VARCHAR}
+	  		, #{confmAt, jdbcType=VARCHAR}
+	  		, #{resveAt, jdbcType=VARCHAR}
+	  		<if test="resveBeginDttm != null and resveBeginDttm != ''">
+	  		, TO_DATE(#{resveBeginDttm, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+	  		</if>
+	  		<if test="resveEndDttm != null and resveEndDttm != '' ">
+			, TO_DATE(#{resveEndDttm, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+			</if>
+	  		<if test="password != null and password != '' ">
+	  		, #{password}
+	  		</if>
+	  		, #{extrlInnerSe}
+	  		, #{topNttAt, jdbcType=VARCHAR}
+	  		, #{siteNtceNo}
+	  		, #{nttDeptNm, jdbcType=VARCHAR}
+			, #{telno, jdbcType=VARCHAR}
+	  		, #{emailAdres, jdbcType=VARCHAR}
+	  		, #{organCrdns, jdbcType=VARCHAR}
+	  		<if test="beginDttm != null and beginDttm != ''">
+	  		, TO_DATE(#{beginDttm, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+	  		</if>
+	  		<if test="endDttm != null and endDttm != ''">
+			, TO_DATE(#{endDttm, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+			</if>
+		)
+	</insert>
+
+	<select id="selectCount" parameterType="hashmap" resultType="int">
+		/* Query ID : humanframe.bbs.type4.selectCount */	
+		SELECT 
+			COUNT(NTT_NO)
+		FROM <include refid="humanframe.bbs.type.trgtTable"/>
+		<include refid="humanframe.bbs.type.listWhere"/>
+	</select>
+
+	<select id="selectBbsStatusCount" parameterType="java.lang.Integer" resultType="egovMap">
+		/* Query ID : humanframe.bbs.type4.selectBbsStatusCount */	
+		SELECT 
+			NVL(SUM(CASE 
+					 WHEN DELETE_AT = 'N'
+		       		 THEN 1 
+		       		 ELSE 0 
+		       		END), 0) AS DELETE_N
+	       ,NVL(SUM(CASE 
+	       			 WHEN DELETE_AT = 'Y'
+		       		 THEN 1 
+		       		 ELSE 0 
+		       		END), 0) AS DELETE_Y
+	  	FROM ${trgtTable}
+	 	WHERE BBS_NO = #{bbsNo}
+	</select>
+
+	<select id="selectListVO" parameterType="hashmap" resultType="egovMap">
+		/* Query ID : humanframe.bbs.type4.selectListVO */	
+		SELECT 
+			 NTT.RNUM
+			,NTT.BBS_NO
+			,NTT.NTT_NO
+			,NVL(NTT.CTGRY_NO, 0) AS CTGRY_NO
+			,CTGRY.CTGRY_NM
+			,NTT.SJ
+			,NTT.MVP_TY
+			,NTT.MVP_HTML
+			,NTT.WRTER
+			,NTT.WRITNG_DE
+			,NTT.RDCNT
+			,NTT.RECOMEND_CO
+			,NTT.OPPS_CO
+			,NTT.PASSWORD
+			,NTT.CCL_TY
+			,NTT.NOTICE_AT
+			,NTT.DELETE_AT
+			,NTT.SECRET_AT
+			,NTT.CRTR_ID
+			,NTT.CRTR_UNIQUE_ID
+			,NTT.EXTRL_INNER_SE
+			,NTT.TOP_NTT_AT
+			,NTT.SUMRY
+			,MNGR.MNGR_NM
+       		,DEPT.DEPT_NM
+       		,(SELECT COUNT(BBSFILE.FILE_NO) FROM TN_BBS_FILE BBSFILE WHERE BBSFILE.BBS_SRVC_TY = 'BBSTY4' AND BBSFILE.NTT_NO = NTT.NTT_NO) AS FILE_CO
+       		,(SELECT NVL(MAX(FILE_NO), 0) FROM TN_BBS_FILE BBSFILE WHERE BBSFILE.BBS_SRVC_TY='BBSTY4' AND BBSFILE.FILE_TY='ATTACH' AND BBSFILE.NTT_NO=NTT.NTT_NO AND BBSFILE.USE_AT='Y') AS THUMB_FILE_NO
+       		,ROUND(TO_NUMBER((SYSDATE - NTT.CREAT_DTTM)/(60*60*1000))) AS TIME_GAP
+       		,NTT.SITE_NTCE_NO
+       		,NTT.NTT_DEPT_NM
+			,NTT.TELNO
+       		,NTT.EMAIL_ADRES
+       		,NTT.ORGAN_CRDNS
+       		,NTT.BEGIN_DTTM
+			,NTT.END_DTTM
+       		,(SELECT SITE_NM FROM TN_SITE WHERE SITE_NO = NTT.SITE_NTCE_NO) AS SITE_NTCE_NM
+       		<foreach collection="etcList" item="etcNo" open="," separator=",">
+			ETC.ETC_DATA${etcNo}
+       		</foreach>
+		  FROM (
+		  	SELECT 
+		  		 RNUM
+				,BBS_NO
+				,NTT_NO
+				,CTGRY_NO
+				,SJ
+				,MVP_TY
+				,MVP_HTML
+				,WRTER
+				,WRITNG_DE
+				,RDCNT
+				,RECOMEND_CO
+				,OPPS_CO
+				,PASSWORD
+				,CCL_TY
+				,NOTICE_AT
+				,DELETE_AT
+				,SECRET_AT
+				,CRTR_ID
+				,CRTR_UNIQUE_ID
+				,CREAT_DTTM
+				,EXTRL_INNER_SE
+				,TOP_NTT_AT
+				,SUMRY
+				,SITE_NTCE_NO
+				,NTT_DEPT_NM
+				,TELNO
+				,EMAIL_ADRES
+				,ORGAN_CRDNS
+				,BEGIN_DTTM
+				,END_DTTM
+			FROM (
+				SELECT 
+					 ROWNUM AS RNUM
+					,BBS_NO
+					,NTT_NO
+					,CTGRY_NO
+					,SJ
+					,MVP_TY
+					,MVP_HTML
+					,WRTER
+					,WRITNG_DE
+					,RDCNT
+					,RECOMEND_CO
+					,OPPS_CO
+					,PASSWORD
+					,CCL_TY
+					,NOTICE_AT
+					,DELETE_AT
+					,SECRET_AT
+					,CRTR_ID
+					,CRTR_UNIQUE_ID
+					,CREAT_DTTM
+					,EXTRL_INNER_SE
+					,TOP_NTT_AT
+					,SUMRY
+					,SITE_NTCE_NO
+					,NTT_DEPT_NM
+					,TELNO
+					,EMAIL_ADRES
+					,ORGAN_CRDNS
+					,BEGIN_DTTM
+				 	,END_DTTM
+				FROM (
+					SELECT 
+						 BBS_NO
+						,NTT_NO
+						,CTGRY_NO
+						,SJ
+						,MVP_TY
+						,MVP_HTML
+						,WRTER
+						,WRITNG_DE
+						,RDCNT
+						,RECOMEND_CO
+						,OPPS_CO
+						,PASSWORD
+						,CCL_TY
+						,NOTICE_AT
+						,DELETE_AT
+						,SECRET_AT
+						,CRTR_ID
+						,CRTR_UNIQUE_ID
+						,CREAT_DTTM
+						,EXTRL_INNER_SE
+						,TOP_NTT_AT
+						,SUMRY
+						,SITE_NTCE_NO
+						,NTT_DEPT_NM
+						,TELNO
+						,EMAIL_ADRES
+						,ORGAN_CRDNS
+						,BEGIN_DTTM
+				 		,END_DTTM
+					FROM <include refid="humanframe.bbs.type.trgtTable"/>
+					<include refid="humanframe.bbs.type.listWhere"/>
+					ORDER BY NOTICE_AT DESC, TOP_NTT_AT DESC, WRITNG_DE DESC, NTT_NO DESC
+				 )
+			)
+			WHERE RNUM > #{startNum}
+			AND RNUM &#60;= #{endNum}
+		)NTT
+		LEFT OUTER JOIN TN_BBS_CTGRY CTGRY ON NTT.BBS_NO = CTGRY.BBS_NO AND NTT.CTGRY_NO = CTGRY.CTGRY_NO
+		LEFT OUTER JOIN TN_MNGR MNGR ON NTT.CRTR_ID = MNGR.MNGR_ID
+        LEFT OUTER JOIN TN_DEPT DEPT ON MNGR.DEPT_CODE = DEPT.DEPT_CODE
+        LEFT OUTER JOIN ( SELECT 
+        					 BBS_NO
+							,NTT_NO
+							<foreach collection="etcList" item="etcNo" open="," separator=",">
+							 MAX(DECODE(etc_iem_no, #{etcNo}, etc_input_iem)) AS etc_data${etcNo}
+							</foreach>
+						  FROM TN_BBS_ETC_IEM_INPUT_DATA
+						  WHERE BBS_NO = #{bbsNo}
+						  GROUP BY BBS_NO, NTT_NO
+         				)ETC
+         				ON ETC.BBS_NO = NTT.BBS_NO
+         				AND ETC.NTT_NO = NTT.NTT_NO
+		ORDER BY NTT.RNUM ASC
+	</select>
+
+	<select id="selectNtt" parameterType="hashmap" resultMap="bbsType4Map">
+		/* Query ID : humanframe.bbs.type4.selectNtt */	
+		SELECT * FROM (
+			SELECT ROWNUM AS RNUM, A.*  FROM (
+				SELECT 
+					 NTT.BBS_NO
+					,NTT.NTT_NO
+					,NVL(NTT.CTGRY_NO, 0) AS CTGRY_NO
+					,CTGRY.CTGRY_NM
+					,NTT.NOTICE_AT
+					,NTT.SJ
+					,NTT.MVP_TY
+					,NTT.MVP_HTML
+					,NTT.SUMRY
+					,NTT.CN
+					,NTT.WRTER
+					,NTT.WRITNG_DE
+					,NTT.RDCNT					
+					,NTT.RESVE_AT
+					,TO_CHAR(NTT.RESVE_BEGIN_DTTM, 'YYYY-MM-DD HH24:MI') AS RESVE_BEGIN_DTTM
+					,TO_CHAR(NTT.RESVE_END_DTTM, 'YYYY-MM-DD HH24:MI') AS RESVE_END_DTTM
+					,NTT.RECOMEND_CO
+					,NTT.OPPS_CO
+					,NTT.CCL_TY
+					,NTT.CRTR_ID
+					,NTT.CRTR_NM
+					,NTT.CRTR_UNIQUE_ID
+					,TO_CHAR(NTT.UPDT_DTTM, 'YYYY-MM-DD HH24:MI' ) AS UPDT_DTTM
+					,NTT.SECRET_AT
+					,NTT.PASSWORD
+					,MNGR.MNGR_NM
+				    ,DEPT.DEPT_NM
+				    ,NTT.EXTRL_INNER_SE
+				    ,NTT.TOP_NTT_AT
+				    ,NTT.DELETE_AT
+				    ,'BBSTY4' AS SRVC_ID
+				    ,'ATTACH' AS FILE_TY
+				    ,'THUMBNAIL' AS THUMB_FILE_TY
+				    ,(SELECT NVL(MAX(FILE_NO), 0) FROM TN_BBS_FILE BBSFILE WHERE BBSFILE.BBS_SRVC_TY='BBSTY4' AND BBSFILE.FILE_TY='THUMBNAIL' AND BBSFILE.NTT_NO=NTT.NTT_NO AND BBSFILE.USE_AT='Y') AS THUMB_FILE_NO
+				    ,NTT.SITE_NTCE_NO
+		       		,(SELECT SITE_NM FROM TN_SITE WHERE SITE_NO = NTT.SITE_NTCE_NO) AS SITE_NTCE_NM
+		       		,NTT.NTT_DEPT_NM
+					,NTT.TELNO
+					,NTT.EMAIL_ADRES
+					,NTT.ORGAN_CRDNS
+					,TO_CHAR(NTT.BEGIN_DTTM, 'YYYY-MM-DD HH24:MI') AS BEGIN_DTTM
+					,TO_CHAR(NTT.END_DTTM, 'YYYY-MM-DD HH24:MI') AS END_DTTM
+				FROM ${trgtTable} NTT
+				LEFT OUTER JOIN TN_BBS_CTGRY CTGRY ON NTT.BBS_NO = CTGRY.BBS_NO AND NTT.CTGRY_NO = CTGRY.CTGRY_NO
+				LEFT OUTER JOIN TN_MNGR MNGR ON NTT.CRTR_ID = MNGR.MNGR_ID
+				LEFT OUTER JOIN TN_DEPT DEPT ON MNGR.DEPT_CODE = DEPT.DEPT_CODE
+				WHERE NTT.NTT_NO = #{nttNo}
+				)A
+			 WHERE ROWNUM &#60;= 1
+		 ) 
+		 WHERE RNUM > 0
+	</select>
+
+	<update id="update" parameterType="bbsType4VO">
+		/* Query ID : humanframe.bbs.type4.update */	
+		UPDATE 
+			${trgtTable} 
+		SET   CTGRY_NO = #{ctgryNo}
+			, SJ = #{sj, jdbcType=VARCHAR}
+			, SUMRY = #{sumry, jdbcType=VARCHAR}
+			, CN = #{cn, jdbcType=CLOB}
+			, MVP_HTML = #{mvpHtml, jdbcType=VARCHAR}
+			, MVP_TY = #{mvpTy, jdbcType=VARCHAR}
+			, WRTER = #{wrter, jdbcType=VARCHAR}
+			, WRITNG_DE = <choose>
+							<when test="writngDe == null">TO_CHAR(SYSDATE, 'YYYY-MM-DD')</when>
+							<otherwise>#{writngDe, jdbcType=VARCHAR}</otherwise>
+						  </choose>
+			, IP = #{ip, jdbcType=VARCHAR}
+			, NOTICE_AT = #{noticeAt, jdbcType=VARCHAR}
+			, RESVE_AT = #{resveAt, jdbcType=VARCHAR}
+			<if test="resveBeginDttm != null and resveBeginDttm != ''">
+	  		, RESVE_BEGIN_DTTM = TO_DATE(#{resveBeginDttm, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+	  		</if>
+	  		<if test="resveEndDttm != null and resveEndDttm != '' ">
+			, RESVE_END_DTTM = TO_DATE(#{resveEndDttm, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+			</if>
+			, ccl_ty = #{cclTy, jdbcType=VARCHAR}
+			, UPDT_DTTM = SYSDATE
+	  		, UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+	  		, UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+	  		, UPDUSR_UNIQUE_ID = #{updusrUniqueId, jdbcType=VARCHAR}
+	  		, SECRET_AT = #{secretAt, jdbcType=VARCHAR}
+	  		<if test="password != null and password != '' ">
+	  		, PASSWORD = #{password}
+	  		</if>
+	  		, EXTRL_INNER_SE = #{extrlInnerSe}
+	  		, TOP_NTT_AT = #{topNttAt, jdbcType=VARCHAR}
+	  		, SITE_NTCE_NO = ${siteNtceNo}
+	  		, NTT_DEPT_NM = #{nttDeptNm, jdbcType=VARCHAR}
+			, TELNO = #{telno, jdbcType=VARCHAR}
+	  		, EMAIL_ADRES = #{emailAdres, jdbcType=VARCHAR}
+	  		, ORGAN_CRDNS = #{organCrdns, jdbcType=VARCHAR}
+	  		<if test="beginDttm != null and beginDttm != ''">
+	  		, BEGIN_DTTM = TO_DATE(#{beginDttm, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+	  		</if>
+	  		<if test="endDttm != null and endDttm != '' ">
+			, END_DTTM = TO_DATE(#{endDttm, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+			</if>
+		WHERE BBS_NO = #{bbsNo}
+		AND NTT_NO = #{nttNo}
+	</update>
+
+	<select id="selectNttPrevNext" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframe.bbs.type4.selectNttPrevNext */	
+		SELECT 
+			 T1.FLAG
+			,T2.NTT_NO
+			,T2.NOTICE_AT
+			,T2.SJ
+		FROM (
+			SELECT 'prev' AS FLAG FROM DUAL
+			UNION ALL
+			SELECT 'next' AS FLAG FROM DUAL
+		)T1, (
+			SELECT 
+				  A1.SJ
+			    , A1.NTT_NO
+			    , A1.RNUM
+			    , A1.NOTICE_AT
+			    , CASE WHEN A1.RNUM > B1.RNUM
+			          	THEN 'prev' 
+			          	ELSE 'next'
+			      	   END AS FLAG
+			FROM (
+				SELECT 
+					  SJ
+					, NTT_NO
+					, NOTICE_AT
+					, ROW_NUMBER() OVER(ORDER BY NOTICE_AT DESC, TOP_NTT_AT DESC, WRITNG_DE DESC, NTT_NO DESC) AS RNUM
+				FROM <include refid="humanframe.bbs.type.trgtTable"/>
+				<include refid="humanframe.bbs.type.listWhere"/>
+			)A1, (
+			  	SELECT 
+			  		RNUM
+				FROM (
+					SELECT 
+						  SJ
+				  		, NTT_NO
+				  		, NOTICE_AT
+				  		, ROW_NUMBER() OVER(ORDER BY NOTICE_AT DESC, TOP_NTT_AT DESC, WRITNG_DE DESC, NTT_NO DESC) AS RNUM
+			        FROM <include refid="humanframe.bbs.type.trgtTable"/>
+					<include refid="humanframe.bbs.type.listWhere"/>
+			    )
+				WHERE NTT_NO = #{nttNo}
+		 	) B1
+			WHERE A1.RNUM IN(B1.RNUM - 1, B1.RNUM + 1)
+		) T2
+		WHERE T1.FLAG = T2.FLAG(+)
+		ORDER BY T1.FLAG DESC
+	</select>
+</mapper>

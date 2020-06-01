@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.media">
+	<resultMap type="mediaVO" id="mediaMap">
+		<result property="mediaNo"		     column="MEDIA_NO"          />
+		<result property="mediaCodeId"	     column="MEDIA_CODE_ID"     />
+		<result property="mediaCodeNm"	     column="MEDIA_CODE_NM"     />
+		<result property="langCodeId"	     column="LANG_CODE_ID"      />
+		<result property="langCodeNm"	     column="LANG_CODE_NM"      />
+		<result property="mediaNm"		     column="MEDIA_NM"          />
+		<result property="sumry"			 column="SUMRY"             />
+		<result property="streMthTy"		 column="STRE_MTH_TY"       />
+		<result property="mediaHtml"		 column="MEDIA_HTML"        />
+		<result property="cpyrhtTy"			 column="CPYRHT_TY"         />
+		<result property="useAt"			 column="USE_AT"            />
+		<result property="creatDttm"		 column="CREAT_DTTM"        />
+		<result property="crtrNm"			 column="CRTR_NM"           />
+		<result property="updtDttm"			 column="UPDT_DT"           />
+		<result property="updusrNm"		     column="UPDUSR_NM"         />
+		<result property="srchAt"		     column="SRCH_AT"           />
+		<result property="thumbImageNm"		 column="THUMB_IMAGE_NM"    />
+		<result property="chargerOrgnztNm"	 column="CHARGER_ORGNZT_NM" />
+		<result property="chargerNm"		 column="CHARGER_NM"        />
+		<result property="chargerTelno"		 column="CHARGER_TELNO"     />
+		<result property="usrCreatDe"		 column="USR_CREAT_DE"      />
+		<result property="pubDe"		     column="PUB_DE"            />
+		<result property="uriWrd"		     column="URI_WRD"           />
+		<result property="source"		     column="SOURCE"            />
+		<result property="relation"		     column="RELATION"          />
+		<collection property="mediaLangList" column="{mediaNo=media_no}" select="humanframe.media.lang.selectMediaLangList" />
+		<collection property="thumbFileList" column="{upperNo=media_no, fileTy=media_thumb}" select="humanframe.media.file.selectFileList" />
+		<collection property="mediaFileList" column="{upperNo=media_no, fileTy=media_file}" select="humanframe.media.file.selectFileList" />
+	</resultMap>
+
+	<sql id="searchMediaList">
+		WHERE 1= 1
+		<if test="useAt == null or useAt == ''">
+		AND USE_AT = 'Y'
+		</if>
+		<if test="useAt !=null and useAt != ''">
+		AND USE_AT = #{useAt}
+		</if>
+		<if test="streMthTy !=null and streMthTy != ''">
+		AND STRE_MTH_TY = #{streMthTy}
+		</if>
+		<if test="srchMediaCodeId !=null and srchMediaCodeId != ''">
+		AND MEDIA_CODE_ID = #{srchMediaCodeId}
+		</if>
+		<if test="searchKey == 'mediaNm' and searchText != ''">
+		AND MEDIA_NM LIKE '%' || #{searchText} || '%'
+		</if>
+		<if test="searchKey == 'sumry' and searchText != ''">
+		AND SUMRY LIKE '%' || #{searchText} || '%'
+		</if>
+		<if test="searchKey == 'mediaNo' and searchText != ''">
+		AND MEDIA_NO = #{searchText}
+		</if>
+		<if test="srchAt !=null and srchAt != ''">
+		AND SRCH_AT = #{srchAt}
+		</if>
+		<if test="uriWrd !=null and uriWrd != ''">
+		AND URI_WRD = #{uriWrd}
+		</if>
+	</sql>
+
+	<select id="selectMediaListCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.media.selectMediaListCount */
+		SELECT COUNT(*)
+		FROM TN_MEDIA
+		<include refid="searchMediaList" />
+	</select>
+
+	<select id="selectMediaList" parameterType="java.util.HashMap" resultMap="mediaMap">
+		/* Query ID : humanframe.media.selectMediaList */
+		SELECT *
+		FROM (
+			SELECT ROWNUM AS RNUM
+		    			, MEDIA_NO
+						, MEDIA_CODE_ID
+						, MEDIA_CODE_NM
+						, LANG_CODE_ID
+						, LANG_CODE_NM
+						, MEDIA_NM
+						, SUMRY
+						, STRE_MTH_TY
+						, MEDIA_HTML
+						, CPYRHT_TY
+						, USE_AT
+						, CREAT_DTTM
+						, CRTR_NM
+						, UPDT_DTTM
+						, UPDUSR_NM
+						, SRCH_AT
+						, THUMB_IMAGE_NM
+						, CHARGER_ORGNZT_NM
+						, CHARGER_NM
+						, CHARGER_TELNO
+						, USR_CREAT_DE
+						, PUB_DE
+						, URI_WRD
+						, 'MEDIATHUMB' AS MEDIA_THUMB
+						, 'MEDIA' AS MEDIA_FILE
+			FROM (
+				SELECT MEDIA_NO
+						, MEDIA_CODE_ID
+						, (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID = MEDIA_CODE_ID AND UPPER_CODE_ID = 'MEDIA') AS MEDIA_CODE_NM
+						, LANG_CODE_ID
+						, (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID = LANG_CODE_ID AND UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+						, MEDIA_NM
+						, SUMRY
+						, STRE_MTH_TY
+						, MEDIA_HTML
+						, CPYRHT_TY
+						, USE_AT
+						, CREAT_DTTM
+						, CRTR_NM
+						, UPDT_DTTM
+						, UPDUSR_NM
+						, SRCH_AT
+						, THUMB_IMAGE_NM
+						, CHARGER_ORGNZT_NM
+						, CHARGER_NM
+						, CHARGER_TELNO
+						, USR_CREAT_DE
+						, PUB_DE
+						, URI_WRD
+						, 'MEDIATHUMB' AS MEDIA_THUMB
+						, 'MEDIA' AS MEDIA_FILE
+				FROM TN_MEDIA
+				<include refid="searchMediaList" />
+				ORDER BY MEDIA_NO DESC
+			) WHERE ROWNUM &lt;= #{endNum}
+		) WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectMedia" parameterType="java.util.HashMap" resultMap="mediaMap">
+		/* Query ID : humanframe.media.selectMedia */
+		SELECT M.MEDIA_NO
+	       , M.MEDIA_CODE_ID
+	       , (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID = M.MEDIA_CODE_ID AND UPPER_CODE_ID = 'MEDIA') AS MEDIA_CODE_NM
+	       , M.LANG_CODE_ID
+	       , (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID = M.LANG_CODE_ID AND UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+	       , M.MEDIA_NM
+	       , M.SUMRY
+	       , M.STRE_MTH_TY
+	       , M.MEDIA_HTML
+	       , M.CPYRHT_TY
+	       , M.USE_AT
+	       , M.CREAT_DTTM
+	       , M.CRTR_NM
+	       , M.UPDT_DTTM
+	       , M.UPDUSR_NM
+	       , M.SRCH_AT
+	       , M.THUMB_IMAGE_NM
+	       , M.CHARGER_ORGNZT_NM
+	       , M.CHARGER_NM
+	       , M.CHARGER_TELNO
+	       , M.USR_CREAT_DE
+	       , M.PUB_DE
+	       , M.URI_WRD
+	       , 'MEDIATHUMB' AS MEDIA_THUMB
+	       , 'MEDIA' AS MEDIA_FILE
+       	   , TM.DC_SOURCE 			AS SOURCE
+           , TM.DC_RELATION		    AS RELATION
+	  FROM TN_MEDIA M 
+	  LEFT JOIN TN_METADATA TM ON M.MEDIA_NO = TM.MEDIA_NO
+	WHERE M.MEDIA_NO = #{mediaNo}
+	</select>
+
+	<insert id="insertMedia" parameterType="mediaVO">
+		/* Query ID : humanframe.media.insertMedia */
+		<selectKey keyProperty="mediaNo" resultType="int" order="BEFORE">
+		 SELECT
+		 	NVL( MAX(MEDIA_NO), 0) + 1
+		 FROM tn_media
+		</selectKey>
+		INSERT INTO TN_MEDIA (
+			MEDIA_NO
+			, MEDIA_CODE_ID
+			, LANG_CODE_ID
+			, MEDIA_NM
+			, SUMRY
+			, STRE_MTH_TY
+			, MEDIA_HTML
+			, CPYRHT_TY
+			, USE_AT
+			, SRCH_AT
+			, THUMB_IMAGE_NM
+			, CREAT_DTTM
+			, CRTR_NM			
+			, URI_WRD
+		) VALUES (
+			#{mediaNo}
+			, #{mediaCodeId}
+			, #{langCodeId}
+			, #{mediaNm}
+			, #{sumry, jdbcType=VARCHAR}
+			, #{streMthTy}
+			, #{mediaHtml, jdbcType=VARCHAR}
+			, #{cpyrhtTy, jdbcType=VARCHAR}
+			, #{useAt}
+			, #{srchAt}
+			, #{thumbImageNm}
+			, #{creatDttm}
+			, #{crtrNm}			
+			, #{uriWrd}
+		)
+	</insert>
+
+	<update id="updateMedia" parameterType="mediaVO">
+		/* Query ID : humanframe.media.updateMedia */
+		UPDATE TN_MEDIA 
+			SET	MEDIA_CODE_ID = #{mediaCodeId}
+				, LANG_CODE_ID = #{langCodeId}
+				, MEDIA_NM = #{mediaNm}
+				, SUMRY = #{sumry}
+				, STRE_MTH_TY = #{streMthTy}
+				, MEDIA_HTML = #{mediaHtml, jdbcType=VARCHAR}
+				, CPYRHT_TY = #{cpyrhtTy, jdbcType=VARCHAR}
+				, SRCH_AT = #{srchAt}
+				, USE_AT = #{useAt}
+				, THUMB_IMAGE_NM = #{thumbImageNm}
+				, UPDT_DTTM = SYSDATE
+				, UPDUSR_NM = #{updusrNm}			
+				, URI_WRD = #{uriWrd}
+		WHERE MEDIA_NO = #{mediaNo}
+	</update>
+
+	<update id="updateMediaUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.media.updateMediaUseAt */
+		UPDATE TN_MEDIA 
+			SET USE_AT = 'N'
+		WHERE MEDIA_NO = #{mediaNo}
+	</update>
+
+	<update id="updateMediaListUseAt" parameterType="mediaVO">
+		/* Query ID : humanframe.media.updateMediaListUseAt */
+		UPDATE TN_MEDIA 
+			SET	USE_AT = #{useAt}
+				, UPDT_DTTM = SYSDATE
+				, UPDUSR_NM = #{updusrNm}
+		WHERE MEDIA_NO IN
+			<foreach collection="arrMediaNo" item="mediaNo" open="(" separator="," close=")">
+				#{mediaNo}
+			</foreach>
+	</update>
+
+	<select id="selectMediaCntByUriWrd" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.media.selectMediaCntByUriWrd */
+		SELECT COUNT(*)
+		FROM TN_MEDIA
+		WHERE 1=1
+		<if test="mediaNo > 0 ">
+		  AND MEDIA_NO NOT IN (#{mediaNo})
+		</if>
+		  AND URI_WRD = #{uriWrd}
+	</select>
+
+	<select id="selectMediaByUri" parameterType="java.util.HashMap" resultMap="mediaMap">
+		/* Query ID : humanframe.media.selectMediaByUri */
+		SELECT MEDIA_NO
+				, MEDIA_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID = MEDIA_CODE_ID AND UPPER_CODE_ID = 'MEDIA') AS MEDIA_CODE_NM
+				, LANG_CODE_ID
+				, (SELECT CODE_NM FROM TC_CODE WHERE CODE_ID = LANG_CODE_ID AND UPPER_CODE_ID = 'LANG') AS LANG_CODE_NM
+				, MEDIA_NM
+				, SUMRY
+				, STRE_MTH_TY
+				, MEDIA_HTML
+				, CPYRHT_TY
+				, USE_AT
+				, CREAT_DTTM
+				, CRTR_NM
+				, UPDT_DTTM
+				, UPDUSR_NM
+				, SRCH_AT
+				, THUMB_IMAGE_NM
+				, CHARGER_ORGNZT_NM
+				, CHARGER_NM
+				, CHARGER_TELNO
+				, USR_CREAT_DE
+				, PUB_DE
+				, URI_WRD
+				, 'MEDIATHUMB' AS MEDIA_THUMB
+				, 'MEDIA' AS MEDIA_FILE
+		FROM TN_MEDIA
+		WHERE URI_WRD = #{uriWrd}
+	</select>
+
+</mapper>

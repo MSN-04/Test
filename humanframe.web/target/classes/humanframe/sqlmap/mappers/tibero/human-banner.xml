@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.banner">
+
+	<!-- Define Banner Result Map  -->
+	<resultMap type="bannerVO" id="bannerMap">
+		<result property="bannerNo"			column="BANNER_NO"/>		
+		<result property="bannerCodeId"		column="BANNER_CODE_ID"/>		
+		<result property="bannerCodeNm"		column="BANNER_CODE_NM"	/>	
+		<result property="siteNo"			column="SITE_NO"/>
+		<result property="bannerOrdr"		column="BANNER_ORDR"/>
+		<result property="sj"				column="SJ"/>
+		<result property="subtitl"			column="SUBTITL"/>
+		<result property="sumry"			column="SUMRY"/>
+		<result property="linkUrl"			column="LINK_URL"/>
+		<result property="linkTrgt" 		column="LINK_TRGT"/>
+		<result property="ntceBgnde"		column="NTCE_BGNDE"/>
+		<result property="ntceEndde"        column="NTCE_ENDDE"/>
+		<result property="useAt"            column="USE_AT"/>
+		<result property="creatDt"          column="CREAT_DT"/>
+		<result property="crtrNm"			column="CRTR_NM"/>
+		<result property="updtDt"			column="UPDT_DT"/>
+		<result property="updusrNm"			column="UPDUSR_NM"/>
+		<collection property="siteList" column="{bannerNo=banner_no}" select="selectBannerMapngSiteList" />
+		<collection property="pcFileList" column="{srvcId=srvc_id, fileTy=pc_file_ty, upperNo=banner_no}" select="humanframe.file.selectFileList" />
+		<collection property="tabletFileList" column="{srvcId=srvc_id, fileTy=tablet_file_ty, upperNo=banner_no}" select="humanframe.file.selectFileList" />
+		<collection property="mobileFileList" column="{srvcId=srvc_id, fileTy=mobile_file_ty, upperNo=banner_no}" select="humanframe.file.selectFileList" />
+	</resultMap>
+
+	<!-- Define BannerVO Column List -->
+	<sql id="listColumn">
+		  BANNER_NO
+		 ,BANNER_CODE_ID
+		 ,SJ
+		 ,SUBTITL
+		 ,SUMRY
+		 ,LINK_URL
+		 ,LINK_TRGT
+		 ,TO_CHAR(NTCE_BGNDE, 'yyyy-MM-dd') as NTCE_BGNDE
+		 ,TO_CHAR(NTCE_ENDDE, 'yyyy-MM-dd') as NTCE_ENDDE
+		 ,USE_AT
+		 ,CREAT_DT
+		 ,CRTR_NM
+		 ,UPDUSR_NM
+		 ,'BANNER' AS SRVC_ID
+		 ,'PCIMG' AS PC_FILE_TY
+		 ,'TABLETIMG' AS TABLET_FILE_TY
+		 ,'MOBILEIMG' AS MOBILE_FILE_TY
+	</sql>
+
+	<!-- Define Search Condition -->
+	<sql id="searchConditions">
+		<if test="searchText != null and searchText != '' ">
+			<choose>
+				<when test='searchKey != null and searchKey == "sj" '>AND SJ LIKE '%'|| #{searchText} ||'%'</when>
+				<when test='searchKey != null and searchKey == "creatDt" '>AND TO_CHAR(CREAT_DT,'YYYY-MM-DD') = #{searchText}</when>
+			</choose>
+		</if>
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt != null and useAt != '' ">
+			AND USE_AT = #{useAt}
+		</if>
+		<if test="@humanframe.core.util.HumanCommonUtil@isNotEmpty(bannerCodeId)">
+			AND BANNER_CODE_ID = #{bannerCodeId}
+		</if>
+		<if test='@humanframe.core.util.HumanCommonUtil@isNotEmpty(useAtFront)'>
+			AND (SYSDATE BETWEEN NTCE_BGNDE AND NTCE_ENDDE OR NTCE_BGNDE IS NULL AND NTCE_ENDDE IS NULL)
+		</if>
+	</sql>
+
+	<sql id="searchConditionsSiteType1">
+		<if test="siteNo != null and siteNo != 0">
+			AND BANNER_NO IN (SELECT 
+								BANNER_NO 
+							  FROM TN_BANNER_MAPNG 
+							  WHERE SITE_NO = #{siteNo}
+							  )
+		</if>
+		<if test="siteNos !=null and siteNos !='' ">
+			AND BANNER_NO IN (SELECT 
+								BANNER_NO 
+							  FROM TN_BANNER_MAPNG 
+							  WHERE SITE_NO IN <foreach collection="siteNos" item="siteNo" open="(" separator="," close=")"> #{siteNo} </foreach>
+							 )
+		</if>
+	</sql>
+
+	<sql id="searchConditionsSiteType2">
+		<if test="siteNo != null and siteNo != 0">
+			AND SITE_NO = #{siteNo}
+		</if>
+		<if test="siteNos !=null and siteNos !='' ">
+			AND SITE_NO IN <foreach collection="siteNos" item="siteNo" open="(" separator="," close=")"> #{siteNo} </foreach>
+		</if>
+	</sql>
+
+	<!-- Define tn_banner List Query -->
+	<select id="selectBannerListVO" parameterType="java.util.HashMap" resultMap="bannerMap">
+		/* Query ID : humanframework.banner.selectBannerListVO */
+		<choose>
+			<when test="siteNo != null and siteNo != 0 and @humanframe.core.util.HumanCommonUtil@isNotEmpty(bannerCodeId)">
+				SELECT MAPNG.BANNER_ORDR
+				     , BANNER.BANNER_NO
+				     , BANNER.BANNER_CODE_ID
+				     , BANNER.SJ
+				     , BANNER.SUBTITL
+				     , BANNER.SUMRY
+				     , BANNER.LINK_URL
+				     , BANNER.LINK_TRGT
+				     , TO_CHAR(BANNER.NTCE_BGNDE, 'yyyy-MM-dd') AS NTCE_BGNDE
+				     , TO_CHAR(BANNER.NTCE_ENDDE, 'yyyy-MM-dd') AS NTCE_ENDDE
+				     , BANNER.USE_AT
+				     , BANNER.CREAT_DT
+				     , BANNER.CRTR_NM
+				     , BANNER.UPDT_DT
+				     , BANNER.UPDUSR_NM
+				     , 'BANNER' AS SRVC_ID
+					 , 'PCIMG' AS PC_FILE_TY
+					 , 'TABLETIMG' AS TABLET_FILE_TY
+					 , 'MOBILEIMG' AS MOBILE_FILE_TY
+				     , (SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = BANNER.BANNER_CODE_ID AND TC.UPPER_CODE_ID = 'BANNER') AS BANNER_CODE_NM
+				     , MAPNG.BANNER_ORDR
+				FROM TN_BANNER BANNER
+				LEFT OUTER JOIN TN_BANNER_MAPNG MAPNG ON BANNER.BANNER_NO = MAPNG.BANNER_NO
+				WHERE 1=1
+				<include refid="searchConditions" />
+				<include refid="searchConditionsSiteType2"/>
+				ORDER BY <if test='bannerCodeId == "EVENT"'>CREAT_DT DESC,</if> MAPNG.BANNER_ORDR ASC
+			</when>
+			<otherwise>
+				SELECT
+					<include refid="listColumn"/>
+					,(SELECT code_nm FROM tc_code tc WHERE tc.code_id = tn_banner.banner_code_id AND tc.upper_code_id = 'BANNER') as banner_code_nm
+				FROM (
+					SELECT 
+						ROWNUM AS RNUM,
+						<include refid="listColumn"/>
+					FROM (
+						SELECT
+							<include refid="listColumn"/>
+						FROM tn_banner
+						WHERE 1=1
+						<include refid="searchConditions" />
+						<include refid="searchConditionsSiteType1"/>
+						ORDER BY <if test='bannerCodeId == "EVENT"'>CREAT_DT DESC,</if> BANNER_NO DESC
+					)
+					WHERE ROWNUM &lt;= #{endNum}
+				) TN_BANNER
+			    WHERE RNUM &gt; #{startNum}
+			</otherwise>
+		</choose>
+	</select>
+
+
+
+	<!-- Define tn_banner Count Query -->
+	<select id="selectBannerCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframework.banner.selectBannerCount */
+		<choose>
+			<when test="siteNo != null and siteNo != 0 and @humanframe.core.util.HumanCommonUtil@isNotEmpty(bannerCodeId)">
+				SELECT 
+					COUNT(BANNER.BANNER_NO)
+				FROM TN_BANNER BANNER
+				LEFT OUTER JOIN TN_BANNER_MAPNG MAPNG ON BANNER.BANNER_NO = MAPNG.BANNER_NO
+				WHERE 1=1
+				<include refid="searchConditions" />
+				<include refid="searchConditionsSiteType2"/>
+			</when>
+			<otherwise>
+				SELECT 
+					COUNT(BANNER_NO)
+				FROM TN_BANNER
+				WHERE 1=1
+				<include refid="searchConditions" />
+				<include refid="searchConditionsSiteType1"/>
+			</otherwise>
+		</choose>
+	</select>
+
+	<!-- Define tn_banner Detail Query -->
+	<select id="selectBanner" parameterType="int" resultMap="bannerMap">
+		/* Query ID : humanframework.banner.selectBanner */
+		SELECT
+			<include refid="listColumn"/>
+			,(SELECT 
+				CODE_NM 
+			  FROM TC_CODE TC 
+			  WHERE TC.CODE_ID = TN_BANNER.BANNER_CODE_ID 
+			  AND TC.UPPER_CODE_ID = 'BANNER'
+			  ) AS BANNER_CODE_NM
+		 FROM TN_BANNER
+	 	 WHERE BANNER_NO = #{bannerNo}
+	</select>
+
+	<!-- Define tn_banner Insert Query -->
+	<insert id="insertBanner" parameterType="bannerVO">
+		/* Query ID : humanframework.banner.insertBanner */
+		<selectKey keyProperty="bannerNo" resultType="int" order="BEFORE">
+			<if test="bannerNo = null or bannerNo = ''">
+            (SELECT NVL(MAX(BANNER_NO), 0) + 1 FROM TN_BANNER)
+            </if>
+            <if test="bannerNo != null and bannerNo != ''">
+            #{bannerNo}
+            </if>
+		</selectKey>
+		INSERT INTO 
+			TN_BANNER (
+			  BANNER_NO
+			, BANNER_CODE_ID
+			, SJ
+			, SUBTITL
+			, SUMRY
+			, LINK_URL
+			, LINK_TRGT
+			, NTCE_BGNDE
+			, NTCE_ENDDE
+			, USE_AT
+			, CREAT_DT
+			, CRTR_NM
+			, UPDT_DT
+			, UPDUSR_NM
+		 ) VALUES (
+	    	  #{bannerNo}
+	    	, #{bannerCodeId, jdbcType=VARCHAR}
+	    	, #{sj, jdbcType=VARCHAR}
+	    	, #{subtitl, jdbcType=VARCHAR}
+	    	, #{sumry, jdbcType=VARCHAR}
+	    	, #{linkUrl, jdbcType=VARCHAR}
+	    	, #{linkTrgt, jdbcType=VARCHAR}
+	    	<if test="ntceBgnde != null and ntceBgnde != ''">
+	    	, TO_DATE(#{ntceBgnde, jdbcType=VARCHAR}, 'yyyy-MM-dd')
+	    	</if>
+	    	<if test="ntceBgnde == null or ntceBgnde == ''">
+	    	, NULL
+	    	</if>
+	    	<if test="ntceEndde != null and ntceEndde != ''">
+	    	, TO_DATE(#{ntceEndde, jdbcType=VARCHAR}, 'yyyy-MM-dd')
+	    	</if>
+	    	<if test="ntceEndde == null or ntceEndde == ''">
+	    	, NULL
+	    	</if>
+	    	, #{useAt, jdbcType=VARCHAR}
+			, sysdate
+			, #{crtrNm}
+			, sysdate
+			, #{updusrNm}
+		)
+	</insert>
+
+	<!-- Define tn_banner Update Query -->
+	<update id="updateBanner" parameterType="bannerVO">
+		/* Query ID : humanframework.banner.updateBanner */
+		UPDATE TN_BANNER
+		   SET BANNER_CODE_ID = #{bannerCodeId, jdbcType=VARCHAR}
+		    	, SJ = #{sj, jdbcType=VARCHAR}
+		    	, SUBTITL = #{subtitl, jdbcType=VARCHAR}
+		    	, SUMRY = #{sumry, jdbcType=VARCHAR}
+		    	, LINK_URL = #{linkUrl, jdbcType=VARCHAR}
+		    	, LINK_TRGT = #{linkTrgt, jdbcType=VARCHAR}
+		      <if test="ntceBgnde != null and ntceBgnde != ''">
+		      	,NTCE_BGNDE = TO_DATE(#{ntceBgnde, jdbcType=VARCHAR}, 'yyyy-MM-dd')
+		      </if>
+		      <if test="ntceBgnde == null or ntceBgnde == ''">
+		    	,NTCE_BGNDE = NULL
+		      </if>
+		      <if test="ntceEndde != null and ntceEndde != ''">
+		    	,NTCE_ENDDE = TO_DATE(#{ntceEndde, jdbcType=VARCHAR}, 'yyyy-MM-dd')
+		      </if>
+		      <if test="ntceEndde == null or ntceEndde == ''">
+		    	,NTCE_ENDDE = NULL
+		      </if>
+		      ,USE_AT = #{useAt, jdbcType=VARCHAR}
+			  ,UPDT_DT = SYSDATE
+			  ,UPDUSR_NM = #{updusrNm}
+		 WHERE BANNER_NO = #{bannerNo}
+	</update>
+
+	<!-- Define tn_banner Update Use Y/N Query -->
+	<update id="updateBannerUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.banner.updateBannerUseAt */
+		UPDATE TN_BANNER
+		   SET USE_AT = #{useAt}
+		 WHERE BANNER_NO = #{bannerNo}
+	</update>
+
+	<!-- Define tn_banner Update Use Y/N for List Query -->
+	<update id="updateBannerListUseAt" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.banner.updateBannerListUseAt */
+		UPDATE TN_BANNER
+		   SET USE_AT = #{useAt}
+			  ,UPDT_DT = SYSDATE
+			  ,UPDUSR_NM = #{updusrNm}
+		WHERE BANNER_NO IN
+			<foreach collection="arrBanner" item="bannerNo" open="(" separator="," close=")">
+				#{bannerNo}
+			</foreach>
+	</update>
+
+	<!-- Define tn_banner Delete Query -->
+	<delete id="deleteBanner" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.banner.deleteBanner */
+		DELETE TN_BANNER
+		 WHERE BANNER_NO = #{bannerNo}
+	</delete>
+
+	<select id="selectBannerListAll" resultMap="bannerMap">
+		/* Query ID : humanframework.banner.selectBannerListAll */
+		<if test="maxLength != null and maxLength != 0 ">
+			<include refid="LimitMapper.header"/>
+		</if>	
+		SELECT 
+			 MAPNG.BANNER_ORDR
+		    ,BANNER.BANNER_NO
+		    ,BANNER.BANNER_CODE_ID
+		    ,BANNER.SJ
+		    ,BANNER.SUBTITL
+		    ,BANNER.SUMRY
+		    ,BANNER.LINK_URL
+		    ,BANNER.LINK_TRGT
+		    ,TO_CHAR(BANNER.NTCE_BGNDE, 'yyyy-MM-dd') AS NTCE_BGNDE
+		    ,TO_CHAR(BANNER.NTCE_ENDDE, 'yyyy-MM-dd') AS NTCE_ENDDE
+		    ,BANNER.USE_AT
+		    ,BANNER.CREAT_DT
+		    ,BANNER.CRTR_NM
+		    ,TO_CHAR(BANNER.UPDT_DT, 'yyyy-MM-dd') AS UPDT_DT
+		    ,BANNER.UPDUSR_NM
+		    ,'BANNER' AS SRVC_ID
+			,'PCIMG' AS PC_FILE_TY
+			,'TABLETIMG' AS TABLET_FILE_TY
+			,'MOBILEIMG' AS MOBILE_FILE_TY
+		    ,(SELECT CODE_NM FROM TC_CODE TC WHERE TC.CODE_ID = BANNER.BANNER_CODE_ID AND TC.UPPER_CODE_ID = 'BANNER') AS BANNER_CODE_NM			     
+		FROM TN_BANNER BANNER
+		LEFT OUTER JOIN TN_BANNER_MAPNG MAPNG ON BANNER.BANNER_NO = MAPNG.BANNER_NO
+		WHERE 1=1
+		<include refid="searchConditions" />
+		<include refid="searchConditionsSiteType2"/>
+		ORDER BY <if test='bannerCodeId == "EVENT"'>CREAT_DT DESC,</if>	MAPNG.BANNER_ORDR ASC
+		<if test="maxLength != null and maxLength != 0 ">
+			<include refid="LimitMapper.footer"/>
+		</if>
+	</select>
+
+	<insert id="insertBannerMapng" parameterType="bannerVO">
+		/* Query ID : humanframework.banner.insertBannerMapng */
+		INSERT INTO 
+			TN_BANNER_MAPNG (
+			  BANNER_NO
+			 ,SITE_NO
+			 ,BANNER_ORDR
+		) VALUES (
+			  #{bannerNo}
+			 ,#{siteNo}
+			 ,(SELECT NVL(MAX(BANNER_ORDR),0) + 1 FROM TN_BANNER_MAPNG WHERE SITE_NO = #{siteNo} AND BANNER_NO IN(SELECT BANNER_NO FROM TN_BANNER WHERE BANNER_CODE_ID = #{bannerCodeId}))
+		)
+	</insert>
+
+	<delete id="deleteBannerMapng" parameterType="int">
+		/* Query ID : humanframework.banner.deleteBannerMapng */
+		DELETE TN_BANNER_MAPNG
+		WHERE BANNER_NO = #{bannerNo}
+	</delete>
+
+	<select id="selectBannerMapngSiteList" parameterType="java.util.HashMap" resultType="egovMap">
+		/* Query ID : humanframework.banner.selectBannerMapngSiteList */
+		SELECT 
+			 SITE.SITE_NO
+			,SITE.SITE_NM
+		FROM TN_SITE SITE
+		  		, TN_BANNER_MAPNG MAPNG
+		WHERE SITE.SITE_NO = MAPNG.SITE_NO
+			AND MAPNG.BANNER_NO = #{bannerNo}
+		ORDER BY SITE.SITE_NM ASC
+	</select>
+
+	<update id="updateBnrChangeOdr" parameterType="java.util.HashMap">
+		/* Query ID : humanframework.banner.updateBnrChangeOdr */
+        UPDATE TN_BANNER_MAPNG
+           SET BANNER_ORDR = (CASE BANNER_ORDR 
+           					  	WHEN (SELECT 
+           					  			BANNER_ORDR 
+           					  		  FROM TN_BANNER_MAPNG 
+           					  		  WHERE BANNER_ORDR = #{beforeOdr} 
+           					  		  AND SITE_NO = #{siteNo} 
+           					  		  AND BANNER_NO IN (SELECT 
+           					  		  						BANNER_NO 
+           					  		  					FROM TN_BANNER 
+           					  		  					WHERE BANNER_CODE_ID = #{bannerCodeId})
+           					  		  ) 
+           					  	THEN #{afterOdr}
+                                ELSE 
+                                	CASE SIGN(#{beforeOdr} - #{afterOdr})
+                                      WHEN -1 THEN BANNER_ORDR - 1
+                                      WHEN 1 THEN BANNER_ORDR + 1
+                                    END
+                           	 END)
+        WHERE BANNER_ORDR &lt;= (CASE SIGN(#{beforeOdr} - #{afterOdr})
+                                   WHEN 1 THEN #{beforeOdr}
+                                   WHEN -1 THEN #{afterOdr}
+                                END)
+        AND BANNER_ORDR &gt;= (CASE SIGN(#{beforeOdr} - #{afterOdr})
+                                 WHEN 1 THEN #{afterOdr}
+                                 WHEN -1 THEN #{beforeOdr}
+                              END)
+        AND SITE_NO = #{siteNo}
+        AND BANNER_NO IN (SELECT 
+        					BANNER_NO 
+        				  FROM TN_BANNER 
+        				  WHERE BANNER_CODE_ID = #{bannerCodeId}
+        				  )
+    </update>
+</mapper>

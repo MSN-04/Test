@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="humanframe.mng.schdul">
+
+	<!-- Define Banner Result Map  -->
+	<resultMap type="mngSchdulVO" id="mngSchdulMap">
+		<result column="SCHDUL_NO"   property="schdulNo"/>
+		<result column="SCHDUL_DATE" property="schdulDate"/>
+		<result column="SCHDUL_CN"   property="schdulCn"/>
+		<result column="NOTIFY_AT"   property="notifyAt"/>
+		<result column="USE_AT"      property="useAt"/>
+		<result column="CREAT_DTTM"  property="creatDttm"/>
+		<result column="CRTR_ID"     property="crtrId"/>
+		<result column="CRTR_NM"     property="crtrNm"/>
+		<result column="UPDT_DTTM"   property="updtDttm"/>
+		<result column="UPDUSR_ID"   property="updusrId"/>
+		<result column="UPDUSR_NM"   property="updusrNm"/>
+	</resultMap>
+
+	<sql id="listColumn">
+		   SCHDUL_NO
+		 , TO_CHAR(SCHDUL_DATE, 'YYYY-MM-DD') AS SCHDUL_DATE
+		 , SCHDUL_CN
+		 , NOTIFY_AT
+		 , USE_AT
+		 , TO_CHAR(CREAT_DTTM, 'YYYY-MM-DD') AS CREAT_DTTM
+		 , CRTR_ID
+		 , CRTR_NM
+		 , TO_CHAR(UPDT_DTTM, 'YYYY-MM-DD') AS UPDT_DTTM
+		 , UPDUSR_ID
+		 , UPDUSR_NM
+	</sql>
+
+	<sql id="searchConditions">
+		<if test="useAt == null or useAt == ''">
+			AND USE_AT = 'Y'
+		</if>
+		<if test="useAt != null and useAt != '' ">
+			AND USE_AT = #{useAt}
+		</if>
+		<if test="crtrId != null and crtrId != '' ">
+			AND CRTR_ID = #{crtrId}
+		</if>
+		<if test="notifyAt != null and notifyAt != '' ">
+			AND NOTIFY_AT = #{notifyAt}
+		</if>
+		<if test="schdulDate != null and schdulDate != '' ">
+			AND TO_CHAR(SCHDUL_DATE, 'YYYY-MM-DD') = #{schdulDate}
+		</if>
+	</sql>
+
+	<select id="selectMngSchdulListVO" parameterType="java.util.HashMap" resultMap="mngSchdulMap">
+		/* Query ID : humanframe.mng.schdul.selectMngSchdulListVO */
+		SELECT	<include refid="listColumn"/>
+		  FROM (
+				SELECT ROWNUM AS RNUM ,
+						<include refid="listColumn"/>
+				  FROM ( SELECT <include refid="listColumn"/>
+						   FROM TN_MNG_SCHDUL
+						  WHERE 1=1
+							<include refid="searchConditions" />
+					  	  ORDER BY SCHDUL_NO DESC
+				  ) WHERE ROWNUM &lt;= #{endNum}
+			   ) WHERE RNUM &gt; #{startNum}
+	</select>
+
+	<select id="selectMngSchdulCount" parameterType="java.util.HashMap" resultType="int">
+		/* Query ID : humanframe.mng.schdul.selectMngSchdulCount */
+		SELECT COUNT(SCHDUL_NO)
+		  FROM TN_MNG_SCHDUL
+		 WHERE 1=1
+			<include refid="searchConditions" />
+	</select>
+
+	<select id="selectMngSchdulListAll" resultMap="mngSchdulMap">
+		/* Query ID : humanframe.mng.schdul.selectMngSchdulListAll */
+		 SELECT <include refid="listColumn"/>
+		   FROM TN_MNG_SCHDUL
+		  WHERE 1=1
+			<include refid="searchConditions" />
+	  	  ORDER BY SCHDUL_NO DESC
+	</select>
+
+	<select id="selectMngSchdul" parameterType="int" resultMap="mngSchdulMap">
+		/* Query ID : humanframe.mng.schdul.selectMngSchdul */
+		SELECT <include refid="listColumn"/>
+		  FROM TN_MNG_SCHDUL
+	 	 WHERE SCHDUL_NO = #{schdulNo}
+	</select>
+
+	<insert id="insertMngSchdul" parameterType="mngSchdulVO">
+		/* Query ID : humanframe.mng.schdul.insertMngSchdul */
+		<selectKey keyProperty="schdulNo" resultType="int" order="BEFORE">
+            (SELECT NVL(MAX(SCHDUL_NO), 0) + 1 FROM TN_MNG_SCHDUL)
+		</selectKey>
+		INSERT INTO TN_MNG_SCHDUL (
+			   SCHDUL_NO
+			 , SCHDUL_DATE
+			 , SCHDUL_CN
+			 , NOTIFY_AT
+			 , USE_AT
+			 , CREAT_DTTM
+			 , CRTR_ID
+			 , CRTR_NM
+			 , UPDT_DTTM
+			 , UPDUSR_ID
+			 , UPDUSR_NM
+		) VALUES (
+	    	#{schdulNo}
+	    	, TO_DATE(#{schdulDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+	    	, #{schdulCn, jdbcType=VARCHAR}
+	    	, #{notifyAt, jdbcType=VARCHAR}
+	    	, 'Y'
+			, SYSDATE
+			, #{crtrId}
+			, #{crtrNm}
+			, SYSDATE
+			, #{updusrId}
+			, #{updusrNm}
+		)
+	</insert>
+
+	<update id="updateMngSchdul" parameterType="mngSchdulVO">
+		/* Query ID : humanframe.mng.schdul.updateMngSchdul */
+		UPDATE	TN_MNG_SCHDUL
+		   SET SCHDUL_DATE = TO_DATE(#{schdulDate, jdbcType=VARCHAR}, 'yyyy-MM-dd')
+		     , SCHDUL_CN = #{schdulCn, jdbcType=VARCHAR}
+	    	 , NOTIFY_AT =  #{notifyAt, jdbcType=VARCHAR}
+	    	<if test="useAt != null and useAt != '' ">
+	    	 , USE_AT =  #{useAt, jdbcType=VARCHAR}
+	    	 </if>
+			 , UPDT_DTTM = SYSDATE
+			 , UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+			 , UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+		 WHERE SCHDUL_NO = #{schdulNo}
+	</update>
+
+	<update id="updateMngSchdulListUseAt" parameterType="mngSchdulVO">
+		/* Query ID : humanframe.mng.schdul.updateMngSchdulListUseAt */
+		UPDATE TN_MNG_SCHDUL
+		   SET USE_AT = #{useAt, jdbcType=VARCHAR}
+			 , UPDT_DTTM = SYSDATE
+			 , UPDUSR_ID = #{updusrId, jdbcType=VARCHAR}
+			 , UPDUSR_NM = #{updusrNm, jdbcType=VARCHAR}
+		WHERE SCHDUL_NO = #{schdulNo}
+	</update>
+
+	<delete id="deleteMngSchdul" parameterType="java.util.HashMap">
+		/* Query ID : humanframe.mng.schdul.deleteMngSchdul */
+		DELETE	FROM TN_MNG_SCHDUL
+		 WHERE	SCHDUL_NO = #{schdulNo}
+	</delete>
+
+</mapper>
